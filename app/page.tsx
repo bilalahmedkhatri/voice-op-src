@@ -1,7 +1,6 @@
 'use client';
 
-import type { Metadata } from 'next';
-import { FaMicrophone, FaSync, FaHeart } from 'react-icons/fa';
+import { FaMicrophone, FaSync } from 'react-icons/fa';
 import { useVoiceGenerator } from './hooks/useVoiceGenerator';
 import { useVoiceSamples } from './hooks/useVoiceSamples';
 import TextInput from './components/TextInput';
@@ -11,7 +10,8 @@ import GenerationStatus from './components/GenerationStatus';
 import ApiToggle from './components/ApiToggle';
 import Footer from './Footer';
 import { designSystem as ds } from './lib/designSystem';
-import { useState, useMemo, lazy, Suspense, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { useIsClient } from './hooks/useIsClient';
 import LoadingSkeleton from './components/LoadingSkeleton';
 
 
@@ -28,163 +28,81 @@ export default function Home() {
     loadPrompt,
     deletePrompt,
     isGenerating,
-    statusMessage,
+    generationTime,
     errorMessage,
     dismissError,
     remainingAttempts,
     resetTime,
   } = useVoiceGenerator();
 
-  // const { count: visitorCount, isLoading: isCountLoading } = useVisitorCount();
 
-  const { voices: apiVoices, loading: apiVoicesLoading, error: apiVoicesError, refetch: refetchVoices } = useVoiceSamples();
+
+  const [selectedModelId, setSelectedModelId] = useState('kokoro-local');
+  const { voices: apiVoices, loading: apiVoicesLoading, error: apiVoicesError, refetch: refetchVoices } = useVoiceSamples(selectedModelId);
   const [selectedApiVoice, setSelectedApiVoice] = useState('');
   const [apiModeKey, setApiModeKey] = useState(0);
-  const [isClient, setIsClient] = useState(false);
+  const isClient = useIsClient();
 
+  // Auto-select first voice once voices are loaded if none currently selected
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (!selectedApiVoice && apiVoices.length > 0) {
+      setSelectedApiVoice(apiVoices[0].voice_id);
+    }
+  }, [apiVoices, selectedApiVoice]);
 
-  const handleApiToggle = (useReplicate: boolean) => {
-    // Force re-render of VoiceControls and refetch voices
-    setApiModeKey(prev => prev + 1);
-    refetchVoices();
-    setSelectedApiVoice(''); // Reset selected voice
+  const handleModelChange = (newModelId: string) => {
+    setSelectedModelId(newModelId);
+    setSelectedApiVoice(''); // Reset selected voice on model switch
   };
 
-  const features = useMemo(() => [
+  const handleApiToggle = (useReplicate: boolean) => {
+    const targetModel = useReplicate ? 'kokoro-replicate' : 'kokoro-local';
+    setSelectedModelId(targetModel);
+    setSelectedApiVoice('');
+  };
+
+  const features = [
     { text: 'Instant Generation' },
     { text: 'Voice Customization' },
     { text: 'Save Prompts' },
-  ], []);
+  ];
 
   const handleGenerateClick = async () => {
     await handleGenerate(selectedApiVoice || undefined);
   };
 
-  const jsonLd = useMemo(() => ({
-    '@context': 'https://schema.org',
-    '@type': 'WebApplication',
-    name: 'AI Voiceover Generator',
-    description: 'Free online text-to-speech voiceover generator with customizable voice parameters',
-    applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'Any',
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-    },
-    featureList: [
-      'Text to speech conversion',
-      'Multiple voice options',
-      'Adjustable speech rate',
-      'Customizable pitch',
-      'Volume control',
-      'Save and manage prompts',
-    ],
-  }), []);
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <link rel="canonical" href="https://your-domain.com/" />
-      {/* 
-        Assuming your domain is your-domain.com. 
-        Replace this with your actual domain.
-      */}
-      
-      <main style={{ 
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #fef3f2 0%, #ffe4e1 30%, #ffd4cc 60%, #ffc5bd 100%)',
-        position: 'relative',
-      }}>
+      <main className="min-h-screen bg-gradient-to-br from-red-50 via-red-100 via-red-200 to-red-300 relative">
+
         {/* API Toggle - Fixed Top Right (Development Only) */}
         {process.env.NODE_ENV === 'development' && (
-          <div style={{
-            position: 'fixed',
-            top: 'clamp(1rem, 3vw, 1.5rem)',
-            right: 'clamp(1rem, 3vw, 2rem)',
-            zIndex: 1000,
-          }}>
+          <div className="fixed top-4 sm:top-6 md:top-8 right-4 sm:right-6 md:right-8 z-50">
             <ApiToggle onToggle={handleApiToggle} />
           </div>
         )}
 
         {/* Hero Section */}
-        <section style={{
-          background: 'linear-gradient(135deg, #ffc9c1 0%, #ffb4a8 100%)',
-          color: '#1a1a1a',
-          padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem) clamp(2rem, 4vw, 3rem)',
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'transparent',
-          }} />
-          
-          <div style={{ 
-            maxWidth: '1200px', 
-            margin: '0 auto',
-            position: 'relative',
-            zIndex: 1,
-            padding: '0 clamp(1rem, 3vw, 2rem)',
-          }}>
-            <h1 style={{
-              fontSize: 'clamp(2rem, 5vw, 3.75rem)',
-              fontWeight: ds.typography.weights.extrabold,
-              fontFamily: ds.typography.fonts.heading,
-              marginBottom: ds.spacing.md,
-              color: '#1a1a1a',
-              letterSpacing: '-0.02em',
-            }}>
+        <section className="bg-gradient-to-br from-red-200 to-red-300 text-gray-900 px-4 sm:px-8 md:px-16 py-8 sm:py-12 md:py-16 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-transparent" />
+
+          <div className="max-w-7xl mx-auto relative z-10 px-4 sm:px-8 md:px-16">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 text-gray-900 tracking-tight">
               AI Voiceover Generator
             </h1>
-            <p style={{
-              fontSize: 'clamp(0.95rem, 2vw, 1.125rem)',
-              fontFamily: ds.typography.fonts.body,
-              maxWidth: '700px',
-              margin: `0 auto ${ds.spacing.lg}`,
-              color: '#2d2d2d',
-              lineHeight: '1.6',
-              fontWeight: ds.typography.weights.normal,
-              padding: '0 1rem',
-            }}>
-              Instantly transform text into high-quality, natural-sounding speech with our free AI Voice Generator. 
-              Perfect for content creators, educators, and developers, our advanced text-to-speech (TTS) tool offers a seamless experience with customizable voice parameters. 
+            <p className="text-base sm:text-lg max-w-3xl mx-auto mb-8 text-gray-800 leading-relaxed font-normal px-4">
+              Instantly transform text into high-quality, natural-sounding speech with our free AI Voice Generator.
+              Perfect for content creators, educators, and developers, our advanced text-to-speech (TTS) tool offers a seamless experience with customizable voice parameters.
               Start creating professional voiceovers in seconds—no sign-up required.
             </p>
 
             {/* Feature Pills */}
-            <div style={{
-              display: 'flex',
-              gap: ds.spacing.md,
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              marginTop: ds.spacing.lg,
-            }}>
-              {features.map((feature, i) => (
+            <div className="flex gap-4 justify-center flex-wrap mt-8">
+              {features.map((feature) => (
                 <div
                   key={feature.text}
-                  style={{
-                    padding: `${ds.spacing.xs} ${ds.spacing.lg}`,
-                    background: 'rgba(0,0,0,0.05)',
-                    borderRadius: ds.borderRadius.full,
-                    fontSize: ds.typography.sizes.sm,
-                    fontWeight: ds.typography.weights.medium,
-                    border: '1px solid rgba(0,0,0,0.08)',
-                    color: '#1a1a1a',
-                    fontFamily: ds.typography.fonts.body,
-                  }}
+                  className="py-1.5 px-4 bg-[#ff9b8f]/25 rounded-full text-sm font-medium border border-[#ff9b8f]/35 text-gray-900 shadow-xs"
                 >
                   {feature.text}
                 </div>
@@ -194,146 +112,100 @@ export default function Home() {
         </section>
 
         {/* Main Content */}
-        <div style={{ 
-          maxWidth: '1400px', 
-          margin: '0 auto', 
-          padding: 'clamp(1rem, 4vw, 4rem)',
-        }}>
+        <div className="max-w-screen-2xl mx-auto p-4 sm:p-8 md:p-16">
           {/* Generator Section */}
-          <section 
+          <section
             aria-label="Voiceover generation controls"
-            style={{
-              background: 'white',
-              borderRadius: ds.borderRadius.xl,
-              padding: 'clamp(1rem, 3vw, 2rem)',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              marginBottom: 'clamp(1.5rem, 4vw, 3rem)',
-            }}
+            className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-md mb-6 sm:mb-8 md:mb-12"
           >
-            <h2 style={{
-              fontSize: ds.typography.sizes['2xl'],
-              fontWeight: ds.typography.weights.bold,
-              fontFamily: ds.typography.fonts.heading,
-              color: ds.colors.gray[800],
-              marginBottom: ds.spacing.xl,
-              textAlign: 'center',
-            }}>
-              Create Your Voiceover
-            </h2>
-
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: ds.spacing['2xl'],
-            }}>
-              <TextInput
-                text={params.text}
-                onTextChange={(text) => setParams({ ...params, text })}
-                onSave={handleSavePrompt}
-                disabled={remainingAttempts === 0}
-              />
-              
-              <section aria-label="Voice parameters">
-                <h3 className="sr-only">Adjust Voice Parameters</h3>
-                <VoiceControls
-                  key={apiModeKey}
-                  params={params}
-                  onParamsChange={setParams}
-                  apiVoices={apiVoices}
-                  apiVoicesLoading={apiVoicesLoading}
-                  apiVoicesError={apiVoicesError}
-                  onApiVoiceChange={setSelectedApiVoice}
-                  selectedApiVoice={selectedApiVoice}
+            {/* ElevenLabs-style Split Workspace Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch mb-8">
+              {/* Left Column: Text Input */}
+              <div className="lg:col-span-7 flex flex-col">
+                <TextInput
+                  text={params.text}
+                  onTextChange={(text) => setParams({ ...params, text })}
+                  onSave={handleSavePrompt}
+                  disabled={remainingAttempts === 0}
                 />
-              </section>
-              
-              {/* Usage Limit Display */}
-              {isClient && remainingAttempts !== null && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: ds.spacing.md,
-                  background: remainingAttempts === 0 ? '#fee' : '#f0f9ff',
-                  border: `1px solid ${remainingAttempts === 0 ? '#fcc' : '#bae6fd'}`,
-                  borderRadius: ds.borderRadius.md,
-                  fontSize: 'clamp(0.875rem, 1.8vw, 1rem)',
-                  fontFamily: ds.typography.fonts.body,
-                  color: remainingAttempts === 0 ? '#dc2626' : '#0369a1',
-                }}>
-                  {remainingAttempts > 0 ? (
-                    <>
-                      <strong>{remainingAttempts}</strong> generation{remainingAttempts !== 1 ? 's' : ''} remaining
-                      {resetTime && <span style={{ marginLeft: ds.spacing.xs }}>(Resets in {resetTime})</span>}
-                    </>
-                  ) : (
-                    <>
-                      Limit reached. Try again in <strong>{resetTime || 'a moment'}</strong>
-                    </>
-                  )}
-                </div>
-              )}
-              
-              {/* Generate Button */}
-              <div style={{ textAlign: 'center' }}>
+              </div>
+
+              {/* Right Column: Scrollable Playable Voices & Parameters */}
+              <div className="lg:col-span-5 flex flex-col bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-xs">
+                <section aria-label="Voice parameters">
+                  <h3 className="sr-only">Adjust Voice Parameters</h3>
+                  <VoiceControls
+                    key={apiModeKey}
+                    params={params}
+                    onParamsChange={setParams}
+                    apiVoices={apiVoices}
+                    apiVoicesLoading={apiVoicesLoading}
+                    apiVoicesError={apiVoicesError}
+                    onApiVoiceChange={setSelectedApiVoice}
+                    selectedApiVoice={selectedApiVoice}
+                    selectedModelId={selectedModelId}
+                    onModelChange={handleModelChange}
+                  />
+                </section>
+              </div>
+            </div>
+
+            {/* Bottom Actions & Player Area */}
+            <div className="flex flex-col gap-4 pt-4 border-t border-gray-100">
+              {/* Toolbar: Usage Badge & Compact Generate Button */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50/80 p-3 sm:p-3.5 rounded-2xl border border-gray-100">
+                {/* Usage Limit Badge */}
+                {isClient && remainingAttempts !== null ? (
+                  <div className={`text-xs font-medium px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${remainingAttempts === 0
+                      ? 'bg-red-50 border border-red-200 text-red-600'
+                      : 'bg-white border border-gray-200/80 text-gray-700 shadow-2xs'
+                    }`}>
+                    {remainingAttempts > 0 ? (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span><strong>{remainingAttempts}</strong> generation{remainingAttempts !== 1 ? 's' : ''} left</span>
+                        {resetTime && <span className="text-gray-400 font-normal">({resetTime})</span>}
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-red-500" />
+                        <span>Limit reached ({resetTime || 'waiting'})</span>
+                      </>
+                    )}
+                  </div>
+                ) : <div />}
+
+                {/* Compact Generate Button */}
                 <button
                   onClick={handleGenerateClick}
                   disabled={!params.text.trim() || isGenerating || remainingAttempts === 0}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 3rem)',
-                    background: isGenerating 
-                      ? ds.colors.gray[400]
-                      : 'linear-gradient(135deg, #ff9b8f 0%, #ffb4a8 100%)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: ds.borderRadius.lg,
-                    fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-                    fontWeight: ds.typography.weights.bold,
-                    cursor: isGenerating || !params.text.trim() || remainingAttempts === 0 ? 'not-allowed' : 'pointer',
-                    transition: `all ${ds.transitions.base}`,
-                    fontFamily: ds.typography.fonts.heading,
-                    boxShadow: ds.shadows.lg,
-                    minWidth: 'clamp(180px, 40vw, 220px)',
-                    minHeight: '44px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: ds.spacing.xs,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isGenerating && params.text.trim() && remainingAttempts > 0) {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = ds.shadows.xl;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = ds.shadows.lg;
-                  }}
+                  className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ffb4a8] hover:from-[#f8887a] hover:to-[#ffa79a] text-white rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] disabled:bg-gray-200 disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 flex items-center justify-center gap-2"
                 >
                   {isGenerating ? (
                     <>
-                      <FaSync className="animate-spin" style={{ marginRight: ds.spacing.xs }} />
-                      Generating...
+                      <FaSync className="animate-spin text-xs" />
+                      <span>Generating...</span>
                     </>
                   ) : (
                     <>
-                      <FaMicrophone style={{ marginRight: ds.spacing.xs }} />
-                      Generate Voiceover
+                      <FaMicrophone className="text-xs" />
+                      <span>Generate Voiceover</span>
                     </>
                   )}
                 </button>
               </div>
 
               <GenerationStatus
-                statusMessage={statusMessage}
                 errorMessage={errorMessage}
                 onDismissError={dismissError}
               />
 
-              {/* Audio Player */}
               <AudioPlayer
                 audioUrl={null}
                 audioBlob={audioBlob}
                 isGenerating={isGenerating}
+                generationTime={generationTime}
+                fileName="voiceover.wav"
               />
             </div>
           </section>
@@ -350,12 +222,7 @@ export default function Home() {
                 <LoadingSkeleton variant="savedPrompts" />
               </section>
             }>
-              <section style={{
-                background: 'white',
-                borderRadius: ds.borderRadius['2xl'],
-                padding: 'clamp(1.5rem, 4vw, 3rem)',
-                boxShadow: ds.shadows.md,
-              }}>
+              <section className="bg-white rounded-3xl p-6 sm:p-8 md:p-12 shadow-md">
                 <SavedPrompts
                   prompts={savedPrompts}
                   onLoad={loadPrompt}
@@ -369,54 +236,6 @@ export default function Home() {
         {/* Footer */}
         <Footer />
       </main>
-
-      <style jsx global>{`
-        * {
-          box-sizing: border-box;
-        }
-        
-        html {
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          scroll-behavior: smooth;
-        }
-        
-        body {
-          overflow-x: hidden;
-        }
-        
-        .sr-only {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          padding: 0;
-          margin: -1px;
-          overflow: hidden;
-          clip: rect(0, 0, 0, 0);
-          white-space: nowrap;
-          border-width: 0;
-        }
-        
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        
-        .animate-spin {
-          animation: spin 1s linear infinite;
-        }
-        
-        /* Ensure buttons have proper touch targets on mobile */
-        button {
-          min-height: 44px;
-          min-width: 44px;
-        }
-      `}
-      </style>
     </>
   );
 }

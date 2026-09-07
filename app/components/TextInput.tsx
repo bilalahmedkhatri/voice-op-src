@@ -1,6 +1,5 @@
 import { useState, memo } from 'react';
 import { FaEdit, FaSave, FaTrash, FaFont, FaExclamationTriangle } from 'react-icons/fa';
-import { designSystem as ds } from '../lib/designSystem';
 
 interface TextInputProps {
   text: string;
@@ -13,13 +12,13 @@ const TextInput = memo(function TextInput({ text, onTextChange, onSave, disabled
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [textareaHeight, setTextareaHeight] = useState('auto');
-  
+
   const charCount = text.length;
-  const wordCount = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const wordCount = text.trim() ? text.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
   const maxChars = 5000;
   const recommendedLimit = 2500;
-  const showLengthWarning = charCount > recommendedLimit;
+  const isLargeText = charCount > recommendedLimit;
+  const isNearMax = charCount > maxChars * 0.9;
 
   const handleSave = () => {
     const success = onSave();
@@ -35,244 +34,121 @@ const TextInput = memo(function TextInput({ text, onTextChange, onSave, disabled
   };
 
   return (
-    <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 3rem)', position: 'relative' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: ds.spacing.md, flexWrap: 'wrap', gap: ds.spacing.sm }}>
-        <label style={{ 
-          display: 'flex',
-          alignItems: 'center',
-          gap: ds.spacing.sm,
-          fontSize: 'clamp(0.95rem, 2vw, 1rem)',
-          fontWeight: ds.typography.weights.semibold,
-          color: ds.colors.gray[700],
-          fontFamily: ds.typography.fonts.heading,
-        }}>
-          <FaEdit style={{ fontSize: '1.2rem' }} />
+    <div className="relative flex flex-col h-full justify-between gap-3">
+      {/* 1. Header with Title & Compact Actions */}
+      <div className="flex justify-between items-center flex-wrap gap-2">
+        <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 uppercase tracking-wider">
+          <FaEdit className="text-base text-[#ff9b8f]" />
           Enter Your Text
         </label>
-        <span style={{
-          fontSize: 'clamp(0.8rem, 1.5vw, 0.875rem)',
-          color: charCount > maxChars * 0.9 ? ds.colors.error : ds.colors.gray[500],
-          fontWeight: ds.typography.weights.medium,
-          fontFamily: ds.typography.fonts.mono,
-          display: 'flex',
-          alignItems: 'center',
-          gap: ds.spacing.xs,
-        }}>
-          <FaFont />
-          {charCount.toLocaleString()} / {maxChars.toLocaleString()}
-        </span>
+
+        <div className="flex items-center gap-2">
+          {/* Compact Save Button */}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!text.trim()}
+            title="Save Prompt"
+            className={`flex items-center gap-1.5 py-1 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              text.trim()
+                ? 'bg-gradient-to-r from-[#ff9b8f] to-[#ffb4a8] hover:from-[#f8887a] hover:to-[#ffa79a] text-white shadow-2xs hover:shadow-xs'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200/60'
+            }`}
+          >
+            <FaSave className="text-xs" />
+            <span>Save</span>
+          </button>
+
+          {/* Compact Clear Button */}
+          <button
+            type="button"
+            onClick={() => onTextChange('')}
+            disabled={!text}
+            title="Clear text"
+            className={`flex items-center gap-1.5 py-1 px-3 rounded-lg text-xs font-medium transition-all border ${
+              text
+                ? 'bg-white text-gray-700 hover:bg-gray-50 hover:text-red-600 border-gray-200 cursor-pointer shadow-2xs'
+                : 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+            }`}
+          >
+            <FaTrash className="text-xs" />
+            <span>Clear</span>
+          </button>
+        </div>
       </div>
 
-      <div style={{ position: 'relative' }}>
+      {/* 2. Textarea filling available height */}
+      <div className="relative flex-1 flex flex-col">
         <textarea
           value={text}
           onChange={(e) => {
             if (disabled) return;
             onTextChange(e.target.value);
-            // Auto-expand textarea
-            e.target.style.height = 'auto';
-            const newHeight = Math.max(120, Math.min(e.target.scrollHeight, 500));
-            e.target.style.height = newHeight + 'px';
           }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={disabled ? "Generation limit reached. Please wait for reset..." : "Type or paste your text here... The AI will convert it into natural-sounding speech."}
+          placeholder={
+            disabled
+              ? 'Generation limit reached. Please wait for reset...'
+              : 'Type or paste your text here... The AI will convert it into natural-sounding speech.'
+          }
           maxLength={maxChars}
           disabled={disabled}
-          style={{
-            width: '100%',
-            minHeight: 'clamp(120px, 20vh, 180px)',
-            maxHeight: '500px',
-            padding: ds.spacing.lg,
-            border: `1px solid ${isFocused ? '#ff9b8f' : '#e5e7eb'}`,
-            borderRadius: ds.borderRadius.lg,
-            fontSize: ds.typography.sizes.base,
-            fontFamily: ds.typography.fonts.body,
-            lineHeight: ds.typography.lineHeights.relaxed,
-            resize: 'none',
-            overflow: 'auto',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            outline: 'none',
-            backgroundColor: disabled ? ds.colors.gray[100] : 'white',
-            boxShadow: isFocused ? '0 0 0 3px rgba(255, 155, 143, 0.1)' : 'none',
-            boxSizing: 'border-box',
-            scrollBehavior: 'smooth',
-            cursor: disabled ? 'not-allowed' : 'text',
-            opacity: disabled ? 0.6 : 1,
-          }}
-          onMouseEnter={(e) => {
-            if (!isFocused && !disabled) {
-              e.currentTarget.style.borderColor = '#ffb4a8';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isFocused && !disabled) {
-              e.currentTarget.style.borderColor = '#e5e7eb';
-            }
-          }}
+          className={`w-full flex-1 min-h-[360px] sm:min-h-[400px] lg:min-h-[440px] p-4 border rounded-xl text-sm sm:text-base leading-relaxed resize-none overflow-auto transition-all duration-200 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 bg-white ${
+            isFocused
+              ? 'border-[#ff9b8f] ring-2 ring-[#ff9b8f]/20 shadow-xs'
+              : 'border-gray-200/90'
+          }`}
         />
-        
+
         {!text && (
-          <div style={{
-            position: 'absolute',
-            bottom: ds.spacing.lg,
-            right: ds.spacing.lg,
-            display: 'flex',
-            gap: ds.spacing.sm,
-            pointerEvents: 'none',
-          }}>
-            <span style={{ fontSize: ds.typography.sizes.xs, color: ds.colors.gray[400], background: ds.colors.gray[50], padding: '4px 8px', borderRadius: ds.borderRadius.sm }}>
+          <div className="absolute bottom-3 right-3 flex gap-2 pointer-events-none">
+            <span className="text-[11px] text-gray-400 bg-gray-50 py-0.5 px-2 rounded-md border border-gray-200/60">
               Ctrl + V to paste
             </span>
           </div>
         )}
       </div>
 
-      {/* Length Warning Message */}
-      {showLengthWarning && (
-        <div style={{
-          marginTop: ds.spacing.md,
-          padding: ds.spacing.md,
-          background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-          border: '1px solid #fbbf24',
-          borderRadius: ds.borderRadius.lg,
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: ds.spacing.md,
-          fontSize: ds.typography.sizes.sm,
-          color: '#92400e',
-          lineHeight: ds.typography.lineHeights.relaxed,
-        }}>
-          <FaExclamationTriangle style={{ 
-            fontSize: '1.1rem', 
-            color: '#f59e0b',
-            marginTop: '2px',
-            flexShrink: 0,
-          }} />
-          <div>
-            <strong style={{ fontWeight: ds.typography.weights.semibold, display: 'block', marginBottom: '4px' }}>
-              Large Text Detected
-            </strong>
-            <span>
-              You've entered {wordCount.toLocaleString()} words ({charCount.toLocaleString()} characters). 
-              Texts over {recommendedLimit.toLocaleString()} characters may take longer to process. 
-              Please be patient while our servers generate your voiceover.
+      {/* 3. Bottom Meta: Word Count & Compact Character Counter */}
+      <div className="flex justify-between items-center px-1 text-xs text-gray-500">
+        <div className="flex items-center gap-2">
+          {wordCount > 0 && (
+            <span className="font-medium text-gray-600">
+              {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
             </span>
-          </div>
+          )}
+          {isLargeText && (
+            <span
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70"
+              title="Large text may take slightly longer to synthesize"
+            >
+              <FaExclamationTriangle className="text-[10px] text-amber-500" />
+              Long text
+            </span>
+          )}
         </div>
-      )}
 
-      <div style={{ 
-        display: 'flex', 
-        gap: ds.spacing.md, 
-        marginTop: ds.spacing.lg,
-        flexWrap: 'wrap',
-      }}>
-        <button
-          onClick={handleSave}
-          disabled={!text.trim()}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: ds.spacing.sm,
-            padding: `${ds.spacing.sm} ${ds.spacing.lg}`,
-            background: text.trim() ? 'linear-gradient(135deg, #ff9b8f 0%, #ffb4a8 100%)' : ds.colors.gray[300],
-            color: 'white',
-            border: 'none',
-            borderRadius: ds.borderRadius.lg,
-            cursor: text.trim() ? 'pointer' : 'not-allowed',
-            fontSize: ds.typography.sizes.sm,
-            fontWeight: ds.typography.weights.semibold,
-            transition: `all ${ds.transitions.base}`,
-            boxShadow: 'none',
-            fontFamily: ds.typography.fonts.heading,
-          }}
-          onMouseEnter={(e) => {
-            if (text.trim()) {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = ds.shadows.lg;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (text.trim()) {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }
-          }}
+        <span
+          className={`font-mono text-xs font-semibold flex items-center gap-1 px-2 py-0.5 rounded-md ${
+            isNearMax
+              ? 'text-red-700 bg-red-50 border border-red-200'
+              : isLargeText
+              ? 'text-amber-700 bg-amber-50 border border-amber-200'
+              : 'text-gray-600 bg-gray-50 border border-gray-200/70'
+          }`}
         >
-          <FaSave style={{ fontSize: '1rem' }} />
-          Save Prompt
-        </button>
-
-        <button
-          onClick={() => onTextChange('')}
-          disabled={!text}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: ds.spacing.sm,
-            padding: `${ds.spacing.sm} ${ds.spacing.lg}`,
-            background: 'white',
-            color: text ? ds.colors.gray[700] : ds.colors.gray[400],
-            border: `1px solid ${text ? ds.colors.gray[300] : ds.colors.gray[200]}`,
-            borderRadius: ds.borderRadius.lg,
-            cursor: text ? 'pointer' : 'not-allowed',
-            fontSize: ds.typography.sizes.sm,
-            fontWeight: ds.typography.weights.medium,
-            transition: `all ${ds.transitions.base}`,
-            fontFamily: ds.typography.fonts.heading,
-          }}
-          onMouseEnter={(e) => {
-            if (text) {
-              e.currentTarget.style.backgroundColor = ds.colors.gray[50];
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'white';
-          }}
-        >
-          <FaTrash style={{ fontSize: '1rem' }} />
-          Clear
-        </button>
+          <FaFont className="text-[10px]" />
+          {charCount.toLocaleString()} / {maxChars.toLocaleString()}
+        </span>
       </div>
 
+      {/* Toast Notification */}
       {showToast && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '24px',
-            right: '24px',
-            background: ds.colors.gray[900],
-            color: 'white',
-            padding: `${ds.spacing.md} ${ds.spacing.xl}`,
-            borderRadius: ds.borderRadius.xl,
-            boxShadow: ds.shadows['2xl'],
-            zIndex: 1000,
-            animation: 'slideIn 0.3s ease-out',
-            display: 'flex',
-            alignItems: 'center',
-            gap: ds.spacing.md,
-            fontSize: ds.typography.sizes.base,
-            fontWeight: ds.typography.weights.medium,
-            maxWidth: '400px',
-          }}
-        >
+        <div className="fixed top-6 right-6 bg-gray-900 text-white py-3 px-5 rounded-xl shadow-2xl z-50 flex items-center gap-3 text-sm font-medium animate-slideIn">
           {toastMessage}
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes slideIn {
-          from {
-            transform: translateX(120%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 });

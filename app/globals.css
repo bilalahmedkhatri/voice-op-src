@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Scrollbar + global smoothing main layout*/
 * {
@@ -45,4 +43,68 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Custom Range Slider Theme (Strict Coral/Red - Clean without blur shadow) */
+input[type="range"],
+.theme-range-slider {
+  accent-color: #ff7d6e !important;
+}
+
+input[type="range"]::-webkit-slider-thumb,
+.theme-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+  background-color: #ff7d6e !important;
+  background: #ff7d6e !important;
+  border: 2px solid #ffffff !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+  transition: transform 0.15s ease-in-out !important;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover,
+.theme-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+input[type="range"]::-moz-range-thumb,
+.theme-range-slider::-moz-range-thumb {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+  background-color: #ff7d6e !important;
+  background: #ff7d6e !important;
+  border: 2px solid #ffffff !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+}
+
+input[type="range"]::-moz-range-thumb:hover,
+.theme-range-slider::-moz-range-thumb:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Hide number input stepper arrows across all browsers */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+  display: none !important;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
 }

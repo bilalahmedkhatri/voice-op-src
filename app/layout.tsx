@@ -45,6 +45,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     images: ["/twitter-image.png"],
   },
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export const viewport: Viewport = {
@@ -66,7 +69,30 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="preconnect" href="http://localhost:8000" />
         <link rel="dns-prefetch" href="http://localhost:8000" />
-        <script src="https://quge5.com/88/tag.min.js" data-zone="203992" async data-cfasync="false"></script>
+        {/* <script src="https://quge5.com/88/tag.min.js" data-zone="203992" async data-cfasync="false"></script> */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: 'AI Voiceover Generator',
+              url: 'https://freevoiceover.vercel.app',
+              description: 'Free online text-to-speech voiceover generator with customizable voice parameters',
+              applicationCategory: 'MultimediaApplication',
+              operatingSystem: 'Any',
+              offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+              featureList: [
+                'Text to speech conversion',
+                'Multiple voice options',
+                'Adjustable speech rate',
+                'Customizable pitch',
+                'Volume control',
+                'Save and manage prompts',
+              ],
+            }),
+          }}
+        />
         <Analytics />
       </head>
       <body>{children}</body>

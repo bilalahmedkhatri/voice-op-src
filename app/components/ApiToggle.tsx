@@ -85,60 +85,21 @@ export default function ApiToggle({ onToggle }: ApiToggleProps) {
   if (isLoading) return null;
 
   return (
-    <label style={{ 
-      display: 'flex', 
-      alignItems: 'center',
-      cursor: isSwitching ? 'not-allowed' : 'pointer',
-      opacity: isSwitching ? 0.6 : 1,
-    }}>
-        <span style={{
-        marginLeft: '0.5rem',
-        fontSize: 'clamp(0.8rem, 1.8vw, 0.95rem)',
-        fontWeight: ds.typography.weights.medium,
-        color: '#1a1a1a',
-        fontFamily: ds.typography.fonts.body,
-        whiteSpace: 'nowrap',
-      }}>
+    <div className={`flex items-center gap-2 ${isSwitching ? 'cursor-not-allowed opacity-60' : ''}`}>
+      <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">
         {useReplicate ? 'Replicate' : 'Default'}
       </span>
-      <input
-        type="checkbox"
-        checked={useReplicate}
-        onChange={handleToggle}
-        disabled={isSwitching}
-        style={{
-          position: 'relative',
-          width: '2.5rem',
-          height: '1.25rem',
-          transition: 'all 200ms ease-in-out',
-          backgroundColor: useReplicate ? '#7f9cf5' : '#9ca3af',
-          borderRadius: '9999px',
-          outline: 'none',
-          appearance: 'none',
-          cursor: isSwitching ? 'not-allowed' : 'pointer',
-          boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-        }}
-        aria-label={`Switch to ${useReplicate ? 'Default API' : 'Replicate'}`}
-      />
-      <style jsx>{`
-        input:before {
-          content: '';
-          position: absolute;
-          width: 1.25rem;
-          height: 1.25rem;
-          border-radius: 50%;
-          top: 0;
-          left: 0;
-          transform: scale(1.1);
-          box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.2);
-          background-color: white;
-          transition: .2s ease-in-out;
-        }
-
-        input:checked:before {
-          left: 1.25rem;
-        }
-      `}</style>
+      <label className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          checked={useReplicate}
+          onChange={handleToggle}
+          disabled={isSwitching}
+          className="sr-only peer"
+          aria-label={`Switch to ${useReplicate ? 'Default API' : 'Replicate'}`}
+        />
+        <div className="w-10 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-indigo-400 peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all after:shadow-sm"></div>
+      </label>
       
       {toast && (
         <Toast
@@ -147,6 +108,6 @@ export default function ApiToggle({ onToggle }: ApiToggleProps) {
           onClose={() => setToast(null)}
         />
       )}
-    </label>
+    </div>
   );
 }

@@ -4,4 +4,8 @@ export interface VoiceParams {
   rate: number;
   pitch: number;
   volume: number;
+  modelId?: string;
+  options?: Record<string, any>;
 }
+
+export * from '../lib/tts/types';

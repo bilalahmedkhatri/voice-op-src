@@ -84,10 +84,13 @@ export async function generateVoiceover(
 /**
  * Get available voice samples/tones
  */
-export async function getVoiceSamples(): Promise<VoiceSample[]> {
+export async function getVoiceSamples(modelId?: string): Promise<VoiceSample[]> {
   return retryWithBackoff(async () => {
     // Call Next.js API route instead of backend directly
-    const response = await fetch('/api/voiceover/voiceover_samples');
+    const url = modelId
+      ? `/api/voiceover/voiceover_samples?model=${encodeURIComponent(modelId)}`
+      : '/api/voiceover/voiceover_samples';
+    const response = await fetch(url);
 
     if (!response.ok) {
       const error = await response.json();

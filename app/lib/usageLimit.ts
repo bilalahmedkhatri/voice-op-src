@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'voiceover-usage-limit';
-const MAX_ATTEMPTS = 3;
+const MAX_ATTEMPTS = parseInt(process.env.NEXT_PUBLIC_MAX_ATTEMPTS ?? '3', 10);
 const RESET_PERIOD_MS = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
 
 interface UsageData {

@@ -23,34 +23,28 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
   `;
 
   const ShimmerBox = ({ width, height, borderRadius = ds.borderRadius.lg, marginBottom = '0' }: { width: string; height: string; borderRadius?: string; marginBottom?: string }) => (
-    <div style={{
-      ...shimmerStyle,
-      width,
-      height,
-      borderRadius,
-      marginBottom,
-    }}>
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent)',
-        animation: 'shimmer 1.5s infinite',
-      }} />
+    <div
+      className="relative overflow-hidden bg-gray-200"
+      style={{
+        width,
+        height,
+        borderRadius,
+        marginBottom,
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-shimmer" />
     </div>
   );
 
   // Text Input Skeleton
   const TextInputSkeleton = () => (
-    <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 3rem)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: ds.spacing.md }}>
+    <div className="mb-6 sm:mb-8 md:mb-12">
+      <div className="flex justify-between mb-4">
         <ShimmerBox width="150px" height="24px" />
         <ShimmerBox width="120px" height="24px" />
       </div>
       <ShimmerBox width="100%" height="180px" marginBottom={ds.spacing.lg} />
-      <div style={{ display: 'flex', gap: ds.spacing.md }}>
+      <div className="flex gap-4">
         <ShimmerBox width="140px" height="44px" />
         <ShimmerBox width="100px" height="44px" />
       </div>
@@ -59,7 +53,7 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
 
   // Voice Dropdown Skeleton
   const VoiceDropdownSkeleton = () => (
-    <div style={{ marginBottom: ds.spacing.xl }}>
+    <div className="mb-6">
       <ShimmerBox width="120px" height="20px" marginBottom={ds.spacing.md} />
       <ShimmerBox width="100%" height="52px" borderRadius={ds.borderRadius.xl} />
     </div>
@@ -67,27 +61,23 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
 
   // Voice Controls Skeleton
   const VoiceControlsSkeleton = () => (
-    <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 3rem)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: ds.spacing.sm, marginBottom: ds.spacing.xl }}>
+    <div className="mb-6 sm:mb-8 md:mb-12">
+      <div className="flex items-center gap-2 mb-6">
         <ShimmerBox width="24px" height="24px" borderRadius={ds.borderRadius.md} />
         <ShimmerBox width="180px" height="28px" />
       </div>
       
       <VoiceDropdownSkeleton />
       
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: ds.spacing.xl,
-      }}>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6">
         {[1, 2, 3].map((i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: ds.spacing.md }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div key={i} className="flex flex-col gap-4">
+            <div className="flex justify-between items-center">
               <ShimmerBox width="100px" height="20px" />
               <ShimmerBox width="60px" height="32px" borderRadius={ds.borderRadius.md} />
             </div>
             <ShimmerBox width="100%" height="8px" borderRadius={ds.borderRadius.full} />
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div className="flex justify-between">
               <ShimmerBox width="80px" height="14px" />
               <ShimmerBox width="80px" height="14px" />
             </div>
@@ -99,24 +89,19 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
 
   // Audio Player Skeleton
   const AudioPlayerSkeleton = () => (
-    <div style={{
-      padding: ds.spacing.xl,
-      background: 'white',
-      border: `2px dashed ${ds.colors.gray[200]}`,
-      borderRadius: ds.borderRadius.xl,
-    }}>
+    <div className="p-6 bg-white border-2 border-dashed border-gray-200 rounded-xl">
       <ShimmerBox width="100%" height="120px" marginBottom={ds.spacing.lg} borderRadius={ds.borderRadius.lg} />
-      <div style={{ display: 'flex', gap: ds.spacing.md, marginBottom: ds.spacing.lg }}>
+      <div className="flex gap-4 mb-6">
         <ShimmerBox width="60px" height="60px" borderRadius={ds.borderRadius.full} />
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: ds.spacing.sm }}>
+        <div className="flex-1 flex flex-col justify-center gap-2">
           <ShimmerBox width="100%" height="8px" borderRadius={ds.borderRadius.full} />
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div className="flex justify-between">
             <ShimmerBox width="60px" height="14px" />
             <ShimmerBox width="60px" height="14px" />
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: ds.spacing.md, justifyContent: 'center' }}>
+      <div className="flex gap-4 justify-center">
         <ShimmerBox width="120px" height="44px" />
         <ShimmerBox width="120px" height="44px" />
       </div>
@@ -126,31 +111,17 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
   // Saved Prompts Skeleton
   const SavedPromptsSkeleton = () => (
     <div>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: ds.spacing.lg,
-      }}>
+      <div className="flex justify-between items-center mb-6">
         <ShimmerBox width="180px" height="32px" />
         <ShimmerBox width="100px" height="32px" borderRadius={ds.borderRadius.full} />
       </div>
       <ShimmerBox width="100%" height="52px" marginBottom={ds.spacing.xl} borderRadius={ds.borderRadius.xl} />
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: 'clamp(1rem, 2vw, 1.5rem)',
-      }}>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 sm:gap-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} style={{
-            background: 'white',
-            border: `2px solid ${ds.colors.gray[200]}`,
-            borderRadius: ds.borderRadius.xl,
-            padding: ds.spacing.lg,
-          }}>
+          <div key={i} className="bg-white border-2 border-gray-200 rounded-xl p-4">
             <ShimmerBox width="100%" height="120px" marginBottom={ds.spacing.md} borderRadius={ds.borderRadius.lg} />
             <ShimmerBox width="120px" height="16px" marginBottom={ds.spacing.md} />
-            <div style={{ display: 'flex', gap: ds.spacing.sm }}>
+            <div className="flex gap-2">
               <ShimmerBox width="100%" height="40px" />
               <ShimmerBox width="60px" height="40px" />
             </div>
@@ -162,16 +133,12 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
 
   // Full Page Skeleton
   const FullPageSkeleton = () => (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: ds.spacing['2xl'],
-    }}>
+    <div className="flex flex-col gap-8">
       <TextInputSkeleton />
       <VoiceControlsSkeleton />
-      <div style={{ textAlign: 'center', marginBottom: ds.spacing.lg }}>
+      <div className="text-center mb-6">
         <ShimmerBox width="220px" height="54px" marginBottom="0" />
-        <div style={{ margin: '0 auto', display: 'inline-block' }} />
+        <div className="mx-auto inline-block" />
       </div>
       <AudioPlayerSkeleton />
     </div>
@@ -199,7 +166,6 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
   return (
     <>
       {renderSkeleton()}
-      <style jsx>{shimmerAnimation}</style>
     </>
   );
 }

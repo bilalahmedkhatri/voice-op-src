@@ -1,24 +1,12 @@
 import Replicate from 'replicate';
-import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import kokoroVoices from '../app/data/kokoroVoices.json';
 
 // Load environment variables from .env.local
-const envPath = join(__dirname, '../.env.local');
-if (existsSync(envPath)) {
-  const envContent = readFileSync(envPath, 'utf-8');
-  envContent.split('\n').forEach(line => {
-    const match = line.match(/^([^=]+)=(.*)$/);
-    if (match) {
-      const key = match[1].trim();
-      const value = match[2].trim();
-      if (!process.env[key]) {
-        process.env[key] = value;
-      }
-    }
-  });
-}
+import { config } from 'dotenv';
+config({ path: join(__dirname, '../.env.local') });
 
-const kokoroVoices = require('../app/data/kokoroVoices.json');
 
 const SAMPLE_TEXT = "Hello! This is a sample of my voice. I can help you create natural-sounding voiceovers for your projects.";
 
@@ -42,7 +30,7 @@ async function generateSample(voiceId: string, voiceName: string) {
           voice: voiceId,
         }
       }
-    ) as any;
+    ) as { url: () => string };
 
     const audioUrl = output.url();
     console.log(`  Audio URL: ${audioUrl}`);

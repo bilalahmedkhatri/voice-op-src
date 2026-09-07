@@ -8,7 +8,7 @@
       "language": "en-US",
       "quality": "B",
       "training": "MM minutes",
-      "description": "American female voice"
+      "description": "Balanced American female voice"
     },
     {
       "voice_id": "af_aoede",
@@ -18,7 +18,7 @@
       "language": "en-US",
       "quality": "B",
       "training": "H hours",
-      "description": "American female voice"
+      "description": "Smooth American female voice"
     },
     {
       "voice_id": "af_bella",
@@ -30,6 +30,17 @@
       "training": "HH hours",
       "featured": true,
       "description": "High quality American female voice"
+    },
+    {
+      "voice_id": "af_heart",
+      "voice_name": "Heart",
+      "gender": "Female",
+      "accent": "American",
+      "language": "en-US",
+      "quality": "A",
+      "training": "HH hours",
+      "featured": true,
+      "description": "Warm & expressive American female voice"
     },
     {
       "voice_id": "af_jessica",
@@ -90,6 +101,7 @@
       "language": "en-US",
       "quality": "B",
       "training": "H hours",
+      "featured": true,
       "description": "Warm American female voice"
     },
     {
@@ -108,9 +120,10 @@
       "gender": "Male",
       "accent": "American",
       "language": "en-US",
-      "quality": "D",
+      "quality": "B",
       "training": "H hours",
-      "description": "American male voice"
+      "featured": true,
+      "description": "Deep & clear American male voice"
     },
     {
       "voice_id": "am_echo",
@@ -160,7 +173,8 @@
       "language": "en-US",
       "quality": "B",
       "training": "H hours",
-      "description": "Deep American male voice"
+      "featured": true,
+      "description": "Narrative American male voice"
     },
     {
       "voice_id": "am_onyx",
@@ -181,6 +195,16 @@
       "quality": "B",
       "training": "H hours",
       "description": "American male voice"
+    },
+    {
+      "voice_id": "am_santa",
+      "voice_name": "Santa",
+      "gender": "Male",
+      "accent": "American",
+      "language": "en-US",
+      "quality": "B",
+      "training": "H hours",
+      "description": "Deep festive American male voice"
     }
   ],
   "britishEnglish": [
@@ -253,6 +277,7 @@
       "language": "en-GB",
       "quality": "B",
       "training": "MM minutes",
+      "featured": true,
       "description": "Distinguished British male voice"
     },
     {
@@ -264,6 +289,38 @@
       "quality": "C",
       "training": "H hours",
       "description": "Clear British male voice"
+    }
+  ],
+  "spanish": [
+    {
+      "voice_id": "ef_dora",
+      "voice_name": "Dora",
+      "gender": "Female",
+      "accent": "Spanish",
+      "language": "es",
+      "quality": "B",
+      "training": "H hours",
+      "description": "Spanish female voice"
+    },
+    {
+      "voice_id": "em_alex",
+      "voice_name": "Alex",
+      "gender": "Male",
+      "accent": "Spanish",
+      "language": "es",
+      "quality": "B",
+      "training": "H hours",
+      "description": "Spanish male voice"
+    },
+    {
+      "voice_id": "em_santa",
+      "voice_name": "Santa",
+      "gender": "Male",
+      "accent": "Spanish",
+      "language": "es",
+      "quality": "B",
+      "training": "H hours",
+      "description": "Spanish male voice"
     }
   ],
   "french": [
@@ -392,6 +449,38 @@
       "quality": "B",
       "training": "M minutes",
       "description": "Japanese male voice"
+    }
+  ],
+  "portuguese": [
+    {
+      "voice_id": "pf_dora",
+      "voice_name": "Dora",
+      "gender": "Female",
+      "accent": "Portuguese",
+      "language": "pt",
+      "quality": "B",
+      "training": "H hours",
+      "description": "Portuguese female voice"
+    },
+    {
+      "voice_id": "pm_alex",
+      "voice_name": "Alex",
+      "gender": "Male",
+      "accent": "Portuguese",
+      "language": "pt",
+      "quality": "B",
+      "training": "H hours",
+      "description": "Portuguese male voice"
+    },
+    {
+      "voice_id": "pm_santa",
+      "voice_name": "Santa",
+      "gender": "Male",
+      "accent": "Portuguese",
+      "language": "pt",
+      "quality": "B",
+      "training": "H hours",
+      "description": "Portuguese male voice"
     }
   ],
   "mandarinChinese": [

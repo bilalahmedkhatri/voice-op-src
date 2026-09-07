@@ -1,79 +1,64 @@
+'use client';
+
 import { useState, useRef, useEffect, memo } from 'react';
-import { FaPlay, FaPause, FaDownload } from 'react-icons/fa';
-import { designSystem as ds } from '../lib/designSystem';
+import { FaPlay, FaPause, FaDownload, FaRedoAlt, FaBolt } from 'react-icons/fa';
 
 interface AudioPlayerProps {
   audioUrl: string | null;
   audioBlob?: Blob | null;
   isGenerating?: boolean;
+  generationTime?: number | null;
   onEnded?: () => void;
   fileName?: string;
 }
 
-const AudioPlayer = memo(function AudioPlayer({ 
-  audioUrl, 
+const AudioPlayer = memo(function AudioPlayer({
+  audioUrl,
   audioBlob,
   isGenerating = false,
+  generationTime,
   onEnded,
-  fileName = 'voiceover.mp3',
+  fileName = 'voiceover.wav',
 }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
+  const progressBarRef = useRef<HTMLDivElement | null>(null);
 
-  // Initialize audio context and analyser
+  // Manage blob URL lifecycle safely
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (audioBlob) {
+      const url = URL.createObjectURL(audioBlob);
+      setBlobUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setBlobUrl(null);
+    }
+  }, [audioBlob]);
 
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-
-    audioContextRef.current = new AudioContextClass();
-    analyserRef.current = audioContextRef.current.createAnalyser();
-    analyserRef.current.fftSize = 2048;
-    analyserRef.current.smoothingTimeConstant = 0.8;
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (audioContextRef.current?.state !== 'closed') {
-        audioContextRef.current?.close();
-      }
-    };
-  }, []);
+  const activeSrc = blobUrl || audioUrl;
 
   // Setup audio element
   useEffect(() => {
-    if (!audioUrl && !audioBlob) return;
-
-    setIsLoading(true);
-    
-    let audio: HTMLAudioElement;
-    try {
-      audio = new Audio();
-      
-      if (audioBlob) {
-        audio.src = URL.createObjectURL(audioBlob);
-      } else if (audioUrl) {
-        audio.src = audioUrl;
-      }
-    } catch (err) {
-      // console.error('Error creating audio element:', err);
-      setIsLoading(false);
+    if (!activeSrc) {
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setDuration(0);
       return;
     }
 
+    setIsLoading(true);
+    const audio = new Audio(activeSrc);
+    audioRef.current = audio;
+
     audio.onloadedmetadata = () => {
-      setDuration(audio.duration);
+      setDuration(audio.duration || 0);
       setIsLoading(false);
     };
 
@@ -89,361 +74,165 @@ const AudioPlayer = memo(function AudioPlayer({
 
     audio.onerror = () => {
       setIsLoading(false);
-      // console.error('Error loading audio');
+      setIsPlaying(false);
     };
-
-    audioRef.current = audio;
-
-    // Connect audio to analyser
-    if (audioContextRef.current && analyserRef.current && !sourceRef.current) {
-      try {
-        sourceRef.current = audioContextRef.current.createMediaElementSource(audio);
-        sourceRef.current.connect(analyserRef.current);
-        analyserRef.current.connect(audioContextRef.current.destination);
-      } catch (err) {
-        // console.error('Error connecting audio context:', err);
-      }
-    }
 
     return () => {
       audio.pause();
-      if (audioBlob) {
-        URL.revokeObjectURL(audio.src);
-      }
+      audioRef.current = null;
     };
-  }, [audioUrl, audioBlob, onEnded]);
+  }, [activeSrc, onEnded]);
 
-  // Stop audio playback when generation starts
+  // Stop playback when new generation starts
   useEffect(() => {
-    if (isGenerating && audioRef.current && isPlaying) {
+    if (isGenerating && audioRef.current) {
       audioRef.current.pause();
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
       setIsPlaying(false);
       setCurrentTime(0);
     }
-  }, [isGenerating, isPlaying]);
+  }, [isGenerating]);
 
-  // Visualize audio
-  const visualize = () => {
-    if (!canvasRef.current || !analyserRef.current) return;
-
-    const canvas = canvasRef.current;
-    const canvasCtx = canvas.getContext('2d');
-    if (!canvasCtx) return;
-
-    const bufferLength = analyserRef.current.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const draw = () => {
-      animationFrameRef.current = requestAnimationFrame(draw);
-
-      analyserRef.current!.getByteTimeDomainData(dataArray);
-
-      canvasCtx.fillStyle = 'rgb(249, 250, 251)';
-      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = isPlaying ? '#9333ea' : '#d1d5db';
-
-      canvasCtx.beginPath();
-
-      const sliceWidth = canvas.width / bufferLength;
-      let x = 0;
-
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = (v * canvas.height) / 2;
-
-        if (i === 0) {
-          canvasCtx.moveTo(x, y);
-        } else {
-          canvasCtx.lineTo(x, y);
-        }
-
-        x += sliceWidth;
-      }
-
-      canvasCtx.lineTo(canvas.width, canvas.height / 2);
-      canvasCtx.stroke();
-    };
-
-    draw();
-  };
-
-  // Handle play/pause
   const handlePlayPause = async () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !activeSrc) return;
 
     try {
       if (isPlaying) {
         audioRef.current.pause();
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
         setIsPlaying(false);
       } else {
-        if (audioContextRef.current?.state === 'suspended') {
-          await audioContextRef.current.resume();
-        }
         await audioRef.current.play();
         setIsPlaying(true);
-        visualize();
       }
-    } catch (err) {
-      // console.error('Error playing audio:', err);
+    } catch {
+      setIsPlaying(false);
     }
   };
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!audioRef.current) return;
-    const time = parseFloat(e.target.value);
-    audioRef.current.currentTime = time;
-    setCurrentTime(time);
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || !duration || duration === 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const percentage = clickX / rect.width;
+    const newTime = percentage * duration;
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
   };
 
-  // Format time
+  const handleDownload = () => {
+    if (!activeSrc) return;
+    const a = document.createElement('a');
+    a.href = activeSrc;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleReplay = () => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    setCurrentTime(0);
+    audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+  };
+
   const formatTime = (time: number) => {
-    if (isNaN(time)) return '0:00';
+    if (isNaN(time) || !isFinite(time) || time < 0) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const handleDownload = () => {
-    if (!audioBlob && !audioUrl) return;
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-    try {
-      const url = audioBlob ? URL.createObjectURL(audioBlob) : audioUrl!;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    if (audioBlob) {
-      URL.revokeObjectURL(url);
-    }
-    } catch (err) {
-      // console.error('Error downloading audio:', err);
-    }
-  };  if (isGenerating) {
-    return (
-      <div style={{
-        background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-        borderRadius: ds.borderRadius.xl,
-        padding: ds.spacing['2xl'],
-        textAlign: 'center',
-      }}>
-        <div style={{ 
-          fontSize: '3rem', 
-          marginBottom: ds.spacing.md,
-          animation: 'pulse 1.5s ease-in-out infinite',
-        }}>
-          🎵
-        </div>
-        <p style={{ 
-          color: ds.colors.gray[600], 
-          fontSize: ds.typography.sizes.base,
-          fontFamily: ds.typography.fonts.body,
-        }}>
-          Generating voiceover...
-        </p>
-      </div>
-    );
-  }
-
-  if (!audioUrl && !audioBlob) {
-    return (
-      <div style={{
-        background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-        borderRadius: ds.borderRadius.xl,
-        padding: ds.spacing['2xl'],
-        textAlign: 'center',
-        border: `2px dashed ${ds.colors.gray[300]}`,
-      }}>
-        <div style={{ fontSize: '3rem', marginBottom: ds.spacing.md }}>🎧</div>
-        <p style={{ 
-          color: ds.colors.gray[600], 
-          fontSize: ds.typography.sizes.base,
-          fontFamily: ds.typography.fonts.body,
-        }}>
-          No audio to play. Generate a voiceover to get started!
-        </p>
-      </div>
-    );
+  if (!activeSrc) {
+    return null;
   }
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)',
-      borderRadius: ds.borderRadius.xl,
-      padding: ds.spacing.xl,
-      boxShadow: ds.shadows.lg,
-      border: `1px solid ${ds.colors.gray[200]}`,
-    }}>
-      {/* Waveform Visualization */}
-      <canvas
-        ref={canvasRef}
-        width={800}
-        height={150}
-        style={{
-          width: '100%',
-          height: 'auto',
-          borderRadius: ds.borderRadius.lg,
-          marginBottom: ds.spacing.lg,
-          background: '#f9fafb',
-        }}
-      />
+    <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-2xl shadow-lg border border-gray-700/60 animate-slideUp">
+      {/* Left: Play/Pause Circular Button */}
+      <button
+        type="button"
+        onClick={handlePlayPause}
+        disabled={isLoading}
+        aria-label={isPlaying ? 'Pause voiceover' : 'Play voiceover'}
+        className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer transition-all duration-200 shadow-md ${
+          isPlaying
+            ? 'bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-amber-500/30 scale-105'
+            : 'bg-gradient-to-br from-[#ff9b8f] to-[#ff7d6e] hover:from-[#ff8a7d] hover:to-[#ff6c5b] text-white shadow-[#ff9b8f]/30 hover:scale-105'
+        }`}
+      >
+        {isPlaying ? (
+          <FaPause className="text-sm" />
+        ) : (
+          <FaPlay className="text-sm ml-0.5" />
+        )}
+      </button>
 
-      {/* Progress Bar */}
-      <div style={{ marginBottom: ds.spacing.lg }}>
-        <div 
-          onClick={(e) => {
-            if (!audioRef.current || isLoading) return;
-            const rect = e.currentTarget.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const percentage = clickX / rect.width;
-            const newTime = percentage * duration;
-            audioRef.current.currentTime = newTime;
-            setCurrentTime(newTime);
-          }}
-          style={{
-            width: '100%',
-            height: '8px',
-            background: ds.colors.gray[200],
-            borderRadius: ds.borderRadius.full,
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            height: '100%',
-            width: `${(currentTime / duration) * 100}%`,
-            background: 'linear-gradient(90deg, #ff9b8f 0%, #ffb4a8 100%)',
-            borderRadius: ds.borderRadius.full,
-            transition: isPlaying ? 'none' : 'width 0.1s ease',
-          }} />
+      {/* Middle: Scrubbable Progress Bar & Waveform Tracker */}
+      <div className="flex-1 w-full flex flex-col gap-1.5 min-w-0">
+        <div className="flex items-center justify-between text-[11px] sm:text-xs font-mono text-gray-300 font-medium">
+          <span className="text-white">{formatTime(currentTime)}</span>
+          
+          <div className="flex items-center gap-2">
+            {generationTime !== undefined && generationTime !== null && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-sans font-medium bg-emerald-950/80 text-emerald-400 border border-emerald-800/40">
+                <FaBolt className="text-[9px]" />
+                <span>{generationTime}s</span>
+              </span>
+            )}
+            <span className="text-gray-400">{formatTime(duration)}</span>
+          </div>
         </div>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          marginTop: ds.spacing.sm,
-          fontSize: ds.typography.sizes.sm,
-          color: ds.colors.gray[600],
-          fontFamily: ds.typography.fonts.mono,
-          fontWeight: ds.typography.weights.medium,
-        }}>
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
+
+        {/* Interactive Scrubbable Bar */}
+        <div
+          ref={progressBarRef}
+          onClick={handleSeek}
+          className="w-full h-2.5 bg-gray-700/80 hover:h-3 rounded-full relative cursor-pointer overflow-hidden transition-all duration-150"
+          title="Click to seek"
+        >
+          {/* Wave Background Lines Effect */}
+          <div className="absolute inset-0 opacity-20 flex items-center justify-between px-1 pointer-events-none">
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div
+                key={i}
+                className="w-0.5 bg-white rounded-full"
+                style={{ height: `${20 + ((i * 7) % 60)}%` }}
+              />
+            ))}
+          </div>
+
+          {/* Active progress fill */}
+          <div
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#ff9b8f] to-amber-400 rounded-full transition-all duration-75"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
       </div>
 
-      {/* Controls */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        gap: ds.spacing.lg,
-      }}>
-        {/* Play/Pause Button */}
+      {/* Right Actions: Replay & Download */}
+      <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
         <button
-          onClick={handlePlayPause}
-          disabled={isLoading || (!audioUrl && !audioBlob)}
-          style={{
-            width: '64px',
-            height: '64px',
-            background: isPlaying 
-              ? 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)'
-              : 'linear-gradient(135deg, #fbcfe8 0%, #f9a8d4 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '50%',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            transition: `all ${ds.transitions.base}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: isPlaying 
-              ? '0 8px 20px rgba(236, 72, 153, 0.4)'
-              : '0 4px 14px rgba(249, 168, 212, 0.3)',
-            opacity: isLoading ? 0.5 : 1,
-          }}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          type="button"
+          onClick={handleReplay}
+          title="Replay from start"
+          aria-label="Replay from start"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-all cursor-pointer border border-gray-700/80 flex items-center justify-center flex-shrink-0"
         >
-          {isPlaying ? (
-            <FaPause size={24} color="white" />
-          ) : (
-            <FaPlay size={24} color="white" style={{ marginLeft: '4px' }} />
-          )}
+          <FaRedoAlt className="text-xs sm:text-sm" />
         </button>
 
-        {/* Download Button */}
         <button
+          type="button"
           onClick={handleDownload}
-          disabled={isLoading || (!audioUrl && !audioBlob)}
-          style={{
-            padding: `${ds.spacing.sm} ${ds.spacing.lg}`,
-            background: isLoading || (!audioUrl && !audioBlob)
-              ? ds.colors.gray[300]
-              : 'linear-gradient(135deg, #ff9b8f 0%, #ffb4a8 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: ds.borderRadius.lg,
-            cursor: isLoading || (!audioUrl && !audioBlob) ? 'not-allowed' : 'pointer',
-            transition: `all ${ds.transitions.base}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: ds.spacing.xs,
-            boxShadow: ds.shadows.md,
-            opacity: isLoading || (!audioUrl && !audioBlob) ? 0.5 : 1,
-            fontSize: ds.typography.sizes.sm,
-            fontWeight: ds.typography.weights.semibold,
-            fontFamily: ds.typography.fonts.heading,
-          }}
-          onMouseEnter={(e) => {
-            if (!isLoading && (audioUrl || audioBlob)) {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = ds.shadows.lg;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = ds.shadows.md;
-          }}
-          title="Download audio"
+          title="Download audio WAV"
+          className="h-9 sm:h-10 flex items-center justify-center gap-1.5 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold bg-white text-gray-900 hover:bg-gray-100 transition-all shadow-xs cursor-pointer flex-shrink-0"
         >
-          <FaDownload size={20} />
+          <FaDownload className="text-xs" />
           <span>Download</span>
         </button>
       </div>
-
-      <style jsx global>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.7;
-            transform: scale(1.05);
-          }
-        }
-      `}</style>
     </div>
   );
 });
