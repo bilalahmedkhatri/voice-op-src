@@ -3,10 +3,12 @@ export function isDatabaseEnabled(): boolean {
   if (envVal === 'false' || envVal === '0') {
     return false;
   }
-  // If explicitly true, or if DATABASE_URL exists and not explicitly disabled
   if (envVal === 'true' || envVal === '1') {
     return true;
   }
-  // Auto-detect based on DATABASE_URL presence
-  return Boolean(process.env.DATABASE_URL || process.env.POSTGRES_URL);
+  // Server-side check
+  if (typeof window === 'undefined') {
+    return Boolean(process.env.DATABASE_URL || process.env.POSTGRES_URL);
+  }
+  return false;
 }

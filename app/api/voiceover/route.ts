@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
 import { getModelDefinition } from '@/app/lib/tts/registry';
 import { formatErrorMessage } from '@/app/lib/errorUtils';
+import { isDatabaseEnabled } from '@/app/lib/config';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -46,6 +47,14 @@ export async function POST(request: NextRequest) {
     // Check DB User & Quota if logged in
     const user = await getCurrentUser();
     const sql = getDb();
+
+    // In Online Database Mode, require Google authentication
+    if (isDatabaseEnabled() && !user) {
+      return NextResponse.json(
+        { error: 'Please sign in with Google to generate voiceovers.' },
+        { status: 401 }
+      );
+    }
 
     if (user && sql) {
       const quotaRows = await sql`

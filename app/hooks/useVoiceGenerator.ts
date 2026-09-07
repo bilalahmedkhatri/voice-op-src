@@ -103,6 +103,12 @@ export function useVoiceGenerator() {
       return;
     }
 
+    const isOnlineDb = isDatabaseEnabled();
+    if (isOnlineDb && !isAuthenticated) {
+      setErrorMessage('Please sign in with Google above to generate voiceovers.');
+      return;
+    }
+
     setErrorMessage(null);
     const startTime = performance.now();
     const targetModelId = params.modelId || DEFAULT_MODEL_ID;
@@ -247,6 +253,7 @@ export function useVoiceGenerator() {
     deletePrompt,
     userQuota,
     isAuthenticated,
+    isOnlineDb: isDatabaseEnabled(),
     remainingGenerations,
     refreshQuota,
   };

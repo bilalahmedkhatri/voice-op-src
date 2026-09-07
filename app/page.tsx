@@ -1,6 +1,6 @@
 'use client';
 
-import { FaMicrophone, FaSync } from 'react-icons/fa';
+import { FaMicrophone, FaSync, FaGoogle, FaLock } from 'react-icons/fa';
 import { useVoiceGenerator } from './hooks/useVoiceGenerator';
 import { useVoiceSamples } from './hooks/useVoiceSamples';
 import TextInput from './components/TextInput';
@@ -32,6 +32,7 @@ export default function Home() {
     dismissError,
     userQuota,
     isAuthenticated,
+    isOnlineDb,
     remainingGenerations,
   } = useVoiceGenerator();
 
@@ -60,11 +61,16 @@ export default function Home() {
   ];
 
   const handleGenerateClick = async () => {
+    if (isOnlineDb && !isAuthenticated) {
+      window.location.href = '/api/auth/google';
+      return;
+    }
     await handleGenerate(selectedApiVoice || undefined);
     setHistoryRefreshKey((prev) => prev + 1);
   };
 
-  const isLimitReached = isAuthenticated && remainingGenerations !== null && remainingGenerations <= 0;
+  const isAuthRequired = isOnlineDb && !isAuthenticated;
+  const isLimitReached = isOnlineDb && isAuthenticated && remainingGenerations !== null && remainingGenerations <= 0;
 
   return (
     <>
@@ -162,13 +168,13 @@ export default function Home() {
                         }`}
                       />
                       <span>
-                        <strong>{remainingGenerations}</strong> generation{remainingGenerations !== 1 ? 's' : ''} left today
+                        <strong>Free Studio Plan</strong> • {remainingGenerations} generation{remainingGenerations !== 1 ? 's' : ''} left today
                       </span>
                     </div>
                   ) : (
                     <div className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 bg-white border border-gray-200/80 text-emerald-700 shadow-2xs">
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span>Free Studio Mode</span>
+                      <span>Free Studio Plan</span>
                     </div>
                   )
                 ) : (
@@ -176,23 +182,33 @@ export default function Home() {
                 )}
 
                 {/* Compact Generate Button */}
-                <button
-                  onClick={handleGenerateClick}
-                  disabled={!params.text.trim() || isGenerating || isLimitReached}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ffb4a8] hover:from-[#f8887a] hover:to-[#ffa79a] text-white rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] disabled:bg-gray-200 disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 flex items-center justify-center gap-2"
-                >
-                  {isGenerating ? (
-                    <>
-                      <FaSync className="animate-spin text-xs" />
-                      <span>Generating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FaMicrophone className="text-xs" />
-                      <span>Generate Voiceover</span>
-                    </>
-                  )}
-                </button>
+                {isAuthRequired ? (
+                  <a
+                    href="/api/auth/google"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ffb4a8] hover:from-[#f8887a] hover:to-[#ffa79a] text-white rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] flex items-center justify-center gap-2"
+                  >
+                    <FaGoogle className="text-xs" />
+                    <span>Sign in to Generate</span>
+                  </a>
+                ) : (
+                  <button
+                    onClick={handleGenerateClick}
+                    disabled={!params.text.trim() || isGenerating || isLimitReached}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ffb4a8] hover:from-[#f8887a] hover:to-[#ffa79a] text-white rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] disabled:bg-gray-200 disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 flex items-center justify-center gap-2"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <FaSync className="animate-spin text-xs" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FaMicrophone className="text-xs" />
+                        <span>Generate Voiceover</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
 
               <GenerationStatus
