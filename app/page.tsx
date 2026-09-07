@@ -7,13 +7,12 @@ import TextInput from './components/TextInput';
 import VoiceControls from './components/VoiceControls';
 import AudioPlayer from './components/AudioPlayer';
 import GenerationStatus from './components/GenerationStatus';
-import ApiToggle from './components/ApiToggle';
 import Footer from './Footer';
 import { designSystem as ds } from './lib/designSystem';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useIsClient } from './hooks/useIsClient';
 import LoadingSkeleton from './components/LoadingSkeleton';
-
+import AuthButton from './components/AuthButton';
 
 const SavedPrompts = lazy(() => import('./components/SavedPrompts'));
 
@@ -35,12 +34,10 @@ export default function Home() {
     resetTime,
   } = useVoiceGenerator();
 
-
-
   const [selectedModelId, setSelectedModelId] = useState('kokoro-local');
-  const { voices: apiVoices, loading: apiVoicesLoading, error: apiVoicesError, refetch: refetchVoices } = useVoiceSamples(selectedModelId);
+  const { voices: apiVoices, loading: apiVoicesLoading, error: apiVoicesError } = useVoiceSamples(selectedModelId);
   const [selectedApiVoice, setSelectedApiVoice] = useState('');
-  const [apiModeKey, setApiModeKey] = useState(0);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const isClient = useIsClient();
 
   // Auto-select first voice once voices are loaded if none currently selected
@@ -55,12 +52,6 @@ export default function Home() {
     setSelectedApiVoice(''); // Reset selected voice on model switch
   };
 
-  const handleApiToggle = (useReplicate: boolean) => {
-    const targetModel = useReplicate ? 'kokoro-replicate' : 'kokoro-local';
-    setSelectedModelId(targetModel);
-    setSelectedApiVoice('');
-  };
-
   const features = [
     { text: 'Instant Generation' },
     { text: 'Voice Customization' },
@@ -69,25 +60,22 @@ export default function Home() {
 
   const handleGenerateClick = async () => {
     await handleGenerate(selectedApiVoice || undefined);
+    setHistoryRefreshKey((prev) => prev + 1);
   };
-
 
   return (
     <>
       <main className="min-h-screen bg-gradient-to-br from-red-50 via-red-100 via-red-200 to-red-300 relative">
-
-        {/* API Toggle - Fixed Top Right (Development Only) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="fixed top-4 sm:top-6 md:top-8 right-4 sm:right-6 md:right-8 z-50">
-            <ApiToggle onToggle={handleApiToggle} />
-          </div>
-        )}
-
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-red-200 to-red-300 text-gray-900 px-4 sm:px-8 md:px-16 py-8 sm:py-12 md:py-16 text-center relative overflow-hidden">
+        <section className="bg-gradient-to-br from-red-200 to-red-300 text-gray-900 px-4 sm:px-8 md:px-16 pt-8 pb-8 sm:pt-10 sm:pb-12 md:pt-12 md:pb-14 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-transparent" />
 
-          <div className="max-w-7xl mx-auto relative z-10 px-4 sm:px-8 md:px-16">
+          <div className="max-w-7xl mx-auto relative z-10 px-4 sm:px-8 md:px-16 flex flex-col items-center">
+            {/* Centered Google Auth Button at Top */}
+            <div className="mb-6 flex justify-center">
+              <AuthButton />
+            </div>
+
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 text-gray-900 tracking-tight">
               AI Voiceover Generator
             </h1>
@@ -98,7 +86,7 @@ export default function Home() {
             </p>
 
             {/* Feature Pills */}
-            <div className="flex gap-4 justify-center flex-wrap mt-8">
+            <div className="flex gap-4 justify-center flex-wrap mt-2">
               {features.map((feature) => (
                 <div
                   key={feature.text}
@@ -135,7 +123,6 @@ export default function Home() {
                 <section aria-label="Voice parameters">
                   <h3 className="sr-only">Adjust Voice Parameters</h3>
                   <VoiceControls
-                    key={apiModeKey}
                     params={params}
                     onParamsChange={setParams}
                     apiVoices={apiVoices}
@@ -145,6 +132,8 @@ export default function Home() {
                     selectedApiVoice={selectedApiVoice}
                     selectedModelId={selectedModelId}
                     onModelChange={handleModelChange}
+                    onLoadPrompt={loadPrompt}
+                    refreshHistoryTrigger={historyRefreshKey}
                   />
                 </section>
               </div>

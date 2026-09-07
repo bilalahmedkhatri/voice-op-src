@@ -4,10 +4,15 @@ import { useState, useEffect, useRef } from 'react';
 import { VoiceParams } from '../types';
 import { promptStorage } from '../lib/promptStorage';
 import { usageLimit } from '../lib/usageLimit';
+import { isDatabaseEnabled } from '../lib/config';
+import { saveLocalHistoryItem } from '../lib/localHistoryStorage';
+import { getModelDefinition, DEFAULT_MODEL_ID } from '../lib/tts/registry';
 
 export function useVoiceGenerator() {
-  // Initialize usage limit status immediately before any state
-  const initialUsageStatus = typeof window !== 'undefined' ? usageLimit.canGenerate() : { remaining: 3, resetAt: null };
+  const dbEnabled = typeof window !== 'undefined' ? isDatabaseEnabled() : false;
+  
+  // Initialize usage limit status (only relevant if online DB limits active)
+  const initialUsageStatus = typeof window !== 'undefined' && dbEnabled ? usageLimit.canGenerate() : { remaining: 999, resetAt: null };
   const initialResetTime = typeof window !== 'undefined' && initialUsageStatus.resetAt ? usageLimit.formatTimeUntilReset() : null;
 
   const [params, setParams] = useState<VoiceParams>({
@@ -30,20 +35,24 @@ export function useVoiceGenerator() {
     const prompts = promptStorage.load();
     setSavedPrompts(prompts);
     
-    // Initialize usage limit status
-    updateUsageStatus();
-
-    // Update countdown timer every second
-    const intervalId = setInterval(() => {
+    if (dbEnabled) {
       updateUsageStatus();
-    }, 1000); // 1 second
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
+      const intervalId = setInterval(() => {
+        updateUsageStatus();
+      }, 1000);
+      return () => clearInterval(intervalId);
+    } else {
+      setRemainingAttempts(999);
+      setResetTime(null);
+    }
+  }, [dbEnabled]);
 
   const updateUsageStatus = () => {
+    if (!dbEnabled) {
+      setRemainingAttempts(999);
+      setResetTime(null);
+      return;
+    }
     const { remaining, resetAt } = usageLimit.canGenerate();
     setRemainingAttempts(remaining);
     if (resetAt) {
@@ -78,18 +87,21 @@ export function useVoiceGenerator() {
       return;
     }
 
-    // Check usage limit
-    const { allowed } = usageLimit.canGenerate();
-    if (!allowed) {
-      const timeLeft = usageLimit.formatTimeUntilReset();
-      setErrorMessage(`Generation limit reached. You've used all ${usageLimit.getMaxAttempts()} attempts. Please try again in ${timeLeft}.`);
-      setRemainingAttempts(0);
-      setResetTime(timeLeft);
-      return;
+    // In online mode only, check usage limit
+    if (dbEnabled) {
+      const { allowed } = usageLimit.canGenerate();
+      if (!allowed) {
+        const timeLeft = usageLimit.formatTimeUntilReset();
+        setErrorMessage(`Generation limit reached. You've used all ${usageLimit.getMaxAttempts()} attempts. Please try again in ${timeLeft}.`);
+        setRemainingAttempts(0);
+        setResetTime(timeLeft);
+        return;
+      }
     }
 
     setErrorMessage(null);
     const startTime = performance.now();
+    const targetModelId = params.modelId || DEFAULT_MODEL_ID;
 
     try {
       generationControllerRef.current?.abort();
@@ -104,7 +116,7 @@ export function useVoiceGenerator() {
         body: JSON.stringify({
           text: params.text,
           voice_id: apiVoiceId,
-          model_id: params.modelId || 'kokoro-82m',
+          model_id: targetModelId,
           options: params.options || { speed: params.rate },
           speed: params.rate,
           pitch: params.pitch,
@@ -139,9 +151,28 @@ export function useVoiceGenerator() {
       const elapsed = Math.round((performance.now() - startTime) / 100) / 10;
       setGenerationTime(elapsed);
 
-      // Increment usage counter on successful generation
-      usageLimit.incrementUsage();
-      updateUsageStatus();
+      // Save to local IndexedDB storage (instant offline history)
+      try {
+        const modelDef = getModelDefinition(targetModelId);
+        await saveLocalHistoryItem({
+          prompt_text: params.text,
+          model_id: targetModelId,
+          model_name: modelDef.name || targetModelId,
+          voice_id: apiVoiceId,
+          voice_name: data.voice_name || apiVoiceId,
+          audioBlob: downloadedBlob,
+          duration_sec: data.duration_seconds || null,
+          generation_time_sec: elapsed,
+          parameters: params.options || {},
+        });
+      } catch (localDbErr) {
+        console.error('Failed to save to local IndexedDB history:', localDbErr);
+      }
+
+      if (dbEnabled) {
+        usageLimit.incrementUsage();
+        updateUsageStatus();
+      }
 
       setErrorMessage(null);
       generationControllerRef.current = null;
@@ -202,7 +233,7 @@ export function useVoiceGenerator() {
     handleSavePrompt,
     loadPrompt,
     deletePrompt,
-    remainingAttempts,
-    resetTime,
+    remainingAttempts: dbEnabled ? remainingAttempts : 999,
+    resetTime: dbEnabled ? resetTime : null,
   };
 }

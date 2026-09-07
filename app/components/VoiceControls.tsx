@@ -9,13 +9,14 @@ import {
   FaCheck,
   FaHeart,
   FaRegHeart,
-  FaChartBar,
+  FaHistory,
 } from 'react-icons/fa';
 import { VoiceParams } from '../types';
 import { VoiceSample } from '../lib/voiceoverApi';
 import LoadingSkeleton from './LoadingSkeleton';
 import ModelSelector from './ModelSelector';
 import DynamicParameterControls from './DynamicParameterControls';
+import GenerationHistory from './GenerationHistory';
 import { getModelDefinition, DEFAULT_MODEL_ID } from '../lib/tts/registry';
 
 interface VoiceControlsProps {
@@ -28,6 +29,8 @@ interface VoiceControlsProps {
   selectedApiVoice?: string;
   selectedModelId?: string;
   onModelChange?: (modelId: string) => void;
+  onLoadPrompt?: (text: string) => void;
+  refreshHistoryTrigger?: number;
 }
 
 // Language to country and code tag mapping
@@ -108,7 +111,11 @@ const VoiceControls = memo(function VoiceControls({
   selectedApiVoice = '',
   selectedModelId = DEFAULT_MODEL_ID,
   onModelChange,
+  onLoadPrompt,
+  refreshHistoryTrigger = 0,
 }: VoiceControlsProps) {
+  const [activeTab, setActiveTab] = useState<'models' | 'history'>('models');
+  const [historyCount, setHistoryCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
@@ -132,7 +139,6 @@ const VoiceControls = memo(function VoiceControls({
     e.stopPropagation();
     if (!voice.sample_url) return;
 
-    // If currently playing this voice, stop it
     if (playingVoiceId === voice.voice_id && audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -140,7 +146,6 @@ const VoiceControls = memo(function VoiceControls({
       return;
     }
 
-    // Stop existing audio if any
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -227,211 +232,215 @@ const VoiceControls = memo(function VoiceControls({
 
   return (
     <div className="flex flex-col gap-3.5">
-      {/* 1. Model Selector Section */}
-      <ModelSelector
-        selectedModelId={currentModelId}
-        onSelectModel={handleModelSelect}
-      />
+      {/* 1. Top Navigation Tabs: Voice & Model vs History */}
+      <div className="flex p-1 bg-gray-100/90 rounded-2xl gap-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab('models')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'models'
+              ? 'bg-white text-gray-900 shadow-2xs'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <FaMicrophone className={activeTab === 'models' ? 'text-[#ff9b8f]' : 'text-gray-400'} />
+          <span>Voice & Model</span>
+        </button>
 
-      {/* 2. Voice Catalog Header & Search */}
-      <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
-        <div className="flex justify-between items-center">
-          <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 uppercase tracking-wider">
-            <FaMicrophone className="text-[#ff9b8f]" />
-            Select Voice
-          </label>
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-            {filteredVoices.length} {filteredVoices.length === 1 ? 'voice' : 'voices'}
-          </span>
-        </div>
-
-        {/* Search Bar */}
-        {apiVoices.length > 4 && (
-          <div className="relative w-full">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search voices by name, accent, gender..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#ff9b8f] focus:bg-white focus:ring-2 focus:ring-[#ff9b8f]/20 transition-all text-gray-800"
-            />
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={() => setActiveTab('history')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'history'
+              ? 'bg-white text-gray-900 shadow-2xs'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <FaHistory className={activeTab === 'history' ? 'text-[#ff9b8f]' : 'text-gray-400'} />
+          <span>History</span>
+          {historyCount > 0 && (
+            <span className="px-1.5 py-0.2 bg-[#ff9b8f]/20 text-[#ff7d6e] rounded-full text-[10px] font-bold">
+              {historyCount}
+            </span>
+          )}
+        </button>
       </div>
 
-      {playbackError && (
-        <div className="p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
-          {playbackError}
-        </div>
-      )}
+      {/* 2. Tab Content: Voice & Model Controls */}
+      {activeTab === 'models' ? (
+        <div className="flex flex-col gap-3.5">
+          {/* Model Selector Section */}
+          <ModelSelector
+            selectedModelId={currentModelId}
+            onSelectModel={handleModelSelect}
+          />
 
-      {/* 3. Modern Scrollable Voices List Cards */}
-      {apiVoicesLoading ? (
-        <LoadingSkeleton variant="voiceDropdown" />
-      ) : apiVoicesError ? (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 text-center">
-          ⚠️ {apiVoicesError}
-        </div>
-      ) : filteredVoices.length === 0 ? (
-        <div className="p-5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-center text-xs text-gray-500">
-          No voices match &quot;{searchQuery}&quot;
-        </div>
-      ) : (
-        <div
-          className="max-h-[300px] sm:max-h-[320px] overflow-y-auto space-y-2 pr-1.5 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent rounded-2xl border border-gray-100 p-1 bg-gray-50/50 transition-all duration-300 ease-in-out"
-          tabIndex={0}
-          aria-label="Scrollable voices list"
-        >
-          {filteredVoices.map((voice) => {
-            const isSelected = voice.voice_id === selectedApiVoice;
-            const isPlayingThis = playingVoiceId === voice.voice_id;
-            const isLiked = !!likedVoices[voice.voice_id];
-            const meta = getVoiceCardMeta(voice);
-            const genderLabel =
-              voice.gender?.toLowerCase() === 'male' ? 'Male' : 'Female';
+          {/* Voice Catalog Header & Search */}
+          <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
+            <div className="flex justify-between items-center">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 uppercase tracking-wider">
+                <FaMicrophone className="text-[#ff9b8f]" />
+                Select Voice
+              </label>
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+                {filteredVoices.length} {filteredVoices.length === 1 ? 'voice' : 'voices'}
+              </span>
+            </div>
 
-            return (
-              <div
-                key={voice.voice_id}
-                onClick={() => onApiVoiceChange && onApiVoiceChange(voice.voice_id)}
-                className={`group relative flex items-start justify-between p-2.5 sm:p-3 rounded-2xl cursor-pointer transition-all duration-200 border ${
-                  isSelected
-                    ? 'bg-white border-[#ff9b8f] ring-2 ring-[#ff9b8f]/25 shadow-xs'
-                    : 'bg-white border-gray-200/80 hover:border-[#ffb4a8] hover:shadow-2xs'
-                }`}
-              >
-                {/* Left: Avatar / Play Overlay & Details */}
-                <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                  {/* Avatar Circle with Hover Play/Pause button */}
+            {/* Search Bar */}
+            {apiVoices.length > 4 && (
+              <div className="relative w-full">
+                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search voices by name, accent, gender..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#ff9b8f] focus:bg-white focus:ring-2 focus:ring-[#ff9b8f]/20 transition-all text-gray-800"
+                />
+              </div>
+            )}
+          </div>
+
+          {playbackError && (
+            <div className="p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+              {playbackError}
+            </div>
+          )}
+
+          {/* Modern Scrollable Voices List Cards */}
+          {apiVoicesLoading ? (
+            <LoadingSkeleton variant="voiceDropdown" />
+          ) : apiVoicesError ? (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 text-center">
+              ⚠️ {apiVoicesError}
+            </div>
+          ) : filteredVoices.length === 0 ? (
+            <div className="p-5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-center text-xs text-gray-500">
+              No voices match &quot;{searchQuery}&quot;
+            </div>
+          ) : (
+            <div
+              className="max-h-[300px] sm:max-h-[320px] overflow-y-auto space-y-2 pr-1.5 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent rounded-2xl border border-gray-100 p-1 bg-gray-50/50 transition-all duration-300 ease-in-out"
+              tabIndex={0}
+              aria-label="Scrollable voices list"
+            >
+              {filteredVoices.map((voice) => {
+                const isSelected = voice.voice_id === selectedApiVoice;
+                const isPlayingThis = playingVoiceId === voice.voice_id;
+                const isLiked = !!likedVoices[voice.voice_id];
+                const meta = getVoiceCardMeta(voice);
+                const genderLabel =
+                  voice.gender?.toLowerCase() === 'male' ? 'Male' : 'Female';
+
+                return (
                   <div
-                    onClick={(e) => handleTogglePlaySample(e, voice)}
-                    className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full flex-shrink-0 cursor-pointer overflow-hidden shadow-2xs group/avatar mt-0.5"
-                    title={`${isPlayingThis ? 'Stop' : 'Play'} voice preview`}
+                    key={voice.voice_id}
+                    onClick={() => onApiVoiceChange && onApiVoiceChange(voice.voice_id)}
+                    className={`group relative flex items-start justify-between p-2.5 sm:p-3 rounded-2xl cursor-pointer transition-all duration-200 border ${
+                      isSelected
+                        ? 'bg-white border-[#ff9b8f] ring-2 ring-[#ff9b8f]/25 shadow-xs'
+                        : 'bg-white/80 border-gray-100/90 hover:bg-white hover:border-gray-200 hover:shadow-2xs'
+                    }`}
                   >
-                    {/* Background Pastel Texture */}
-                    <div
-                      className={`w-full h-full bg-gradient-to-br ${meta.avatarGradient} flex items-center justify-center font-bold text-gray-700 text-sm transition-transform duration-300 group-hover/avatar:scale-105`}
-                    >
-                      {meta.cleanName.charAt(0)}
-                    </div>
-
-                    {/* Play/Pause Overlay - visible on hover or when playing */}
-                    <div
-                      className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
-                        isPlayingThis
-                          ? 'bg-amber-500/90 text-white opacity-100'
-                          : 'bg-black/40 text-white opacity-0 group-hover:opacity-100 group-hover/avatar:opacity-100'
-                      }`}
-                    >
-                      {isPlayingThis ? (
-                        <FaPause className="text-[11px] animate-pulse" />
-                      ) : (
-                        <FaPlay className="text-[11px] ml-0.5" />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Voice Info */}
-                  <div className="min-w-0 flex flex-col flex-1 gap-0.5">
-                    {/* Title Row */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-xs sm:text-sm text-gray-900 truncate">
-                        {meta.cleanName}
-                      </span>
-                      <span className="text-gray-400 text-[11px] font-normal">
-                        · {genderLabel}
-                      </span>
-                      {isSelected && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.2 bg-[#ff9b8f]/20 text-red-700 rounded-md inline-flex items-center gap-0.5">
-                          <FaCheck className="text-[7px]" /> Active
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Description Row */}
-                    <p className="text-[10.5px] sm:text-[11px] text-gray-500 line-clamp-1 leading-snug">
-                      {voice.description ||
-                        `Natural ${meta.tone.toLowerCase()} ${genderLabel.toLowerCase()} voice.`}
-                    </p>
-
-                    {/* Chips Row: Country/Lang, Gender, Tone */}
-                    <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                      {/* Country + Lang Chip */}
-                      <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-[9.5px] font-semibold px-2 py-0.5 rounded-full">
-                        <span className="font-mono text-gray-900">{meta.langMeta.country}</span>
-                        <span className="text-gray-400">•</span>
-                        <span>{meta.langMeta.code}</span>
-                      </span>
-
-                      {/* Gender Chip */}
-                      <span className="bg-gray-100 text-gray-600 text-[9.5px] font-medium px-2 py-0.5 rounded-full">
-                        {genderLabel}
-                      </span>
-
-                      {/* Tone / Style Chip */}
-                      <span className="bg-gray-100 text-gray-600 text-[9.5px] font-medium px-2 py-0.5 rounded-full">
-                        {meta.tone}
-                      </span>
-                    </div>
-
-                    {/* Stats Row: Usage + Likes (Compact Spacing) */}
-                    <div className="flex items-center gap-2 mt-0.5 text-[9.5px] font-medium text-gray-400">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* Avatar with dynamic initials & gradient */}
                       <div
-                        className="flex items-center gap-1"
-                        title="Total generations using this voice"
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm text-gray-700 bg-gradient-to-tr ${meta.avatarGradient} flex-shrink-0 shadow-2xs`}
                       >
-                        <FaChartBar className="text-gray-400 text-[8px]" />
-                        <span>{meta.usageCount}</span>
+                        {meta.cleanName.substring(0, 2).toUpperCase()}
                       </div>
 
-                      <span className="text-gray-300">|</span>
+                      {/* Info & Tags */}
+                      <div className="flex flex-col min-w-0 flex-1 gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs sm:text-sm text-gray-900 truncate">
+                            {meta.cleanName}
+                          </span>
+                          {/* Language/Country Tag */}
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200/60">
+                            {meta.langMeta.code}
+                          </span>
+                          {/* Tone Tag */}
+                          <span className="hidden xs:inline px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-700 border border-red-100">
+                            {meta.tone}
+                          </span>
+                        </div>
+
+                        {/* Subtitle / Gender / Accent info */}
+                        <div className="flex items-center gap-2 text-[11px] text-gray-500 truncate">
+                          <span>{genderLabel}</span>
+                          <span>•</span>
+                          <span>{voice.accent || 'Natural'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions: Play preview & Like Button */}
+                    <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
+                      {voice.sample_url && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleTogglePlaySample(e, voice)}
+                          aria-label={isPlayingThis ? 'Pause sample' : 'Play sample'}
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                            isPlayingThis
+                              ? 'bg-[#ff9b8f] text-white shadow-xs scale-105'
+                              : 'bg-gray-100 hover:bg-[#ff9b8f]/20 text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          {isPlayingThis ? (
+                            <FaPause className="text-[10px]" />
+                          ) : (
+                            <FaPlay className="text-[10px] ml-0.5" />
+                          )}
+                        </button>
+                      )}
 
                       <button
                         type="button"
                         onClick={(e) => handleToggleLike(e, voice.voice_id)}
-                        className="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer"
-                        title="Like this voice"
+                        aria-label={isLiked ? 'Unlike' : 'Like'}
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                          isLiked
+                            ? 'text-red-500 hover:scale-110'
+                            : 'text-gray-300 hover:text-gray-400'
+                        }`}
                       >
                         {isLiked ? (
-                          <FaHeart className="text-red-500 text-[8px]" />
+                          <FaHeart className="text-xs" />
                         ) : (
-                          <FaRegHeart className="text-gray-400 hover:text-red-500 text-[8px]" />
+                          <FaRegHeart className="text-xs" />
                         )}
-                        <span className={isLiked ? 'text-red-500 font-semibold' : ''}>
-                          {meta.likesCount}
-                        </span>
                       </button>
+
+                      {isSelected && (
+                        <div className="w-5 h-5 rounded-full bg-[#ff9b8f] text-white flex items-center justify-center ml-1 flex-shrink-0">
+                          <FaCheck className="text-[9px]" />
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                );
+              })}
+            </div>
+          )}
 
-                {/* Right: Selection Radio */}
-                <div className="ml-1.5 flex-shrink-0 pt-0.5">
-                  <div
-                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border flex items-center justify-center transition-all ${
-                      isSelected
-                        ? 'border-[#ff9b8f] bg-[#ff9b8f]'
-                        : 'border-gray-300 bg-white group-hover:border-gray-400'
-                    }`}
-                  >
-                    {isSelected && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {/* Dynamic Model Parameter Controls */}
+          <DynamicParameterControls
+            model={currentModelDef}
+            params={params.options || currentModelDef.defaultParams}
+            onParamChange={handleParamChange}
+          />
         </div>
+      ) : (
+        /* Tab Content: Generation History */
+        <GenerationHistory
+          onLoadPrompt={onLoadPrompt}
+          onHistoryCountChange={setHistoryCount}
+          refreshTrigger={refreshHistoryTrigger}
+        />
       )}
-
-      {/* 4. Dynamic Model Parameter Sliders */}
-      <DynamicParameterControls
-        model={currentModelDef}
-        params={params.options || { speed: params.rate }}
-        onParamChange={handleParamChange}
-      />
     </div>
   );
 });
