@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, memo } from 'react';
 import { FaEdit, FaSave, FaTrash, FaFont, FaExclamationTriangle } from 'react-icons/fa';
 
@@ -8,17 +10,19 @@ interface TextInputProps {
   disabled?: boolean;
 }
 
-const TextInput = memo(function TextInput({ text, onTextChange, onSave, disabled = false }: TextInputProps) {
+const TextInput = memo(function TextInput({
+  text,
+  onTextChange,
+  onSave,
+  disabled = false,
+}: TextInputProps) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
   const charCount = text.length;
   const wordCount = text.trim() ? text.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
-  const maxChars = 5000;
-  const recommendedLimit = 2500;
-  const isLargeText = charCount > recommendedLimit;
-  const isNearMax = charCount > maxChars * 0.9;
+  const isLargeText = charCount > 2500;
 
   const handleSave = () => {
     const success = onSave();
@@ -77,7 +81,7 @@ const TextInput = memo(function TextInput({ text, onTextChange, onSave, disabled
         </div>
       </div>
 
-      {/* 2. Textarea filling available height */}
+      {/* 2. Textarea filling available height with NO character cap */}
       <div className="relative flex-1 flex flex-col">
         <textarea
           value={text}
@@ -87,12 +91,7 @@ const TextInput = memo(function TextInput({ text, onTextChange, onSave, disabled
           }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={
-            disabled
-              ? 'Generation limit reached. Please wait for reset...'
-              : 'Type or paste your text here... The AI will convert it into natural-sounding speech.'
-          }
-          maxLength={maxChars}
+          placeholder="Type or paste your text here... The AI will convert it into natural-sounding speech."
           disabled={disabled}
           className={`w-full flex-1 min-h-[360px] sm:min-h-[400px] lg:min-h-[440px] p-4 border rounded-xl text-sm sm:text-base leading-relaxed resize-none overflow-auto transition-all duration-200 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 bg-white ${
             isFocused
@@ -110,7 +109,7 @@ const TextInput = memo(function TextInput({ text, onTextChange, onSave, disabled
         )}
       </div>
 
-      {/* 3. Bottom Meta: Word Count & Compact Character Counter */}
+      {/* 3. Bottom Meta: Word Count & Character Counter */}
       <div className="flex justify-between items-center px-1 text-xs text-gray-500">
         <div className="flex items-center gap-2">
           {wordCount > 0 && (
@@ -121,7 +120,7 @@ const TextInput = memo(function TextInput({ text, onTextChange, onSave, disabled
           {isLargeText && (
             <span
               className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70"
-              title="Large text may take slightly longer to synthesize"
+              title="Large text input"
             >
               <FaExclamationTriangle className="text-[10px] text-amber-500" />
               Long text
@@ -129,17 +128,9 @@ const TextInput = memo(function TextInput({ text, onTextChange, onSave, disabled
           )}
         </div>
 
-        <span
-          className={`font-mono text-xs font-semibold flex items-center gap-1 px-2 py-0.5 rounded-md ${
-            isNearMax
-              ? 'text-red-700 bg-red-50 border border-red-200'
-              : isLargeText
-              ? 'text-amber-700 bg-amber-50 border border-amber-200'
-              : 'text-gray-600 bg-gray-50 border border-gray-200/70'
-          }`}
-        >
+        <span className="font-mono text-xs font-semibold flex items-center gap-1 px-2 py-0.5 rounded-md text-gray-600 bg-gray-50 border border-gray-200/70">
           <FaFont className="text-[10px]" />
-          {charCount.toLocaleString()} / {maxChars.toLocaleString()}
+          {charCount.toLocaleString()} chars
         </span>
       </div>
 

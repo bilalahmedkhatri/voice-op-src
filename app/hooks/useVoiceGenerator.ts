@@ -1,20 +1,22 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { VoiceParams } from '../types';
 import { promptStorage } from '../lib/promptStorage';
-import { usageLimit } from '../lib/usageLimit';
 import { isDatabaseEnabled } from '../lib/config';
 import { saveLocalHistoryItem } from '../lib/localHistoryStorage';
 import { getModelDefinition, DEFAULT_MODEL_ID } from '../lib/tts/registry';
 
-export function useVoiceGenerator() {
-  const dbEnabled = typeof window !== 'undefined' ? isDatabaseEnabled() : false;
-  
-  // Initialize usage limit status (only relevant if online DB limits active)
-  const initialUsageStatus = typeof window !== 'undefined' && dbEnabled ? usageLimit.canGenerate() : { remaining: 999, resetAt: null };
-  const initialResetTime = typeof window !== 'undefined' && initialUsageStatus.resetAt ? usageLimit.formatTimeUntilReset() : null;
+export interface UserQuotaState {
+  generations_used: number;
+  max_daily_generations: number;
+  max_chars_per_request: number;
+  chars_used_today: number;
+  max_daily_chars: number;
+  reset_at: string;
+}
 
+export function useVoiceGenerator() {
   const [params, setParams] = useState<VoiceParams>({
     text: '',
     voice: '',
@@ -27,40 +29,40 @@ export function useVoiceGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [remainingAttempts, setRemainingAttempts] = useState<number>(initialUsageStatus.remaining);
-  const [resetTime, setResetTime] = useState<string | null>(initialResetTime);
+  const [userQuota, setUserQuota] = useState<UserQuotaState | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const generationControllerRef = useRef<AbortController | null>(null);
+
+  // Load session & quota from DB
+  const refreshQuota = useCallback(async () => {
+    try {
+      // Clear any legacy localStorage usage keys that might linger
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('vg_usage_status');
+        localStorage.removeItem('voice_generator_usage');
+      }
+
+      if (!isDatabaseEnabled()) return;
+
+      const res = await fetch('/api/auth/session');
+      const data = await res.json();
+      if (data.authenticated && data.quota) {
+        setIsAuthenticated(true);
+        setUserQuota(data.quota);
+      } else {
+        setIsAuthenticated(false);
+        setUserQuota(null);
+      }
+    } catch {
+      setUserQuota(null);
+    }
+  }, []);
 
   useEffect(() => {
     const prompts = promptStorage.load();
     setSavedPrompts(prompts);
-    
-    if (dbEnabled) {
-      updateUsageStatus();
-      const intervalId = setInterval(() => {
-        updateUsageStatus();
-      }, 1000);
-      return () => clearInterval(intervalId);
-    } else {
-      setRemainingAttempts(999);
-      setResetTime(null);
-    }
-  }, [dbEnabled]);
-
-  const updateUsageStatus = () => {
-    if (!dbEnabled) {
-      setRemainingAttempts(999);
-      setResetTime(null);
-      return;
-    }
-    const { remaining, resetAt } = usageLimit.canGenerate();
-    setRemainingAttempts(remaining);
-    if (resetAt) {
-      setResetTime(usageLimit.formatTimeUntilReset());
-    } else {
-      setResetTime(null);
-    }
-  };
+    refreshQuota();
+  }, [refreshQuota]);
 
   useEffect(() => {
     if (savedPrompts.length > 0 || promptStorage.count() > 0) {
@@ -85,18 +87,6 @@ export function useVoiceGenerator() {
     if (!apiVoiceId) {
       setErrorMessage('Please select a voice from the dropdown before generating.');
       return;
-    }
-
-    // In online mode only, check usage limit
-    if (dbEnabled) {
-      const { allowed } = usageLimit.canGenerate();
-      if (!allowed) {
-        const timeLeft = usageLimit.formatTimeUntilReset();
-        setErrorMessage(`Generation limit reached. You've used all ${usageLimit.getMaxAttempts()} attempts. Please try again in ${timeLeft}.`);
-        setRemainingAttempts(0);
-        setResetTime(timeLeft);
-        return;
-      }
     }
 
     setErrorMessage(null);
@@ -151,7 +141,7 @@ export function useVoiceGenerator() {
       const elapsed = Math.round((performance.now() - startTime) / 100) / 10;
       setGenerationTime(elapsed);
 
-      // Save to local IndexedDB storage (instant offline history)
+      // Save to local IndexedDB storage (instant offline history fallback)
       try {
         const modelDef = getModelDefinition(targetModelId);
         await saveLocalHistoryItem({
@@ -169,10 +159,8 @@ export function useVoiceGenerator() {
         console.error('Failed to save to local IndexedDB history:', localDbErr);
       }
 
-      if (dbEnabled) {
-        usageLimit.incrementUsage();
-        updateUsageStatus();
-      }
+      // Refresh DB quota after successful generation
+      await refreshQuota();
 
       setErrorMessage(null);
       generationControllerRef.current = null;
@@ -205,9 +193,9 @@ export function useVoiceGenerator() {
   const handleSavePrompt = () => {
     if (params.text.trim() && !savedPrompts.includes(params.text)) {
       setSavedPrompts([...savedPrompts, params.text]);
-      return true; // Indicate success
+      return true;
     }
-    return false; // Already saved or empty
+    return false;
   };
 
   const loadPrompt = (prompt: string) => {
@@ -219,6 +207,13 @@ export function useVoiceGenerator() {
   };
 
   const dismissError = () => setErrorMessage(null);
+
+  // Compute remaining attempts from real DB quota if logged in
+  const remainingGenerations = userQuota
+    ? Math.max(0, userQuota.max_daily_generations - userQuota.generations_used)
+    : null;
+
+  const maxCharLimit = userQuota?.max_chars_per_request || 2500;
 
   return {
     params,
@@ -233,7 +228,10 @@ export function useVoiceGenerator() {
     handleSavePrompt,
     loadPrompt,
     deletePrompt,
-    remainingAttempts: dbEnabled ? remainingAttempts : 999,
-    resetTime: dbEnabled ? resetTime : null,
+    userQuota,
+    isAuthenticated,
+    remainingGenerations,
+    maxCharLimit,
+    refreshQuota,
   };
 }

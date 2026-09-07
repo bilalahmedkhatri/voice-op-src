@@ -4,8 +4,6 @@ import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
 import { getModelDefinition } from '@/app/lib/tts/registry';
 
-const MAX_CHARS_PER_REQUEST = 5000;
-
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
@@ -33,15 +31,6 @@ export async function POST(request: NextRequest) {
     if (!text || typeof text !== 'string' || !text.trim()) {
       return NextResponse.json(
         { error: 'Text is required and must not be empty.' },
-        { status: 400 }
-      );
-    }
-
-    if (text.length > MAX_CHARS_PER_REQUEST) {
-      return NextResponse.json(
-        {
-          error: `Text length exceeds the maximum allowed limit of ${MAX_CHARS_PER_REQUEST.toLocaleString()} characters. Current length: ${text.length.toLocaleString()}.`,
-        },
         { status: 400 }
       );
     }
@@ -77,16 +66,21 @@ export async function POST(request: NextRequest) {
             SET generations_used = 0, chars_used_today = 0, reset_at = ${nextReset.toISOString()}, updated_at = NOW()
             WHERE user_id = ${user.id}
           `;
-        } else if (q.generations_used >= q.max_daily_generations) {
-          return NextResponse.json(
-            { error: `Daily generation limit (${q.max_daily_generations}) reached. Resets at midnight UTC.` },
-            { status: 429 }
-          );
-        } else if (q.chars_used_today + text.length > q.max_daily_chars) {
-          return NextResponse.json(
-            { error: `Daily character quota limit (${q.max_daily_chars}) exceeded.` },
-            { status: 429 }
-          );
+        } else {
+          // Check if user exceeded daily generations
+          if (q.max_daily_generations > 0 && q.generations_used >= q.max_daily_generations) {
+            return NextResponse.json(
+              { error: `Daily generation limit (${q.max_daily_generations}) reached. Resets at midnight UTC.` },
+              { status: 429 }
+            );
+          }
+          // Check if user exceeded daily character quota
+          if (q.max_daily_chars > 0 && q.chars_used_today + text.length > q.max_daily_chars) {
+            return NextResponse.json(
+              { error: `Daily character quota limit (${q.max_daily_chars.toLocaleString()}) exceeded.` },
+              { status: 429 }
+            );
+          }
         }
       }
     }

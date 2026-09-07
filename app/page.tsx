@@ -30,8 +30,10 @@ export default function Home() {
     generationTime,
     errorMessage,
     dismissError,
-    remainingAttempts,
-    resetTime,
+    userQuota,
+    isAuthenticated,
+    remainingGenerations,
+    maxCharLimit,
   } = useVoiceGenerator();
 
   const [selectedModelId, setSelectedModelId] = useState('kokoro-local');
@@ -62,6 +64,8 @@ export default function Home() {
     await handleGenerate(selectedApiVoice || undefined);
     setHistoryRefreshKey((prev) => prev + 1);
   };
+
+  const isLimitReached = isAuthenticated && remainingGenerations !== null && remainingGenerations <= 0;
 
   return (
     <>
@@ -114,7 +118,8 @@ export default function Home() {
                   text={params.text}
                   onTextChange={(text) => setParams({ ...params, text })}
                   onSave={handleSavePrompt}
-                  disabled={remainingAttempts === 0}
+                  disabled={isLimitReached}
+                  maxChars={maxCharLimit}
                 />
               </div>
 
@@ -143,31 +148,39 @@ export default function Home() {
             <div className="flex flex-col gap-4 pt-4 border-t border-gray-100">
               {/* Toolbar: Usage Badge & Compact Generate Button */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50/80 p-3 sm:p-3.5 rounded-2xl border border-gray-100">
-                {/* Usage Limit Badge */}
-                {isClient && remainingAttempts !== null ? (
-                  <div className={`text-xs font-medium px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${remainingAttempts === 0
-                      ? 'bg-red-50 border border-red-200 text-red-600'
-                      : 'bg-white border border-gray-200/80 text-gray-700 shadow-2xs'
-                    }`}>
-                    {remainingAttempts > 0 ? (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span><strong>{remainingAttempts}</strong> generation{remainingAttempts !== 1 ? 's' : ''} left</span>
-                        {resetTime && <span className="text-gray-400 font-normal">({resetTime})</span>}
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-red-500" />
-                        <span>Limit reached ({resetTime || 'waiting'})</span>
-                      </>
-                    )}
-                  </div>
-                ) : <div />}
+                {/* Usage / Quota Status Badge */}
+                {isClient ? (
+                  isAuthenticated && remainingGenerations !== null ? (
+                    <div
+                      className={`text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${
+                        isLimitReached
+                          ? 'bg-red-50 border border-red-200 text-red-600'
+                          : 'bg-white border border-gray-200/80 text-gray-700 shadow-2xs'
+                      }`}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          isLimitReached ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'
+                        }`}
+                      />
+                      <span>
+                        <strong>{remainingGenerations}</strong> generation{remainingGenerations !== 1 ? 's' : ''} left today
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 bg-white border border-gray-200/80 text-emerald-700 shadow-2xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span>Free Studio Mode</span>
+                    </div>
+                  )
+                ) : (
+                  <div className="h-7 w-32 bg-gray-100 animate-pulse rounded-xl" />
+                )}
 
                 {/* Compact Generate Button */}
                 <button
                   onClick={handleGenerateClick}
-                  disabled={!params.text.trim() || isGenerating || remainingAttempts === 0}
+                  disabled={!params.text.trim() || isGenerating || isLimitReached}
                   className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ffb4a8] hover:from-[#f8887a] hover:to-[#ffa79a] text-white rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] disabled:bg-gray-200 disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100 flex items-center justify-center gap-2"
                 >
                   {isGenerating ? (
