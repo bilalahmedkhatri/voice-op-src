@@ -3,6 +3,7 @@ import { generateSpeech } from '@/app/lib/tts/unifiedService';
 import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
 import { getModelDefinition } from '@/app/lib/tts/registry';
+import { formatErrorMessage } from '@/app/lib/errorUtils';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     const targetVoiceId = voice_id || voice;
-    const targetModelId = model_id || modelId || 'kokoro-82m';
+    const targetModelId = model_id || modelId || 'kokoro-local';
 
     if (!text || typeof text !== 'string' || !text.trim()) {
       return NextResponse.json(
@@ -156,9 +157,10 @@ export async function POST(request: NextRequest) {
       model_id: targetModelId,
     });
   } catch (error: any) {
+    const errorMsg = formatErrorMessage(error);
     return NextResponse.json(
-      { error: error.message || 'Failed to generate voiceover.' },
-      { status: error.status || 500 }
+      { error: errorMsg },
+      { status: error?.status || 500 }
     );
   }
 }

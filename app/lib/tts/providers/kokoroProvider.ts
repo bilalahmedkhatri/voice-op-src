@@ -1,5 +1,6 @@
 import { TTSProvider, UnifiedTTSRequest, UnifiedTTSResponse } from '../types';
 import { generateWithReplicate } from '../../replicateService';
+import { formatErrorMessage } from '../../errorUtils';
 
 export class KokoroProvider implements TTSProvider {
   async generateAudio(request: UnifiedTTSRequest): Promise<UnifiedTTSResponse> {
@@ -90,7 +91,7 @@ export class KokoroProvider implements TTSProvider {
       let errorMessage = 'Failed to generate voiceover with Kokoro Gateway';
       try {
         const error = await response.json();
-        errorMessage = error.detail || error.message || error.error || JSON.stringify(error);
+        errorMessage = formatErrorMessage(error);
       } catch {
         errorMessage = (await response.text()) || `Kokoro API returned status ${response.status}`;
       }

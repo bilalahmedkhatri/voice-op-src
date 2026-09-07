@@ -115,7 +115,7 @@ export async function createOrUpdateUserAndSession(googleUser: {
 
     await sql`
       INSERT INTO user_quotas (user_id, generations_used, max_daily_generations, max_chars_per_request, chars_used_today, max_daily_chars, reset_at, updated_at)
-      VALUES (${activeUserId}, 0, 10, 5000, 0, 50000, ${resetDate.toISOString()}, NOW())
+      VALUES (${activeUserId}, 0, 5, 2500, 0, 12500, ${resetDate.toISOString()}, NOW())
       ON CONFLICT (user_id) DO NOTHING
     `;
 

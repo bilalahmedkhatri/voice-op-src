@@ -6,6 +6,20 @@ import { promptStorage } from '../lib/promptStorage';
 import { isDatabaseEnabled } from '../lib/config';
 import { saveLocalHistoryItem } from '../lib/localHistoryStorage';
 import { getModelDefinition, DEFAULT_MODEL_ID } from '../lib/tts/registry';
+import { formatErrorMessage } from '../lib/errorUtils';
+
+function dataUriToBlob(dataUri: string): Blob {
+  const [header, base64] = dataUri.split(',');
+  const mimeMatch = header?.match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'audio/wav';
+  const binary = atob(base64 || '');
+  const len = binary.length;
+  const buffer = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    buffer[i] = binary.charCodeAt(i);
+  }
+  return new Blob([buffer], { type: mime });
+}
 
 export interface UserQuotaState {
   generations_used: number;
@@ -119,8 +133,8 @@ export function useVoiceGenerator() {
       if (!response.ok) {
         let errorMsg = 'Failed to generate voiceover';
         try {
-          const error = await response.json();
-          errorMsg = error.error || errorMsg;
+          const errData = await response.json();
+          errorMsg = formatErrorMessage(errData);
         } catch {
           errorMsg = `Server error: ${response.status} ${response.statusText}`;
         }
@@ -129,13 +143,19 @@ export function useVoiceGenerator() {
 
       const data = await response.json();
 
-      const audioResponse = await fetch(data.audio_url, { signal: controller.signal });
-      
-      if (!audioResponse.ok) {
-        throw new Error(`Failed to download audio file: ${audioResponse.status} ${audioResponse.statusText}`);
+      let downloadedBlob: Blob;
+      if (typeof data.audio_url === 'string' && data.audio_url.startsWith('data:')) {
+        downloadedBlob = dataUriToBlob(data.audio_url);
+      } else if (data.audio_url) {
+        const audioResponse = await fetch(data.audio_url, { signal: controller.signal });
+        if (!audioResponse.ok) {
+          throw new Error(`Failed to download audio file: ${audioResponse.status} ${audioResponse.statusText}`);
+        }
+        downloadedBlob = await audioResponse.blob();
+      } else {
+        throw new Error('No audio data received from the server.');
       }
-      
-      const downloadedBlob = await audioResponse.blob();
+
       setAudioBlob(downloadedBlob);
 
       const elapsed = Math.round((performance.now() - startTime) / 100) / 10;
@@ -173,7 +193,7 @@ export function useVoiceGenerator() {
         return;
       }
 
-      const rawMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const rawMessage = formatErrorMessage(error);
       
       const errorMap: Record<string, string> = {
         '404': 'The selected voice model is not available. Please try a different voice or contact support.',
@@ -181,9 +201,8 @@ export function useVoiceGenerator() {
         'Failed to fetch': 'Unable to connect to the voiceover API. Make sure the backend server is running at http://localhost:8000.',
       };
 
-      const uiMessage = Object.keys(errorMap).find(key => rawMessage.includes(key))
-        ? errorMap[Object.keys(errorMap).find(key => rawMessage.includes(key))!]
-        : `Error generating voiceover: ${rawMessage}`;
+      const matchedKey = Object.keys(errorMap).find(key => rawMessage.includes(key));
+      const uiMessage = matchedKey ? errorMap[matchedKey] : rawMessage;
       
       setErrorMessage(uiMessage);
       generationControllerRef.current = null;
@@ -213,8 +232,6 @@ export function useVoiceGenerator() {
     ? Math.max(0, userQuota.max_daily_generations - userQuota.generations_used)
     : null;
 
-  const maxCharLimit = userQuota?.max_chars_per_request || 2500;
-
   return {
     params,
     setParams,
@@ -231,7 +248,6 @@ export function useVoiceGenerator() {
     userQuota,
     isAuthenticated,
     remainingGenerations,
-    maxCharLimit,
     refreshQuota,
   };
 }

@@ -1,4 +1,5 @@
 import { retryWithBackoff } from './retryUtils';
+import { formatErrorMessage } from './errorUtils';
 
 const API_BASE_URL = process.env.VOICEOVER_API_URL;
 
@@ -73,8 +74,14 @@ export async function generateVoiceover(
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to generate voiceover');
+      let errorMsg = 'Failed to generate voiceover';
+      try {
+        const error = await response.json();
+        errorMsg = formatErrorMessage(error);
+      } catch {
+        errorMsg = `HTTP Error ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMsg);
     }
 
     return response.json();
@@ -93,8 +100,14 @@ export async function getVoiceSamples(modelId?: string): Promise<VoiceSample[]> 
     const response = await fetch(url);
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch voice samples');
+      let errorMsg = 'Failed to fetch voice samples';
+      try {
+        const error = await response.json();
+        errorMsg = formatErrorMessage(error);
+      } catch {
+        errorMsg = `HTTP Error ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMsg);
     }
 
     const data = await response.json();
@@ -119,8 +132,14 @@ export async function getVoiceover(
     const response = await fetch(`${API_BASE_URL}/api/voiceover/${voiceoverId}`);
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch voiceover');
+      let errorMsg = 'Failed to fetch voiceover';
+      try {
+        const error = await response.json();
+        errorMsg = formatErrorMessage(error);
+      } catch {
+        errorMsg = `HTTP Error ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMsg);
     }
 
     return response.json();
@@ -137,8 +156,14 @@ export async function downloadVoiceover(voiceoverId: string): Promise<Blob> {
     );
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to download voiceover');
+      let errorMsg = 'Failed to download voiceover';
+      try {
+        const error = await response.json();
+        errorMsg = formatErrorMessage(error);
+      } catch {
+        errorMsg = `HTTP Error ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMsg);
     }
 
     return response.blob();
@@ -157,8 +182,14 @@ export async function deleteVoiceover(
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to delete voiceover');
+      let errorMsg = 'Failed to delete voiceover';
+      try {
+        const error = await response.json();
+        errorMsg = formatErrorMessage(error);
+      } catch {
+        errorMsg = `HTTP Error ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMsg);
     }
 
     return response.json();

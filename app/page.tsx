@@ -33,7 +33,6 @@ export default function Home() {
     userQuota,
     isAuthenticated,
     remainingGenerations,
-    maxCharLimit,
   } = useVoiceGenerator();
 
   const [selectedModelId, setSelectedModelId] = useState('kokoro-local');
@@ -119,7 +118,6 @@ export default function Home() {
                   onTextChange={(text) => setParams({ ...params, text })}
                   onSave={handleSavePrompt}
                   disabled={isLimitReached}
-                  maxChars={maxCharLimit}
                 />
               </div>
 

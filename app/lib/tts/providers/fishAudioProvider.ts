@@ -1,4 +1,5 @@
 import { TTSProvider, UnifiedTTSRequest, UnifiedTTSResponse } from '../types';
+import { formatErrorMessage } from '../../errorUtils';
 
 export class FishAudioProvider implements TTSProvider {
   async generateAudio(request: UnifiedTTSRequest): Promise<UnifiedTTSResponse> {
@@ -39,7 +40,7 @@ export class FishAudioProvider implements TTSProvider {
       let errorMessage = 'Failed to generate voiceover with Fish Audio';
       try {
         const error = await response.json();
-        errorMessage = error.detail || error.message || JSON.stringify(error);
+        errorMessage = formatErrorMessage(error);
       } catch {
         errorMessage = (await response.text()) || `Fish Audio server returned status ${response.status}`;
       }

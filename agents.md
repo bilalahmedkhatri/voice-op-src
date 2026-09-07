@@ -1,7 +1,7 @@
 # AI Voiceover Generator: Developer & Agent Instructions
 
 ## 1. Project Overview
-This project is an **AI Voiceover Generator** built with Next.js (App Router), React, and Tailwind CSS. It supports multiple open-source AI voice synthesis models through a unified, schema-driven architecture.
+This project is an **AI Voiceover Generator** built with Next.js (App Router), React, and Tailwind CSS. It supports multiple open-source AI voice synthesis models through a unified, schema-driven architecture with dual-mode storage (Online Neon Postgres + 100% Offline Local IndexedDB).
 
 ---
 
@@ -12,6 +12,10 @@ The application uses a **Unified Provider & Schema-Driven Architecture** (`app/l
 ```
 free_voice_generator/app/
 ├── lib/
+│   ├── config.ts                      # Centralized environment flags (isDatabaseEnabled, etc.)
+│   ├── localHistoryStorage.ts         # Offline IndexedDB audio storage engine
+│   ├── auth/googleAuth.ts             # Google OAuth & session management
+│   ├── db/                            # Neon Serverless PostgreSQL client & schema
 │   └── tts/
 │       ├── types.ts                   # Unified types (UnifiedTTSRequest, ModelDefinition, ParameterSchema)
 │       ├── registry.ts                # Master catalog of models & their parameter schemas
@@ -22,28 +26,35 @@ free_voice_generator/app/
 ├── components/
 │   ├── ModelSelector.tsx              # Model switcher tab UI
 │   ├── DynamicParameterControls.tsx   # Schema-driven auto-renderer for sliders & toggles
+│   ├── GenerationHistory.tsx          # Dual-mode history list & audio player
+│   ├── TextInput.tsx                  # Unconstrained text editor with character counter
+│   ├── AudioPlayer.tsx                # Audio playback bar with generation speed badge
 │   └── VoiceControls.tsx              # Assembled voice selection & model controls
 ```
 
 ---
 
-## 3. Supported Open-Source Models
+## 3. Best Practices for Modifying Code, Classes & Functions (MANDATORY AGENT RULES)
 
-1. **Kokoro-82M (`kokoro-82m`)**:
-   - Ultra-fast open-source TTS model.
-   - Parameters: `speed` (0.5x – 2.0x).
-   - Backend: Local FastAPI server (`http://localhost:8000`) or Replicate.
+Whenever the user requests changing any parameter, limit, feature, or function:
 
-2. **Fish Audio / Fish-Speech (`fish-audio`)**:
-   - High-fidelity expressive open-source model.
-   - Parameters: `speed`, `temperature` (expressiveness), `top_p` (stability), `repetition_penalty` (clarity).
-   - Backend: Local Fish-Speech server (`http://localhost:8080/v1/tts`) or custom API.
+1. **Perform Exhaustive Project Search First**:
+   - Always run `grep_search` across the entire codebase (`app/api/`, `app/components/`, `app/hooks/`, `app/lib/`) to identify **ALL** places where that variable, constant, or condition exists.
+   - Never update a constant or UI component without also updating the corresponding API route and validation handler.
+
+2. **No Hardcoded Constraints**:
+   - Do **NOT** hardcode arbitrary length limits (e.g. 5,000 characters) into API routes or frontend inputs.
+   - Long texts (multi-thousand characters/words) must be passed directly to the AI TTS synthesis engines without artificial frontend or API blocks.
+   - All rate-limiting or quota tracking must be dynamic and driven strictly by the database (`user_quotas` table).
+
+3. **Dual-Mode Compatibility**:
+   - Always verify that new features work in **both Online Mode** (Neon DB + Google OAuth) and **Offline Local Mode** (IndexedDB + Guest Session).
 
 ---
 
 ## 4. How to Add a New AI Voice Model (Agent Guide)
 
-When instructed to add a new AI voice model (e.g., *ChatTTS, XTTS, Piper, Bark, or custom TTS API*), follow these **3 steps**:
+Follow these **3 steps**:
 
 ### Step 1: Register Model & Parameter Schema in `app/lib/tts/registry.ts`
 Add a new model definition entry:
@@ -66,7 +77,7 @@ Add a new model definition entry:
       unit: 'x',
       defaultValue: 1.0,
     },
-    // Add any custom parameters (sliders, toggles, dropdowns)
+    // Add custom sliders, toggles, or dropdowns here
   ],
   defaultParams: {
     speed: 1.0,
@@ -96,9 +107,6 @@ import { NewModelProvider } from './providers/newModelProvider';
 const providers: Record<string, TTSProvider> = {
   'kokoro-82m': new KokoroProvider(),
   'fish-audio': new FishAudioProvider(),
-  'new-model-id': new NewModelProvider(), // <-- Added here
+  'new-model-id': new NewModelProvider(),
 };
 ```
-
-> [!IMPORTANT]
-> **No UI Modifications Required**: The frontend (`VoiceControls` & `DynamicParameterControls`) will automatically detect the new model from `registry.ts`, render its tab, and dynamically display all of its configured parameter sliders/toggles!

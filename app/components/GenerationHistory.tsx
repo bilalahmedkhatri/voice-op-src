@@ -8,10 +8,8 @@ import {
   FaDownload,
   FaTrash,
   FaBolt,
-  FaArrowRight,
   FaGoogle,
   FaVolumeUp,
-  FaLaptopCode,
 } from 'react-icons/fa';
 import { isDatabaseEnabled } from '../lib/config';
 import {
@@ -321,48 +319,67 @@ const GenerationHistory = memo(function GenerationHistory({
                 </div>
               </div>
 
-              {/* Prompt Text Preview */}
-              <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed bg-gray-50/70 p-2 rounded-xl">
+              {/* Generation Parameters Tags */}
+              {item.parameters && Object.keys(item.parameters).length > 0 && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {Object.entries(item.parameters).map(([key, val]) => {
+                    if (val === undefined || val === null) return null;
+                    const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+                    const formattedVal =
+                      typeof val === 'number' && (key === 'speed' || key === 'rate')
+                        ? `${val}x`
+                        : String(val);
+                    return (
+                      <span
+                        key={key}
+                        className="px-1.5 py-0.2 rounded text-[9px] font-medium bg-gray-50 text-gray-600 border border-gray-200/50"
+                      >
+                        {label}: <strong className="text-gray-800">{formattedVal}</strong>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Prompt Text Preview (Clean snippet) */}
+              <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed bg-gray-50/80 p-2.5 rounded-xl font-normal border border-gray-100/60">
                 {item.prompt_text}
               </p>
 
-              {/* Bottom Actions Row: Play, Download, Use In Editor */}
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handlePlayToggle(item)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      isPlaying
-                        ? 'bg-amber-500 text-white shadow-xs'
-                        : 'bg-[#ff9b8f] hover:bg-[#f8887a] text-white shadow-2xs'
-                    }`}
-                  >
-                    {isPlaying ? <FaPause className="text-[9px]" /> : <FaPlay className="text-[9px]" />}
-                    <span>{isPlaying ? 'Pause' : 'Play'}</span>
-                  </button>
-
-                  {item.audio_url && (
-                    <a
-                      href={item.audio_url}
-                      download={`voiceover_${item.voice_name}.wav`}
-                      className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors cursor-pointer"
-                      title="Download audio"
-                    >
-                      <FaDownload className="text-[10px]" />
-                    </a>
+              {/* Bottom Actions Row: Standardized Play and Download Buttons */}
+              <div className="flex items-center gap-2 pt-0.5">
+                <button
+                  type="button"
+                  onClick={() => handlePlayToggle(item)}
+                  className={`h-8.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+                    isPlaying
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                      : 'bg-[#ff9b8f] hover:bg-[#f8887a] text-white hover:shadow-xs'
+                  }`}
+                >
+                  {isPlaying ? (
+                    <>
+                      <FaPause className="text-[10px]" />
+                      <span>Pause</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaPlay className="text-[10px] ml-0.5" />
+                      <span>Play</span>
+                    </>
                   )}
-                </div>
+                </button>
 
-                {onLoadPrompt && (
-                  <button
-                    type="button"
-                    onClick={() => onLoadPrompt(item.prompt_text)}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#ff9b8f] hover:text-[#f8887a] transition-colors cursor-pointer"
+                {item.audio_url && (
+                  <a
+                    href={item.audio_url}
+                    download={`voiceover_${item.voice_name}.wav`}
+                    className="h-8.5 px-3 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200/60 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    title="Download audio"
                   >
-                    <span>Use in Editor</span>
-                    <FaArrowRight className="text-[9px]" />
-                  </button>
+                    <FaDownload className="text-[10px]" />
+                    <span className="hidden xs:inline">Download</span>
+                  </a>
                 )}
               </div>
             </div>
