@@ -3,16 +3,24 @@
 import { FaMicrophone, FaSync, FaGoogle, FaLock } from 'react-icons/fa';
 import { useVoiceGenerator } from './hooks/useVoiceGenerator';
 import { useVoiceSamples } from './hooks/useVoiceSamples';
+import { useModels, TTSModel } from './hooks/useModels';
 import TextInput from './components/TextInput';
 import VoiceControls from './components/VoiceControls';
 import AudioPlayer from './components/AudioPlayer';
 import GenerationStatus from './components/GenerationStatus';
 import Footer from './Footer';
 import { designSystem as ds } from './lib/designSystem';
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useIsClient } from './hooks/useIsClient';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import AuthButton from './components/AuthButton';
+import {
+  VoicePresetItem,
+  getLocalPresets,
+  saveLocalPreset,
+  deleteLocalPreset,
+} from './lib/localPresetStorage';
+import FormatSelectionModal, { VideoFormat } from './components/FormatSelectionModal';
 
 const SavedPrompts = lazy(() => import('./components/SavedPrompts'));
 
@@ -26,6 +34,7 @@ export default function Home() {
     handleSavePrompt,
     loadPrompt,
     deletePrompt,
+    videoFormat,
     isGenerating,
     generationTime,
     errorMessage,
@@ -36,11 +45,53 @@ export default function Home() {
     remainingGenerations,
   } = useVoiceGenerator();
 
-  const [selectedModelId, setSelectedModelId] = useState('kokoro-local');
-  const { voices: apiVoices, loading: apiVoicesLoading, error: apiVoicesError } = useVoiceSamples(selectedModelId);
+  const { models: apiModels, loading: apiModelsLoading } = useModels();
+  const [selectedModelId, setSelectedModelId] = useState('');
+  const { 
+    voices: apiVoices, 
+    loading: apiVoicesLoading, 
+    error: apiVoicesError,
+    searchQuery: apiVoicesSearch,
+    setSearchQuery: setApiVoicesSearch,
+    loadingMore: apiVoicesLoadingMore,
+    hasMore: apiVoicesHasMore,
+    loadMore: apiVoicesLoadMore,
+  } = useVoiceSamples(selectedModelId);
   const [selectedApiVoice, setSelectedApiVoice] = useState('');
+  const [presets, setPresets] = useState<VoicePresetItem[]>([]);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
   const isClient = useIsClient();
+
+  // Load Presets (both online DB and local IndexedDB)
+  const refreshPresets = useCallback(async () => {
+    try {
+      if (isOnlineDb && isAuthenticated) {
+        const res = await fetch('/api/presets');
+        const data = await res.json();
+        if (data.presets && Array.isArray(data.presets)) {
+          setPresets(data.presets);
+          return;
+        }
+      }
+      const local = await getLocalPresets();
+      setPresets(local);
+    } catch {
+      const local = await getLocalPresets().catch(() => []);
+      setPresets(local);
+    }
+  }, [isOnlineDb, isAuthenticated]);
+
+  useEffect(() => {
+    refreshPresets();
+  }, [refreshPresets]);
+
+  // Auto-select first model once models are loaded if none currently selected
+  useEffect(() => {
+    if (!selectedModelId && apiModels.length > 0) {
+      setSelectedModelId(apiModels[0].name);
+    }
+  }, [apiModels, selectedModelId]);
 
   // Auto-select first voice once voices are loaded if none currently selected
   useEffect(() => {
@@ -54,23 +105,115 @@ export default function Home() {
     setSelectedApiVoice(''); // Reset selected voice on model switch
   };
 
+  const handleApplyPreset = (preset: VoicePresetItem) => {
+    setSelectedModelId(preset.model_id);
+    setSelectedApiVoice(preset.voice_id);
+    const speed = preset.parameters?.speed || preset.parameters?.rate || params.rate;
+    setParams((prev) => ({
+      ...prev,
+      modelId: preset.model_id,
+      voice: preset.voice_id,
+      rate: typeof speed === 'number' ? speed : prev.rate,
+      options: {
+        ...(prev.options || {}),
+        ...(preset.parameters || {}),
+      },
+    }));
+  };
+
+  const handleSavePreset = async (presetName?: string): Promise<boolean> => {
+    const selectedVoiceObj = apiVoices.find((v) => v.voice_id === selectedApiVoice);
+    const voiceName = selectedVoiceObj?.voice_name.split('(')[0].trim() || selectedApiVoice || 'Custom Voice';
+    const name = presetName || `${voiceName} Preset`;
+    const presetParams = params.options || { speed: params.rate };
+
+    try {
+      // 1. Save locally to IndexedDB
+      await saveLocalPreset({
+        preset_name: name,
+        model_id: selectedModelId,
+        voice_id: selectedApiVoice,
+        voice_name: voiceName,
+        language: selectedVoiceObj?.language || 'EN',
+        gender: selectedVoiceObj?.gender || 'Female',
+        parameters: presetParams,
+      });
+
+      // 2. If online and logged in, sync to Neon DB
+      if (isOnlineDb && isAuthenticated) {
+        await fetch('/api/presets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            preset_name: name,
+            model_id: selectedModelId,
+            voice_id: selectedApiVoice,
+            voice_name: voiceName,
+            language: selectedVoiceObj?.language || 'EN',
+            gender: selectedVoiceObj?.gender || 'Female',
+            parameters: presetParams,
+          }),
+        });
+      }
+
+      await refreshPresets();
+      return true;
+    } catch (e) {
+      console.error('Failed to save preset:', e);
+      return false;
+    }
+  };
+
+  const handleDeletePreset = async (presetId: string) => {
+    try {
+      await deleteLocalPreset(presetId);
+      if (isOnlineDb && isAuthenticated) {
+        await fetch(`/api/presets?id=${presetId}`, { method: 'DELETE' });
+      }
+      await refreshPresets();
+    } catch (e) {
+      console.error('Failed to delete preset:', e);
+    }
+  };
+
   const features = [
     { text: 'Instant Generation' },
     { text: 'Voice Customization' },
     { text: 'Save Prompts' },
   ];
 
-  const handleGenerateClick = async () => {
+  const handleGenerateClick = () => {
     if (isOnlineDb && !isAuthenticated) {
       window.location.href = '/api/auth/google';
       return;
     }
-    await handleGenerate(selectedApiVoice || undefined);
+    if (!params.text.trim()) {
+      handleGenerate(selectedApiVoice || undefined, selectedModelId);
+      return;
+    }
+    // Open sleek format selection popup
+    setIsFormatModalOpen(true);
+  };
+
+  const handleConfirmFormat = async (format: VideoFormat) => {
+    setIsFormatModalOpen(false);
+    await handleGenerate(selectedApiVoice || undefined, selectedModelId, format);
     setHistoryRefreshKey((prev) => prev + 1);
   };
 
   const isAuthRequired = isOnlineDb && !isAuthenticated;
   const isLimitReached = isOnlineDb && isAuthenticated && remainingGenerations !== null && remainingGenerations <= 0;
+
+  const selectedVoiceObj = apiVoices.find((v) => v.voice_id === selectedApiVoice);
+  const activeVoiceMeta = selectedVoiceObj
+    ? {
+        voice_id: selectedVoiceObj.voice_id,
+        voice_name: selectedVoiceObj.voice_name.split('(')[0].trim() || selectedVoiceObj.voice_name,
+        language: selectedVoiceObj.language,
+        gender: selectedVoiceObj.gender,
+        model_id: selectedModelId,
+      }
+    : null;
 
   return (
     <>
@@ -134,15 +277,25 @@ export default function Home() {
                   <VoiceControls
                     params={params}
                     onParamsChange={setParams}
+                    apiModels={apiModels}
+                    apiModelsLoading={apiModelsLoading}
                     apiVoices={apiVoices}
                     apiVoicesLoading={apiVoicesLoading}
                     apiVoicesError={apiVoicesError}
+                    apiVoicesSearch={apiVoicesSearch}
+                    setApiVoicesSearch={setApiVoicesSearch}
+                    apiVoicesLoadingMore={apiVoicesLoadingMore}
+                    apiVoicesHasMore={apiVoicesHasMore}
+                    apiVoicesLoadMore={apiVoicesLoadMore}
                     onApiVoiceChange={setSelectedApiVoice}
                     selectedApiVoice={selectedApiVoice}
                     selectedModelId={selectedModelId}
                     onModelChange={handleModelChange}
                     onLoadPrompt={loadPrompt}
                     refreshHistoryTrigger={historyRefreshKey}
+                    presets={presets}
+                    onApplyPreset={handleApplyPreset}
+                    onDeletePreset={handleDeletePreset}
                   />
                 </section>
               </div>
@@ -221,10 +374,22 @@ export default function Home() {
                 audioBlob={audioBlob}
                 isGenerating={isGenerating}
                 generationTime={generationTime}
-                fileName="voiceover.wav"
+                videoFormat={videoFormat}
+                activeVoiceMeta={activeVoiceMeta}
+                activeParameters={params.options || { speed: params.rate }}
+                onSavePreset={handleSavePreset}
               />
             </div>
           </section>
+
+          {/* Format Selection Modal Popup */}
+          <FormatSelectionModal
+            isOpen={isFormatModalOpen}
+            onClose={() => setIsFormatModalOpen(false)}
+            onSelectFormat={handleConfirmFormat}
+            text={params.text}
+            isGenerating={isGenerating}
+          />
 
           {/* Saved Prompts Section */}
           {isClient && savedPrompts.length > 0 && (

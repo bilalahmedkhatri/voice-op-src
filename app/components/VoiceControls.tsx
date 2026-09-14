@@ -11,27 +11,42 @@ import {
   FaRegHeart,
   FaHistory,
   FaChartBar,
+  FaBookmark,
+  FaTimes,
+  FaSlidersH,
+  FaSync,
 } from 'react-icons/fa';
 import { VoiceParams } from '../types';
 import { VoiceSample } from '../lib/voiceoverApi';
+import { VoicePresetItem } from '../lib/localPresetStorage';
 import LoadingSkeleton from './LoadingSkeleton';
 import ModelSelector from './ModelSelector';
 import DynamicParameterControls from './DynamicParameterControls';
 import GenerationHistory from './GenerationHistory';
-import { getModelDefinition, DEFAULT_MODEL_ID } from '../lib/tts/registry';
+import { TTSModel } from '../hooks/useModels';
 
 interface VoiceControlsProps {
   params: VoiceParams;
   onParamsChange: (params: VoiceParams) => void;
+  apiModels?: TTSModel[];
+  apiModelsLoading?: boolean;
   apiVoices?: VoiceSample[];
   apiVoicesLoading?: boolean;
   apiVoicesError?: string | null;
+  apiVoicesSearch?: string;
+  setApiVoicesSearch?: (query: string) => void;
+  apiVoicesLoadingMore?: boolean;
+  apiVoicesHasMore?: boolean;
+  apiVoicesLoadMore?: () => void;
   onApiVoiceChange?: (voiceId: string) => void;
   selectedApiVoice?: string;
   selectedModelId?: string;
   onModelChange?: (modelId: string) => void;
   onLoadPrompt?: (text: string) => void;
   refreshHistoryTrigger?: number;
+  presets?: VoicePresetItem[];
+  onApplyPreset?: (preset: VoicePresetItem) => void;
+  onDeletePreset?: (presetId: string) => void;
 }
 
 // Language to country and code tag mapping
@@ -124,34 +139,52 @@ function getVoiceCardMeta(voice: VoiceSample) {
 const VoiceControls = memo(function VoiceControls({
   params,
   onParamsChange,
+  apiModels = [],
+  apiModelsLoading = false,
   apiVoices = [],
   apiVoicesLoading = false,
   apiVoicesError = null,
+  apiVoicesSearch = '',
+  setApiVoicesSearch,
+  apiVoicesLoadingMore = false,
+  apiVoicesHasMore = false,
+  apiVoicesLoadMore,
   onApiVoiceChange,
   selectedApiVoice = '',
-  selectedModelId = DEFAULT_MODEL_ID,
+  selectedModelId = '',
   onModelChange,
   onLoadPrompt,
   refreshHistoryTrigger = 0,
+  presets = [],
+  onApplyPreset,
+  onDeletePreset,
 }: VoiceControlsProps) {
   const [activeTab, setActiveTab] = useState<'models' | 'history'>('models');
   const [historyCount, setHistoryCount] = useState<number>(0);
-  const [searchQuery, setSearchQuery] = useState('');
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+  const [loadingVoiceId, setLoadingVoiceId] = useState<string | null>(null);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
   const [likedVoices, setLikedVoices] = useState<Record<string, boolean>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const currentModelId = selectedModelId || params.modelId || DEFAULT_MODEL_ID;
-  const currentModelDef = getModelDefinition(currentModelId);
+  const currentModelId = selectedModelId || params.modelId || (apiModels.length > 0 ? apiModels[0].name : '');
+  const currentModelDef = apiModels.find(m => m.name === currentModelId);
+
+  const stopCurrentAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.removeAttribute('src');
+      audioRef.current.load();
+      audioRef.current = null;
+    }
+    setPlayingVoiceId(null);
+    setLoadingVoiceId(null);
+  };
 
   // Cleanup audio on unmount
   useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      stopCurrentAudio();
     };
   }, []);
 
@@ -159,37 +192,55 @@ const VoiceControls = memo(function VoiceControls({
     e.stopPropagation();
     if (!voice.sample_url) return;
 
-    if (playingVoiceId === voice.voice_id && audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setPlayingVoiceId(null);
+    // 1. If currently playing or loading this voice, stop/pause it immediately
+    if (playingVoiceId === voice.voice_id || loadingVoiceId === voice.voice_id) {
+      stopCurrentAudio();
       return;
     }
 
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
+    // 2. Stop any other audio that might be playing
+    stopCurrentAudio();
     setPlaybackError(null);
+    setLoadingVoiceId(voice.voice_id);
+
+    // 3. Create fresh Audio instance
     const audio = new Audio(voice.sample_url);
     audioRef.current = audio;
-    setPlayingVoiceId(voice.voice_id);
 
-    audio.play().catch((err) => {
-      setPlayingVoiceId(null);
-      setPlaybackError(`Sample playback failed: ${err.message}`);
-    });
+    const handlePlayingState = () => {
+      if (audioRef.current === audio && !audio.paused) {
+        setLoadingVoiceId(null);
+        setPlayingVoiceId(voice.voice_id);
+      }
+    };
+
+    audio.onplaying = handlePlayingState;
 
     audio.onended = () => {
-      setPlayingVoiceId(null);
-      setPlaybackError(null);
+      if (audioRef.current === audio) {
+        stopCurrentAudio();
+      }
     };
 
     audio.onerror = () => {
-      setPlayingVoiceId(null);
-      setPlaybackError('Failed to load audio sample.');
+      if (audioRef.current === audio) {
+        stopCurrentAudio();
+        setPlaybackError('Failed to load audio sample.');
+      }
     };
+
+    audio.play().then(() => {
+      handlePlayingState();
+    }).catch((err) => {
+      if (err.name === 'AbortError') {
+        // Paused intentionally before playback started
+        return;
+      }
+      if (audioRef.current === audio) {
+        stopCurrentAudio();
+        setPlaybackError(`Sample playback failed: ${err.message}`);
+      }
+    });
   };
 
   const handleToggleLike = (e: React.MouseEvent, voiceId: string) => {
@@ -204,19 +255,16 @@ const VoiceControls = memo(function VoiceControls({
     if (onModelChange) {
       onModelChange(newModelId);
     }
-    const newModelDef = getModelDefinition(newModelId);
     onParamsChange({
       ...params,
       modelId: newModelId,
-      options: {
-        ...newModelDef.defaultParams,
-      },
+      options: {},
     });
   };
 
   const handleParamChange = (paramId: string, value: any) => {
     const updatedOptions = {
-      ...(params.options || currentModelDef.defaultParams),
+      ...(params.options || {}),
       [paramId]: value,
     };
 
@@ -238,17 +286,6 @@ const VoiceControls = memo(function VoiceControls({
 
     onParamsChange(updatedParams);
   };
-
-  const filteredVoices = apiVoices.filter((voice) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      voice.voice_name.toLowerCase().includes(query) ||
-      (voice.language && voice.language.toLowerCase().includes(query)) ||
-      (voice.accent && voice.accent.toLowerCase().includes(query)) ||
-      (voice.gender && voice.gender.toLowerCase().includes(query))
-    );
-  });
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -293,7 +330,66 @@ const VoiceControls = memo(function VoiceControls({
           <ModelSelector
             selectedModelId={currentModelId}
             onSelectModel={handleModelSelect}
+            apiModels={apiModels}
+            apiModelsLoading={apiModelsLoading}
           />
+
+          {/* Saved Presets Bar */}
+          {presets && presets.length > 0 && (
+            <div className="flex flex-col gap-1.5 p-2.5 bg-amber-50/70 rounded-2xl border border-amber-200/60 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <FaBookmark className="text-amber-500 text-[10px]" />
+                  Saved Voice Presets ({presets.length})
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
+                {presets.map((preset) => {
+                  const isActive =
+                    preset.voice_id === selectedApiVoice &&
+                    preset.model_id === currentModelId;
+                  const speedVal = preset.parameters?.speed || preset.parameters?.rate;
+                  return (
+                    <div
+                      key={preset.id}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold cursor-pointer transition-all flex-shrink-0 border ${
+                        isActive
+                          ? 'bg-amber-500 text-white border-amber-600 shadow-2xs'
+                          : 'bg-white text-gray-800 border-amber-200 hover:border-amber-300 shadow-2xs'
+                      }`}
+                      onClick={() => onApplyPreset && onApplyPreset(preset)}
+                    >
+                      <span>{preset.preset_name || preset.voice_name}</span>
+                      {speedVal && (
+                        <span
+                          className={`text-[9px] px-1 rounded font-mono ${
+                            isActive ? 'bg-amber-600 text-amber-100' : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {speedVal}x
+                        </span>
+                      )}
+                      {onDeletePreset && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeletePreset(preset.id);
+                          }}
+                          className={`p-0.5 rounded hover:bg-black/10 transition-colors ml-0.5 ${
+                            isActive ? 'text-white' : 'text-gray-400 hover:text-red-500'
+                          }`}
+                          title="Delete preset"
+                        >
+                          <FaTimes className="text-[8px]" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Voice Catalog Header & Search */}
           <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
@@ -303,23 +399,21 @@ const VoiceControls = memo(function VoiceControls({
                 Select Voice
               </label>
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-                {filteredVoices.length} {filteredVoices.length === 1 ? 'voice' : 'voices'}
+                {apiVoices.length} {apiVoices.length === 1 ? 'voice' : 'voices'} loaded
               </span>
             </div>
 
             {/* Search Bar */}
-            {apiVoices.length > 4 && (
-              <div className="relative w-full">
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search voices by name, accent, gender..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#ff9b8f] focus:bg-white focus:ring-2 focus:ring-[#ff9b8f]/20 transition-all text-gray-800"
-                />
-              </div>
-            )}
+            <div className="relative w-full">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search voices by name, accent, gender..."
+                value={apiVoicesSearch}
+                onChange={(e) => setApiVoicesSearch?.(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#ff9b8f] focus:bg-white focus:ring-2 focus:ring-[#ff9b8f]/20 transition-all text-gray-800"
+              />
+            </div>
           </div>
 
           {playbackError && (
@@ -328,16 +422,15 @@ const VoiceControls = memo(function VoiceControls({
             </div>
           )}
 
-          {/* Modern Scrollable Voices List Cards */}
-          {apiVoicesLoading ? (
-            <LoadingSkeleton variant="voiceDropdown" />
+          {apiVoicesLoading && !apiVoices.length ? (
+            <LoadingSkeleton variant="voiceList" />
           ) : apiVoicesError ? (
             <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 text-center">
               ⚠️ {apiVoicesError}
             </div>
-          ) : filteredVoices.length === 0 ? (
+          ) : apiVoices.length === 0 ? (
             <div className="p-5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-center text-xs text-gray-500">
-              No voices match &quot;{searchQuery}&quot;
+              No voices match &quot;{apiVoicesSearch}&quot;
             </div>
           ) : (
             <div
@@ -345,9 +438,10 @@ const VoiceControls = memo(function VoiceControls({
               tabIndex={0}
               aria-label="Scrollable voices list"
             >
-              {filteredVoices.map((voice) => {
+              {apiVoices.map((voice) => {
                 const isSelected = voice.voice_id === selectedApiVoice;
                 const isPlayingThis = playingVoiceId === voice.voice_id;
+                const isLoadingThis = loadingVoiceId === voice.voice_id;
                 const isLiked = !!likedVoices[voice.voice_id];
                 const meta = getVoiceCardMeta(voice);
                 const genderLabel =
@@ -357,119 +451,136 @@ const VoiceControls = memo(function VoiceControls({
                   <div
                     key={voice.voice_id}
                     onClick={() => onApiVoiceChange && onApiVoiceChange(voice.voice_id)}
-                    className={`group relative flex flex-col p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all duration-200 border ${
+                    className={`group relative flex items-center justify-between p-2.5 sm:p-3 rounded-2xl cursor-pointer transition-all duration-200 border ${
                       isSelected
                         ? 'bg-white border-[#ff9b8f] ring-2 ring-[#ff9b8f]/20 shadow-xs'
                         : 'bg-white/90 border-gray-100/90 hover:bg-white hover:border-gray-200 hover:shadow-2xs'
                     }`}
                   >
-                    {/* Top Row: Avatar with Overlaid Play button + Title, Gender, Active pill + Radio Dot */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        {/* Circular Avatar with embedded Play/Pause Button */}
-                        <div className="relative flex-shrink-0">
-                          <button
-                            type="button"
-                            onClick={(e) => handleTogglePlaySample(e, voice)}
-                            aria-label={isPlayingThis ? 'Pause sample' : 'Play sample'}
-                            className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-sm text-gray-700 bg-gradient-to-tr ${meta.avatarGradient} shadow-2xs relative overflow-hidden group/btn cursor-pointer transition-transform hover:scale-105`}
-                          >
-                            <div className="absolute inset-0 bg-black/25 flex items-center justify-center transition-colors group-hover/btn:bg-black/35">
-                              {isPlayingThis ? (
-                                <FaPause className="text-white text-xs" />
-                              ) : (
-                                <FaPlay className="text-white text-xs ml-0.5" />
-                              )}
-                            </div>
-                          </button>
-                        </div>
-
-                        {/* Title, Gender & Active Pill */}
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-sm sm:text-base text-gray-900">
-                              {meta.cleanName}
-                            </span>
-                            <span className="text-gray-400 text-xs">·</span>
-                            <span className="text-gray-500 text-xs font-normal">
-                              {genderLabel}
-                            </span>
-                            {isSelected && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-red-600 border border-red-100">
-                                <FaCheck className="text-[9px]" />
-                                <span>Active</span>
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Description text */}
-                          <p className="text-xs text-gray-500 mt-0.5 truncate">
-                            {voice.description || `${meta.tone} ${genderLabel.toLowerCase()} voice`}
-                          </p>
-                        </div>
+                    {/* Left: Avatar & Info */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* Avatar with dynamic initials & gradient */}
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm text-gray-700 bg-gradient-to-tr ${meta.avatarGradient} flex-shrink-0 shadow-2xs ${
+                          isLoadingThis ? 'animate-pulse ring-2 ring-[#ff9b8f]/60' : ''
+                        }`}
+                      >
+                        {isLoadingThis ? (
+                          <FaSync className="text-xs animate-spin text-gray-800" />
+                        ) : (
+                          meta.cleanName.substring(0, 2).toUpperCase()
+                        )}
                       </div>
 
-                      {/* Top Right: Radio selection dot indicator */}
-                      <div className="flex-shrink-0 pt-0.5">
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                            isSelected
-                              ? 'border-[#ff9b8f] bg-white'
-                              : 'border-gray-200 bg-transparent group-hover:border-gray-300'
+                      {/* Info & Badges */}
+                      <div className="flex flex-col min-w-0 flex-1">
+                        {/* Top Line: Name + Lang Tag + Tone */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-xs sm:text-sm text-gray-900 truncate">
+                            {meta.cleanName}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200/60">
+                            {meta.langMeta.code}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-700 border border-red-100/80">
+                            {meta.tone}
+                          </span>
+                        </div>
+
+                        {/* Subtitle Line: Gender • Accent • Usage count */}
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-0.5 flex-wrap">
+                          <span>{genderLabel}</span>
+                          <span className="text-gray-300">•</span>
+                          <span>{voice.accent || 'Natural'}</span>
+                          <span className="text-gray-300">•</span>
+                          <span className="text-gray-400 font-medium">{meta.usageCount} uses</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Actions (Play Preview, Like with Count, Selection Check) */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 ml-2 flex-shrink-0">
+                      {voice.sample_url && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleTogglePlaySample(e, voice)}
+                          aria-label={
+                            isLoadingThis
+                              ? 'Loading sample...'
+                              : isPlayingThis
+                              ? 'Pause sample'
+                              : 'Play sample'
+                          }
+                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                            isLoadingThis
+                              ? 'bg-amber-50 text-amber-600 border border-amber-300/80 ring-2 ring-amber-300/30'
+                              : isPlayingThis
+                              ? 'bg-[#ff9b8f] text-white shadow-xs scale-105 animate-pulse'
+                              : 'bg-gray-100 hover:bg-[#ff9b8f]/20 text-gray-600 hover:text-gray-900'
                           }`}
                         >
-                          {isSelected && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-[#ff9b8f]" />
+                          {isLoadingThis ? (
+                            <FaSync className="text-[10px] animate-spin text-amber-600" />
+                          ) : isPlayingThis ? (
+                            <FaPause className="text-[10px]" />
+                          ) : (
+                            <FaPlay className="text-[10px] ml-0.5" />
                           )}
-                        </div>
-                      </div>
-                    </div>
+                        </button>
+                      )}
 
-                    {/* Middle Row: Chips / Badges (Country • Lang, Gender, Tone) */}
-                    <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100/80 text-gray-700">
-                        {meta.langMeta.country} • {meta.langMeta.code}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100/80 text-gray-700">
-                        {genderLabel}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100/80 text-gray-700">
-                        {meta.tone}
-                      </span>
-                    </div>
-
-                    {/* Bottom Row: Stats (Usage Count & Likes Count) */}
-                    <div className="flex items-center gap-3 mt-3 pt-2 text-[11px] text-gray-500 font-medium border-t border-gray-50">
-                      <div className="flex items-center gap-1.5">
-                        <FaChartBar className="text-gray-400 text-xs" />
-                        <span>{meta.usageCount}</span>
-                      </div>
-                      <span className="text-gray-300">|</span>
                       <button
                         type="button"
                         onClick={(e) => handleToggleLike(e, voice.voice_id)}
-                        className="flex items-center gap-1.5 hover:text-red-500 transition-colors cursor-pointer"
+                        aria-label={isLiked ? 'Unlike' : 'Like'}
+                        className="flex items-center gap-1 px-1.5 py-1 rounded-full text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
                       >
                         {isLiked ? (
                           <FaHeart className="text-red-500 text-xs" />
                         ) : (
                           <FaRegHeart className="text-gray-400 hover:text-red-400 text-xs" />
                         )}
-                        <span>{meta.likesCount}</span>
+                        <span className="text-[10px] font-medium text-gray-500">{meta.likesCount}</span>
                       </button>
+
+                      {isSelected && (
+                        <div className="w-5 h-5 rounded-full bg-[#ff9b8f] text-white flex items-center justify-center ml-0.5 flex-shrink-0">
+                          <FaCheck className="text-[9px]" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
+
+              {/* Load More Button */}
+              {apiVoicesHasMore && (
+                <div className="pt-2 pb-1 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => apiVoicesLoadMore?.()}
+                    disabled={apiVoicesLoadingMore}
+                    className="px-4 py-1.5 rounded-full text-xs font-bold text-[#ff9b8f] bg-[#ff9b8f]/10 hover:bg-[#ff9b8f]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {apiVoicesLoadingMore ? (
+                      <><FaSync className="animate-spin text-xs" /> Loading...</>
+                    ) : (
+                      'Load More'
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
           {/* Dynamic Model Parameter Controls */}
-          <DynamicParameterControls
-            model={currentModelDef}
-            params={params.options || currentModelDef.defaultParams}
-            onParamChange={handleParamChange}
-          />
+          {currentModelDef && (
+            <DynamicParameterControls
+              model={currentModelDef}
+              params={params.options || {}}
+              onParamChange={handleParamChange}
+            />
+          )}
         </div>
       ) : (
         /* Tab Content: Generation History */

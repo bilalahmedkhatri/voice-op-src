@@ -18,6 +18,7 @@ import {
   clearAllLocalHistory,
   LocalHistoryItem,
 } from '../lib/localHistoryStorage';
+import { generateVoiceoverFilename } from '../lib/filenameUtils';
 
 interface UnifiedHistoryItem {
   id: string;
@@ -30,6 +31,7 @@ interface UnifiedHistoryItem {
   audioBlob?: Blob;
   duration_sec?: number | null;
   generation_time_sec?: number | null;
+  video_format?: 'short' | 'long' | string;
   parameters?: Record<string, any>;
   created_at: string;
 }
@@ -60,7 +62,7 @@ const GenerationHistory = memo(function GenerationHistory({
       Object.values(blobUrlsRef.current).forEach((url) => {
         try {
           URL.revokeObjectURL(url);
-        } catch {}
+        } catch { }
       });
     };
   }, []);
@@ -75,6 +77,11 @@ const GenerationHistory = memo(function GenerationHistory({
       loadOnlineHistory();
     }
   }, [refreshTrigger]);
+
+  // Safely synchronize history count to parent without setState-in-render violations
+  useEffect(() => {
+    onHistoryCountChange?.(historyItems.length);
+  }, [historyItems.length, onHistoryCountChange]);
 
   const loadOfflineHistory = async () => {
     try {
@@ -95,11 +102,9 @@ const GenerationHistory = memo(function GenerationHistory({
       });
 
       setHistoryItems(unified);
-      onHistoryCountChange?.(unified.length);
     } catch (e) {
       console.error('Error loading offline local history:', e);
       setHistoryItems([]);
-      onHistoryCountChange?.(0);
     } finally {
       setLoading(false);
     }
@@ -114,18 +119,28 @@ const GenerationHistory = memo(function GenerationHistory({
         setAuthenticated(true);
         const items = data.items || [];
         setHistoryItems(items);
-        onHistoryCountChange?.(items.length);
       } else {
         setAuthenticated(false);
         // Fallback to local storage if user not signed in online
         const localItems = await getLocalHistoryItems();
-        setHistoryItems(localItems as any);
-        onHistoryCountChange?.(localItems.length);
+        const unified: UnifiedHistoryItem[] = localItems.map((item) => {
+          let url = item.audio_url;
+          if (!url && item.audioBlob) {
+            if (!blobUrlsRef.current[item.id]) {
+              blobUrlsRef.current[item.id] = URL.createObjectURL(item.audioBlob);
+            }
+            url = blobUrlsRef.current[item.id];
+          }
+          return {
+            ...item,
+            audio_url: url,
+          };
+        });
+        setHistoryItems(unified);
       }
     } catch (e) {
       console.error('Error loading online history:', e);
       setHistoryItems([]);
-      onHistoryCountChange?.(0);
     } finally {
       setLoading(false);
     }
@@ -163,11 +178,7 @@ const GenerationHistory = memo(function GenerationHistory({
         await fetch(`/api/history?id=${id}`, { method: 'DELETE' });
       }
 
-      setHistoryItems((prev) => {
-        const updated = prev.filter((it) => it.id !== id);
-        onHistoryCountChange?.(updated.length);
-        return updated;
-      });
+      setHistoryItems((prev) => prev.filter((it) => it.id !== id));
     } catch (e) {
       console.error('Failed to delete history item:', e);
     } finally {
@@ -185,7 +196,6 @@ const GenerationHistory = memo(function GenerationHistory({
       }
 
       setHistoryItems([]);
-      onHistoryCountChange?.(0);
     } catch (e) {
       console.error('Failed to clear history:', e);
     }
@@ -291,6 +301,24 @@ const GenerationHistory = memo(function GenerationHistory({
               {/* Top Row: Meta Tags & Actions */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 flex-wrap">
+                  {/* Video format tag (Short vs Long) */}
+                  {(() => {
+                    const fmt = item.video_format || item.parameters?.video_format;
+                    if (!fmt) return null;
+                    const isShort = fmt === 'short';
+                    return (
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                          isShort
+                            ? 'bg-rose-50 text-rose-700 border-rose-200/80'
+                            : 'bg-indigo-50 text-indigo-700 border-indigo-200/80'
+                        }`}
+                      >
+                        {isShort ? '⚡ Short' : '🎬 Long'}
+                      </span>
+                    );
+                  })()}
+
                   <span className="px-2 py-0.5 bg-[#ff9b8f]/15 text-gray-900 rounded-lg text-[10px] font-bold">
                     {item.voice_name}
                   </span>
@@ -319,43 +347,59 @@ const GenerationHistory = memo(function GenerationHistory({
                 </div>
               </div>
 
-              {/* Generation Parameters Tags */}
-              {item.parameters && Object.keys(item.parameters).length > 0 && (
-                <div className="flex items-center gap-1 flex-wrap">
-                  {Object.entries(item.parameters).map(([key, val]) => {
-                    if (val === undefined || val === null) return null;
-                    const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                    const formattedVal =
-                      typeof val === 'number' && (key === 'speed' || key === 'rate')
-                        ? `${val}x`
-                        : String(val);
-                    return (
-                      <span
-                        key={key}
-                        className="px-1.5 py-0.2 rounded text-[9px] font-medium bg-gray-50 text-gray-600 border border-gray-200/50"
-                      >
-                        {label}: <strong className="text-gray-800">{formattedVal}</strong>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+              {/* Generation Parameters Tags (Speed + Model Specific Options) */}
+              {(() => {
+                const paramsMap: Record<string, any> = { ...(item.parameters || {}) };
+                if (paramsMap.speed === undefined && paramsMap.rate === undefined) {
+                  paramsMap.speed = 1.0;
+                }
+                const paramEntries = Object.entries(paramsMap).filter(
+                  ([_, val]) => val !== undefined && val !== null && val !== ''
+                );
 
-              {/* Prompt Text Preview (Clean snippet) */}
-              <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed bg-gray-50/80 p-2.5 rounded-xl font-normal border border-gray-100/60">
-                {item.prompt_text}
-              </p>
+                if (paramEntries.length === 0) return null;
 
-              {/* Bottom Actions Row: Standardized Play and Download Buttons */}
-              <div className="flex items-center gap-2 pt-0.5">
+                return (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {paramEntries.map(([key, val]) => {
+                      const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+                      const formattedVal =
+                        typeof val === 'number' && (key === 'speed' || key === 'rate')
+                          ? `${val}x`
+                          : String(val);
+                      return (
+                        <span
+                          key={key}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-gray-50 text-gray-600 border border-gray-200/60"
+                        >
+                          {label}: <strong className="text-gray-800 font-semibold">{formattedVal}</strong>
+                        </span>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              {/* Short Prompt Snippet (First 15-20 characters only) */}
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50/70 px-2.5 py-1.5 rounded-xl border border-gray-100">
+                <span className="text-gray-400 font-serif text-xs">&ldquo;</span>
+                <span className="truncate font-normal text-gray-700">
+                  {item.prompt_text.length > 70
+                    ? `${item.prompt_text.substring(0, 70).trim()}...`
+                    : item.prompt_text}
+                </span>
+                <span className="text-gray-400 font-serif text-xs">&rdquo;</span>
+              </div>
+
+              {/* Bottom Actions Row: Polished Play & Download Buttons */}
+              <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => handlePlayToggle(item)}
-                  className={`h-8.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
-                    isPlaying
-                      ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                      : 'bg-[#ff9b8f] hover:bg-[#f8887a] text-white hover:shadow-xs'
-                  }`}
+                  className={`h-9 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${isPlaying
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                    : 'bg-[#ff9b8f] hover:bg-[#f8887a] text-white hover:shadow-xs'
+                    }`}
                 >
                   {isPlaying ? (
                     <>
@@ -373,12 +417,17 @@ const GenerationHistory = memo(function GenerationHistory({
                 {item.audio_url && (
                   <a
                     href={item.audio_url}
-                    download={`voiceover_${item.voice_name}.wav`}
-                    className="h-8.5 px-3 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200/60 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    download={generateVoiceoverFilename({
+                      videoFormat: item.video_format || item.parameters?.video_format,
+                      voiceName: item.voice_name,
+                      parameters: item.parameters,
+                      date: item.created_at,
+                    })}
+                    className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200/80 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     title="Download audio"
                   >
-                    <FaDownload className="text-[10px]" />
-                    <span className="hidden xs:inline">Download</span>
+                    <FaDownload className="text-[10px] text-gray-500" />
+                    <span>Download</span>
                   </a>
                 )}
               </div>

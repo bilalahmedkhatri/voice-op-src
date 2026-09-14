@@ -51,3 +51,19 @@ CREATE TABLE IF NOT EXISTS user_quotas (
     reset_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
+
+-- 5. Voice Presets Table (Saved voice & model parameter profiles)
+CREATE TABLE IF NOT EXISTS voice_presets (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    preset_name VARCHAR(100) NOT NULL,
+    model_id VARCHAR(60) NOT NULL,
+    voice_id VARCHAR(100) NOT NULL,
+    voice_name VARCHAR(100) NOT NULL,
+    language VARCHAR(20),
+    gender VARCHAR(20),
+    parameters JSONB DEFAULT '{}'::jsonb NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_presets_user_date ON voice_presets(user_id, created_at DESC);

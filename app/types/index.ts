@@ -8,4 +8,4 @@ export interface VoiceParams {
   options?: Record<string, any>;
 }
 
-export * from '../lib/tts/types';
+

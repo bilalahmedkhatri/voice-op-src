@@ -2,31 +2,27 @@
 
 import { getLocalDB } from './localIndexedDB';
 
-export interface LocalHistoryItem {
+export interface VoicePresetItem {
   id: string;
-  prompt_text: string;
+  preset_name: string;
   model_id: string;
-  model_name: string;
   voice_id: string;
   voice_name: string;
-  audioBlob: Blob;
-  audio_url?: string;
-  duration_sec?: number | null;
-  generation_time_sec?: number | null;
-  video_format?: 'short' | 'long' | string;
-  parameters?: Record<string, any>;
+  language?: string;
+  gender?: string;
+  parameters: Record<string, any>;
   created_at: string;
 }
 
-const STORE_NAME = 'history';
+const STORE_NAME = 'presets';
 
-export async function saveLocalHistoryItem(
-  item: Omit<LocalHistoryItem, 'id' | 'created_at'>
-): Promise<LocalHistoryItem> {
+export async function saveLocalPreset(
+  preset: Omit<VoicePresetItem, 'id' | 'created_at'>
+): Promise<VoicePresetItem> {
   const db = await getLocalDB();
-  const id = `loc_${crypto.randomUUID().replace(/-/g, '')}`;
-  const newItem: LocalHistoryItem = {
-    ...item,
+  const id = `pre_${crypto.randomUUID().replace(/-/g, '')}`;
+  const newItem: VoicePresetItem = {
+    ...preset,
     id,
     created_at: new Date().toISOString(),
   };
@@ -41,7 +37,7 @@ export async function saveLocalHistoryItem(
   });
 }
 
-export async function getLocalHistoryItems(): Promise<LocalHistoryItem[]> {
+export async function getLocalPresets(): Promise<VoicePresetItem[]> {
   const db = await getLocalDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readonly');
@@ -49,8 +45,7 @@ export async function getLocalHistoryItems(): Promise<LocalHistoryItem[]> {
     const req = store.getAll();
 
     req.onsuccess = () => {
-      const items = (req.result as LocalHistoryItem[]) || [];
-      // Sort newest first
+      const items = (req.result as VoicePresetItem[]) || [];
       items.sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
@@ -60,24 +55,12 @@ export async function getLocalHistoryItems(): Promise<LocalHistoryItem[]> {
   });
 }
 
-export async function deleteLocalHistoryItem(id: string): Promise<void> {
+export async function deleteLocalPreset(id: string): Promise<void> {
   const db = await getLocalDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
     const req = store.delete(id);
-
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
-
-export async function clearAllLocalHistory(): Promise<void> {
-  const db = await getLocalDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.clear();
 
     req.onsuccess = () => resolve();
     req.onerror = () => reject(req.error);

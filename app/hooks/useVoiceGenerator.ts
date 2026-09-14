@@ -5,8 +5,8 @@ import { VoiceParams } from '../types';
 import { promptStorage } from '../lib/promptStorage';
 import { isDatabaseEnabled } from '../lib/config';
 import { saveLocalHistoryItem } from '../lib/localHistoryStorage';
-import { getModelDefinition, DEFAULT_MODEL_ID } from '../lib/tts/registry';
 import { formatErrorMessage } from '../lib/errorUtils';
+import { playCompletionSound } from '../lib/audioNotification';
 
 function dataUriToBlob(dataUri: string): Blob {
   const [header, base64] = dataUri.split(',');
@@ -42,6 +42,7 @@ export function useVoiceGenerator() {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState<number | null>(null);
+  const [videoFormat, setVideoFormat] = useState<'short' | 'long'>('short');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [userQuota, setUserQuota] = useState<UserQuotaState | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -92,7 +93,7 @@ export function useVoiceGenerator() {
     };
   }, []);
 
-  const handleGenerate = async (apiVoiceId?: string) => {
+  const handleGenerate = async (apiVoiceId?: string, targetModelId?: string, targetFormat: 'short' | 'long' = 'short') => {
     if (!params.text.trim()) {
       setErrorMessage('Please enter some text to generate a voiceover.');
       return;
@@ -103,15 +104,20 @@ export function useVoiceGenerator() {
       return;
     }
 
+    if (!targetModelId) {
+      setErrorMessage('Please select a model before generating.');
+      return;
+    }
+
     const isOnlineDb = isDatabaseEnabled();
     if (isOnlineDb && !isAuthenticated) {
       setErrorMessage('Please sign in with Google above to generate voiceovers.');
       return;
     }
 
+    setVideoFormat(targetFormat);
     setErrorMessage(null);
     const startTime = performance.now();
-    const targetModelId = params.modelId || DEFAULT_MODEL_ID;
 
     try {
       generationControllerRef.current?.abort();
@@ -127,7 +133,10 @@ export function useVoiceGenerator() {
           text: params.text,
           voice_id: apiVoiceId,
           model_id: targetModelId,
-          options: params.options || { speed: params.rate },
+          options: {
+            ...(params.options || {}),
+            video_format: targetFormat,
+          },
           speed: params.rate,
           pitch: params.pitch,
           volume: params.volume,
@@ -167,19 +176,26 @@ export function useVoiceGenerator() {
       const elapsed = Math.round((performance.now() - startTime) / 100) / 10;
       setGenerationTime(elapsed);
 
+      // Play completion chime notification for background/active tab feedback
+      playCompletionSound();
+
       // Save to local IndexedDB storage (instant offline history fallback)
       try {
-        const modelDef = getModelDefinition(targetModelId);
         await saveLocalHistoryItem({
           prompt_text: params.text,
           model_id: targetModelId,
-          model_name: modelDef.name || targetModelId,
+          model_name: targetModelId,
           voice_id: apiVoiceId,
           voice_name: data.voice_name || apiVoiceId,
           audioBlob: downloadedBlob,
           duration_sec: data.duration_seconds || null,
           generation_time_sec: elapsed,
-          parameters: params.options || {},
+          video_format: targetFormat,
+          parameters: {
+            speed: params.rate ?? (params.options?.speed ?? 1.0),
+            video_format: targetFormat,
+            ...(params.options || {}),
+          },
         });
       } catch (localDbErr) {
         console.error('Failed to save to local IndexedDB history:', localDbErr);
@@ -251,6 +267,8 @@ export function useVoiceGenerator() {
     handleSavePrompt,
     loadPrompt,
     deletePrompt,
+    videoFormat,
+    setVideoFormat,
     userQuota,
     isAuthenticated,
     isOnlineDb: isDatabaseEnabled(),

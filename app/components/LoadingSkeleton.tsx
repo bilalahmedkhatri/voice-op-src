@@ -1,7 +1,7 @@
 import { designSystem as ds } from '../lib/designSystem';
 
 interface LoadingSkeletonProps {
-  variant?: 'textInput' | 'voiceControls' | 'audioPlayer' | 'savedPrompts' | 'voiceDropdown' | 'full';
+  variant?: 'textInput' | 'voiceControls' | 'audioPlayer' | 'savedPrompts' | 'voiceDropdown' | 'voiceList' | 'full';
 }
 
 export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonProps) {
@@ -11,16 +11,6 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
     backgroundColor: ds.colors.gray[200],
   };
 
-  const shimmerAnimation = `
-    @keyframes shimmer {
-      0% {
-        transform: translateX(-100%);
-      }
-      100% {
-        transform: translateX(100%);
-      }
-    }
-  `;
 
   const ShimmerBox = ({ width, height, borderRadius = ds.borderRadius.lg, marginBottom = '0' }: { width: string; height: string; borderRadius?: string; marginBottom?: string }) => (
     <div
@@ -144,6 +134,37 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
     </div>
   );
 
+  // Voice List Skeleton (for the scrollable catalog)
+  const VoiceListSkeleton = () => (
+    <div className="flex flex-col gap-2">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl border bg-white border-gray-100/90">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <ShimmerBox width="40px" height="40px" borderRadius={ds.borderRadius.full} />
+            <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <ShimmerBox width="80px" height="16px" />
+                <ShimmerBox width="24px" height="14px" borderRadius={ds.borderRadius.sm} />
+                <ShimmerBox width="60px" height="14px" borderRadius={ds.borderRadius.sm} />
+              </div>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <ShimmerBox width="30px" height="12px" />
+                <span className="text-gray-200">•</span>
+                <ShimmerBox width="50px" height="12px" />
+                <span className="text-gray-200">•</span>
+                <ShimmerBox width="40px" height="12px" />
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-2 flex-shrink-0">
+            <ShimmerBox width="32px" height="32px" borderRadius={ds.borderRadius.full} />
+            <ShimmerBox width="45px" height="20px" borderRadius={ds.borderRadius.full} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   // Render based on variant
   const renderSkeleton = () => {
     switch (variant) {
@@ -157,6 +178,8 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
         return <SavedPromptsSkeleton />;
       case 'voiceDropdown':
         return <VoiceDropdownSkeleton />;
+      case 'voiceList':
+        return <VoiceListSkeleton />;
       case 'full':
       default:
         return <FullPageSkeleton />;
@@ -165,6 +188,15 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
 
   return (
     <>
+      <style>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 1.5s infinite;
+        }
+      `}</style>
       {renderSkeleton()}
     </>
   );

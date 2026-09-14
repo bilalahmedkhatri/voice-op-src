@@ -1,14 +1,27 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { FaSlidersH, FaInfoCircle } from 'react-icons/fa';
-import { ModelDefinition } from '../lib/tts/types';
+import { TTSModel } from '../hooks/useModels';
 
 interface DynamicParameterControlsProps {
-  model: ModelDefinition;
+  model: TTSModel;
   params: Record<string, any>;
   onParamChange: (paramId: string, value: any) => void;
   disabled?: boolean;
+}
+
+interface ParamConfig {
+  id: string;
+  type: 'slider' | 'toggle' | 'select';
+  label: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  defaultValue: number | boolean | string;
+  unit?: string;
+  description?: string;
+  options?: { label: string; value: string }[];
 }
 
 const DynamicParameterControls = memo(function DynamicParameterControls({
@@ -17,7 +30,76 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
   onParamChange,
   disabled = false,
 }: DynamicParameterControlsProps) {
-  if (!model || !model.parameters || model.parameters.length === 0) {
+  const parameters = useMemo<ParamConfig[]>(() => {
+    if (!model) return [];
+    
+    // Provide hardcoded UI schemas based on the backend provider
+    if (model.provider === 'gemini') {
+      return [
+        {
+          id: 'speed',
+          type: 'slider',
+          label: 'Speed',
+          min: 0.5,
+          max: 4.0,
+          step: 0.1,
+          defaultValue: 1.0,
+          unit: 'x',
+        },
+        {
+          id: 'pitch',
+          type: 'slider',
+          label: 'Pitch',
+          min: -20.0,
+          max: 20.0,
+          step: 1.0,
+          defaultValue: 0.0,
+          unit: 'st',
+        },
+        {
+          id: 'volume',
+          type: 'slider',
+          label: 'Volume Gain',
+          min: -10.0,
+          max: 10.0,
+          step: 1.0,
+          defaultValue: 0.0,
+          unit: 'dB',
+        }
+      ];
+    }
+    
+    if (model.provider === 'kokoro') {
+      return [
+        {
+          id: 'speed',
+          type: 'slider',
+          label: 'Speed',
+          min: 0.5,
+          max: 2.0,
+          step: 0.1,
+          defaultValue: 1.0,
+          unit: 'x',
+        }
+      ];
+    }
+    
+    // Default fallback
+    return [
+      {
+        id: 'speed',
+        type: 'slider',
+        label: 'Speed',
+        min: 0.5,
+        max: 2.0,
+        step: 0.1,
+        defaultValue: 1.0,
+        unit: 'x',
+      }
+    ];
+  }, [model]);
+
+  if (!parameters || parameters.length === 0) {
     return null;
   }
 
@@ -34,7 +116,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
       </div>
 
       <div className="flex flex-col gap-3">
-        {model.parameters.map((param) => {
+        {parameters.map((param) => {
           const currentValue =
             params[param.id] !== undefined ? params[param.id] : param.defaultValue;
 
