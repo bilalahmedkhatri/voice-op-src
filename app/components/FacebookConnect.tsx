@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { FaFacebook } from 'react-icons/fa';
 
 interface FacebookConnectProps {
-  onPageSelected: (pageId: string, pageName: string) => void;
+  onPagesFetched: (pages: any[]) => void;
 }
 
 // Ensure TypeScript knows about window.FB
@@ -15,10 +15,9 @@ declare global {
   }
 }
 
-export default function FacebookConnect({ onPageSelected }: FacebookConnectProps) {
+export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [pages, setPages] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,39 +66,12 @@ export default function FacebookConnect({ onPageSelected }: FacebookConnectProps
   const fetchPages = () => {
     window.FB.api('/me/accounts', (response: any) => {
       setIsConnecting(false);
-      if (response && !response.error) {
-        setPages(response.data);
+      if (response && !response.error && response.data && response.data.length > 0) {
+        onPagesFetched(response.data);
       } else {
-        setError('Failed to fetch pages. Ensure you have granted the necessary permissions.');
+        setError('No pages found or failed to fetch pages. Ensure you have granted the necessary permissions.');
       }
     });
-  };
-
-  const selectPage = async (page: any) => {
-    setError(null);
-    try {
-      // Use VOICEOVER_API_URL or fallback
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const res = await fetch(`${apiUrl}/api/v1/facebook/store-token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          page_id: page.id,
-          page_name: page.name,
-          access_token: page.access_token
-        })
-      });
-
-      if (res.ok) {
-        onPageSelected(page.id, page.name);
-      } else {
-        const errorData = await res.json();
-        setError(errorData.detail || 'Failed to store page token on the server.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('A network error occurred while connecting to the backend.');
-    }
   };
 
   return (
@@ -112,41 +84,17 @@ export default function FacebookConnect({ onPageSelected }: FacebookConnectProps
         </div>
       )}
 
-      {pages.length === 0 ? (
-        <>
-          <p className="text-gray-600 mb-6 text-center text-sm">
-            Link your Facebook Page to directly publish or schedule voiceovers and text updates.
-          </p>
-          <button
-            onClick={handleConnect}
-            disabled={!isLoaded || isConnecting}
-            className="w-full sm:w-auto px-6 py-3 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <FaFacebook className="text-lg" />
-            <span>{isConnecting ? 'Connecting...' : 'Connect with Facebook'}</span>
-          </button>
-        </>
-      ) : (
-        <div className="w-full max-w-md">
-          <p className="text-gray-700 font-medium mb-3 text-sm text-center">Select a page to connect:</p>
-          <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-            {pages.map((page) => (
-              <div 
-                key={page.id}
-                className="flex items-center justify-between p-3 border border-gray-200 rounded-xl hover:border-[#ff9b8f] hover:bg-red-50/30 transition-colors"
-              >
-                <span className="font-medium text-gray-800 truncate">{page.name}</span>
-                <button
-                  onClick={() => selectPage(page)}
-                  className="px-4 py-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ffb4a8] hover:from-[#f8887a] hover:to-[#ffa79a] text-white text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ml-4 shrink-0"
-                >
-                  Select
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <p className="text-gray-600 mb-6 text-center text-sm">
+        Link your Facebook Page to directly publish or schedule voiceovers and text updates.
+      </p>
+      <button
+        onClick={handleConnect}
+        disabled={!isLoaded || isConnecting}
+        className="w-full sm:w-auto px-6 py-3 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        <FaFacebook className="text-lg" />
+        <span>{isConnecting ? 'Connecting...' : 'Connect with Facebook'}</span>
+      </button>
     </div>
   );
 }

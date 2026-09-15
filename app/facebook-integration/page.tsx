@@ -2,18 +2,18 @@
 
 import { useState } from 'react';
 import FacebookConnect from '../components/FacebookConnect';
-import FacebookPostForm from '../components/FacebookPostForm';
+import FacebookPostEditor from '../components/FacebookPostEditor';
 import Footer from '../Footer';
 
 export default function FacebookIntegrationPage() {
-  const [connectedPage, setConnectedPage] = useState<{ id: string; name: string } | null>(null);
+  const [connectedPages, setConnectedPages] = useState<any[]>([]);
 
-  const handlePageSelected = (pageId: string, pageName: string) => {
-    setConnectedPage({ id: pageId, name: pageName });
+  const handlePagesFetched = (pages: any[]) => {
+    setConnectedPages(pages);
   };
 
   const handleDisconnect = () => {
-    setConnectedPage(null);
+    setConnectedPages([]);
   };
 
   const features = [
@@ -59,21 +59,24 @@ export default function FacebookIntegrationPage() {
       </section>
 
       {/* Main Content */}
-      <div className="max-w-screen-md mx-auto p-4 sm:p-8 md:p-16">
-        <section
-          aria-label="Facebook Integration Workspace"
-          className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-md mb-6 sm:mb-8 md:mb-12"
-        >
-          {!connectedPage ? (
-            <FacebookConnect onPageSelected={handlePageSelected} />
-          ) : (
-            <FacebookPostForm 
-              pageId={connectedPage.id} 
-              pageName={connectedPage.name} 
+      <div className="w-full mx-auto p-4 sm:p-8 flex justify-center">
+        {connectedPages.length === 0 ? (
+          <div className="w-full max-w-screen-md">
+            <section
+              aria-label="Facebook Integration Workspace"
+              className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-md mb-6 sm:mb-8 md:mb-12"
+            >
+              <FacebookConnect onPagesFetched={handlePagesFetched} />
+            </section>
+          </div>
+        ) : (
+          <div className="w-full mb-6 sm:mb-8 md:mb-12">
+            <FacebookPostEditor 
+              pages={connectedPages}
               onDisconnect={handleDisconnect} 
             />
-          )}
-        </section>
+          </div>
+        )}
       </div>
 
       <Footer />
