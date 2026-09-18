@@ -67,3 +67,15 @@ CREATE TABLE IF NOT EXISTS voice_presets (
 );
 
 CREATE INDEX IF NOT EXISTS idx_presets_user_date ON voice_presets(user_id, created_at DESC);
+
+-- 6. JSON Templates Table
+CREATE TABLE IF NOT EXISTS json_templates (
+    id TEXT PRIMARY KEY,
+    json_data JSONB NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    confirmed_by_email TEXT,
+    view_count INTEGER DEFAULT 0 NOT NULL,
+    updated_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);

@@ -80,28 +80,28 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
   };
 
   return (
-    <div className="flex items-start gap-2 group pb-1.5 mb-1.5 border-b border-slate-100 last:border-0 last:mb-0 last:pb-0">
+    <div className="flex items-start gap-2 group hover:bg-slate-50 transition-colors py-0.5 rounded-sm">
       {isEditing ? (
         <textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="flex-1 text-sm p-1.5 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none min-h-[40px]"
+          className="flex-1 text-sm p-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none min-h-[40px]"
         />
       ) : isUrl ? (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="flex-1 text-sm text-blue-600 hover:underline break-words py-1 flex items-center gap-1">
+        <a href={value} target="_blank" rel="noopener noreferrer" className="flex-1 text-sm text-blue-600 hover:underline break-words flex items-center gap-1">
           {value} <FiExternalLink className="w-3 h-3 inline opacity-50" />
         </a>
       ) : (
-        <span className="flex-1 text-sm text-slate-700 py-1 break-words">{value}</span>
+        <span className="flex-1 text-sm text-slate-700 break-words">{value}</span>
       )}
       
-      <div className="flex gap-1 shrink-0 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
-          <button onClick={() => setIsEditing(false)} className="p-1 text-blue-600 hover:text-blue-700"><FiSave className="w-3.5 h-3.5" /></button>
+          <button onClick={() => setIsEditing(false)} className="p-0.5 text-blue-600 hover:text-blue-700"><FiSave className="w-3.5 h-3.5" /></button>
         ) : (
-          <button onClick={() => setIsEditing(true)} className="p-1 text-slate-400 hover:text-blue-600"><FiEdit2 className="w-3.5 h-3.5" /></button>
+          <button onClick={() => setIsEditing(true)} className="p-0.5 text-slate-400 hover:text-blue-600"><FiEdit2 className="w-3.5 h-3.5" /></button>
         )}
-        <button onClick={handleCopy} className="p-1 text-slate-400 hover:text-blue-600">
+        <button onClick={handleCopy} className="p-0.5 text-slate-400 hover:text-blue-600">
           {copied ? <FiCheck className="w-3.5 h-3.5 text-green-500" /> : <FiCopy className="w-3.5 h-3.5" />}
         </button>
       </div>
@@ -229,7 +229,7 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
     // If array of strings
     if (data.every((item) => typeof item === "string")) {
       return (
-        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+        <div className="space-y-0.5">
           {data.map((item, index) => (
             <EditableListItem key={index} initialValue={item} isUrl={checkIsUrl(item)} />
           ))}
@@ -278,11 +278,11 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
           const isComplex = typeof value === "object" && value !== null;
           const label = formatKey(key);
 
-          // Array of Objects - Scene Check
-          const isArrayOfObjects = Array.isArray(value) && value.every(v => typeof v === 'object' && v !== null);
-          if (isArrayOfObjects && (key.toLowerCase().includes('scene') || key.toLowerCase().includes('item'))) {
+          // Array of Objects - Generic Table Check
+          const isArrayOfObjects = Array.isArray(value) && value.length > 0 && value.every(v => typeof v === 'object' && v !== null && !Array.isArray(v));
+          if (isArrayOfObjects) {
             return (
-              <div key={key} className="space-y-2">
+              <div key={key} className="space-y-2 mt-4">
                 <label className="block text-sm font-semibold text-slate-900 mb-1">{label}</label>
                 <SceneTable items={value} />
               </div>
@@ -307,7 +307,7 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
               </label>
 
               {isComplex ? (
-                <div className="pl-4 border-l-2 border-slate-200 mt-2">
+                <div className="p-5 bg-white border border-slate-200 rounded-xl shadow-sm mt-3">
                   <TemplateRenderer data={value} level={level + 1} />
                 </div>
               ) : typeof value === "string" && checkIsUrl(value) ? (
