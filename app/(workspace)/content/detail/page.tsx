@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiArrowLeft, FiRefreshCw, FiAlertCircle, FiVideo, FiYoutube, FiExternalLink, FiCopy, FiCheck, FiSave } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import { FiArrowLeft, FiRefreshCw, FiAlertCircle, FiVideo, FiYoutube, FiExternalLink, FiCopy, FiCheck, FiSave, FiMic } from "react-icons/fi";
 
 export default function ContentDetailPage() {
+  const router = useRouter();
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [item, setItem] = useState<any>(null);
   const [itemType, setItemType] = useState<"short" | "long_video" | null>(null);
@@ -15,6 +17,24 @@ export default function ContentDetailPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleSendToVoice = (text: string, type?: string | null, title?: string) => {
+    const contentText = text?.trim();
+    if (!contentText) {
+      alert("No script or text available for voiceover.");
+      return;
+    }
+    if (typeof window !== "undefined") {
+      localStorage.setItem("pending_voice_script", contentText);
+      if (type) {
+        localStorage.setItem("pending_voice_format", type === "long_video" ? "long" : "short");
+      }
+      if (title) {
+        localStorage.setItem("pending_voice_title", title);
+      }
+    }
+    router.push("/?from=content");
+  };
 
   const handleCopy = (text: string, id: string) => {
     if (!text) return;
@@ -166,7 +186,7 @@ export default function ContentDetailPage() {
   if (error || !item) {
     return (
       <div className="space-y-4">
-        <Link href={`/dashboard/content?id=${templateId}`} className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline">
+        <Link href={`/content?id=${templateId}`} className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline">
           <FiArrowLeft /> Back to Content Table
         </Link>
         <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
@@ -240,22 +260,33 @@ export default function ContentDetailPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       <div className="flex flex-col space-y-2">
-        <Link href={`/dashboard/content?id=${templateId}`} className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium">
+        <Link href={`/content?id=${templateId}`} className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium">
           <FiArrowLeft /> Back to Content Table
         </Link>
-        <div className="flex items-center gap-3">
-          {itemType === "long_video" ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-800 border border-purple-200 rounded-lg text-sm font-bold shadow-sm">
-              <FiYoutube className="w-4 h-4" /> Long Video
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-800 border border-red-200 rounded-lg text-sm font-bold shadow-sm">
-              <FiVideo className="w-4 h-4" /> Short Video
-            </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            {itemType === "long_video" ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-800 border border-purple-200 rounded-lg text-sm font-bold shadow-sm">
+                <FiYoutube className="w-4 h-4" /> Long Video
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-800 border border-red-200 rounded-lg text-sm font-bold shadow-sm">
+                <FiVideo className="w-4 h-4" /> Short Video
+              </span>
+            )}
+            <h1 className="text-2xl font-bold text-slate-900 line-clamp-1 flex-1">
+              {item.title || "Untitled Video"}
+            </h1>
+          </div>
+          {(item.script || item.description) && (
+            <button
+              onClick={() => handleSendToVoice(item.script || item.description, itemType, item.title)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow transition-all cursor-pointer"
+            >
+              <FiMic className="w-4 h-4" />
+              <span>Generate Voiceover</span>
+            </button>
           )}
-          <h1 className="text-2xl font-bold text-slate-900 line-clamp-1 flex-1">
-            {item.title || "Untitled Video"}
-          </h1>
         </div>
       </div>
 
@@ -264,9 +295,21 @@ export default function ContentDetailPage() {
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Description</h3>
-              <button onClick={() => handleCopy(item.description, 'desc')} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer p-1" title="Copy Description">
-                {copiedId === 'desc' ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
-              </button>
+              <div className="flex items-center gap-2">
+                {item.description && !item.script && (
+                  <button
+                    onClick={() => handleSendToVoice(item.description, itemType, item.title)}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-xs font-semibold transition-colors cursor-pointer"
+                    title="Send description to Voice Generator"
+                  >
+                    <FiMic className="w-3.5 h-3.5" />
+                    <span>Voice</span>
+                  </button>
+                )}
+                <button onClick={() => handleCopy(item.description, 'desc')} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer p-1" title="Copy Description">
+                  {copiedId === 'desc' ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             <p className="text-slate-700 whitespace-pre-wrap leading-relaxed text-sm">
               {item.description || <span className="italic text-slate-400">No description provided</span>}
@@ -276,9 +319,21 @@ export default function ContentDetailPage() {
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Full Script</h3>
-              <button onClick={() => handleCopy(item.script, 'script')} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer p-1" title="Copy Script">
-                {copiedId === 'script' ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
-              </button>
+              <div className="flex items-center gap-2">
+                {item.script && (
+                  <button
+                    onClick={() => handleSendToVoice(item.script, itemType, item.title)}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                    title="Send script to AI Voice Generator"
+                  >
+                    <FiMic className="w-3.5 h-3.5" />
+                    <span>Generate Voiceover</span>
+                  </button>
+                )}
+                <button onClick={() => handleCopy(item.script, 'script')} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer p-1" title="Copy Script">
+                  {copiedId === 'script' ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             <div className="bg-amber-50/50 p-5 rounded-lg border border-amber-100/50">
               <p className="text-slate-800 whitespace-pre-wrap leading-relaxed font-serif text-[15px]">

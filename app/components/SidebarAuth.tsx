@@ -158,7 +158,7 @@ export default function SidebarAuth() {
 
           <div className="p-2">
             <Link
-              href="/dashboard/settings"
+              href="/settings"
               onClick={() => setMenuOpen(false)}
               className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors"
             >

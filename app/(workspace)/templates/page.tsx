@@ -205,7 +205,7 @@ export default function TemplatesDashboard() {
                     >
                       <td className="px-6 py-4">
                         <Link
-                          href={`/dashboard/json-generator?id=${template.id}`}
+                          href={`/json-generator?id=${template.id}`}
                           className="font-medium text-slate-900 hover:text-blue-600 transition-colors"
                         >
                           {info.title}
@@ -221,7 +221,7 @@ export default function TemplatesDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <Link
-                          href={`/dashboard/content?id=${template.id}`}
+                          href={`/content?id=${template.id}`}
                           className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
                         >
                           {info.contentInfo}

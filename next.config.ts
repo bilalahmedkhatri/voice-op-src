@@ -13,6 +13,20 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['react-icons'],
   },
   poweredByHeader: false,
+  async redirects() {
+    return [
+      {
+        source: '/dashboard',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/:path*',
+        destination: '/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

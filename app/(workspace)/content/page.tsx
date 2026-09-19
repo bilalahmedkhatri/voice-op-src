@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiArrowLeft, FiRefreshCw, FiAlertCircle, FiVideo, FiYoutube, FiSave, FiCheck, FiCopy } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import { FiArrowLeft, FiRefreshCw, FiAlertCircle, FiVideo, FiYoutube, FiSave, FiCheck, FiCopy, FiMic } from "react-icons/fi";
 
 type ContentItem = {
   id: string;
@@ -24,6 +25,25 @@ export default function ContentPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSendToVoice = (text: string, type?: string, title?: string) => {
+    const contentText = text?.trim();
+    if (!contentText) {
+      alert("No script or text available for voiceover.");
+      return;
+    }
+    if (typeof window !== "undefined") {
+      localStorage.setItem("pending_voice_script", contentText);
+      if (type) {
+        localStorage.setItem("pending_voice_format", type === "long_video" ? "long" : "short");
+      }
+      if (title) {
+        localStorage.setItem("pending_voice_title", title);
+      }
+    }
+    router.push("/?from=content");
+  };
 
   const formatTags = (tags: any) => {
     if (!Array.isArray(tags)) return "";
@@ -155,7 +175,7 @@ export default function ContentPage() {
   if (error) {
     return (
       <div className="space-y-4">
-        <Link href="/dashboard/templates" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline">
+        <Link href="/templates" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline">
           <FiArrowLeft /> Back to Templates
         </Link>
         <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
@@ -170,7 +190,7 @@ export default function ContentPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <Link href="/dashboard/templates" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline mb-2 font-medium">
+          <Link href="/templates" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline mb-2 font-medium">
             <FiArrowLeft /> Back to Templates
           </Link>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -233,7 +253,7 @@ export default function ContentPage() {
                   <tr key={item.id} className={`transition-colors ${item.type === 'short' ? 'bg-red-50/50 hover:bg-red-50' : 'bg-purple-50/50 hover:bg-purple-50'}`}>
                     <td className="px-4 py-4 align-top group">
                       <div className="flex items-start justify-between gap-2">
-                        <Link href={`/dashboard/content/detail?templateId=${template.id}&itemId=${item.id}`} className="font-medium text-slate-900 hover:text-blue-600 break-words text-left" title="Click to view full details">
+                        <Link href={`/content/detail?templateId=${template.id}&itemId=${item.id}`} className="font-medium text-slate-900 hover:text-blue-600 break-words text-left" title="Click to view full details">
                           {item.title}
                         </Link>
                         <button onClick={() => handleCopy(item.title, `${item.id}-title`)} className="text-slate-400 hover:text-blue-600 flex-shrink-0 transition-opacity cursor-pointer" title="Copy Title">
@@ -248,6 +268,16 @@ export default function ContentPage() {
                           {copiedId === `${item.id}-desc` ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4 opacity-0 group-hover:opacity-100" />}
                         </button>
                       </div>
+                      {item.description && !item.script && (
+                        <button
+                          onClick={() => handleSendToVoice(item.description, item.type, item.title)}
+                          className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 hover:border-blue-300 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+                          title="Generate voiceover from description"
+                        >
+                          <FiMic className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Voice from Desc</span>
+                        </button>
+                      )}
                     </td>
                     <td className="px-4 py-4 align-top group">
                       <div className="flex items-start justify-between gap-2">
@@ -256,6 +286,16 @@ export default function ContentPage() {
                           {copiedId === `${item.id}-script` ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4 opacity-0 group-hover:opacity-100" />}
                         </button>
                       </div>
+                      {item.script && (
+                        <button
+                          onClick={() => handleSendToVoice(item.script, item.type, item.title)}
+                          className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                          title="Send script to AI Voice Generator"
+                        >
+                          <FiMic className="w-3.5 h-3.5" />
+                          <span>Generate Voice</span>
+                        </button>
+                      )}
                     </td>
                     <td className="px-4 py-4 align-top group">
                       <div className="flex items-start justify-between gap-2">
@@ -301,8 +341,6 @@ export default function ContentPage() {
           </table>
         </div>
       </div>
-
-      {/* Modal has been replaced by the dedicated Detail Page */}
     </div>
   );
 }
