@@ -338,11 +338,12 @@ export default function ContentDetailPage() {
       }
       return [];
     }
-    return keywords.map((k: any) => {
-      if (typeof k === 'string') return { keyword: k.trim() };
-      if (typeof k === 'object' && k.keyword) return { keyword: k.keyword, quantity_to_download: k.quantity_to_download };
-      return null;
-    }).filter(Boolean);
+    const result: { keyword: string, quantity_to_download?: number }[] = [];
+    keywords.forEach((k: any) => {
+      if (typeof k === 'string') result.push({ keyword: k.trim() });
+      else if (typeof k === 'object' && k.keyword) result.push({ keyword: k.keyword, quantity_to_download: k.quantity_to_download });
+    });
+    return result;
   };
 
   const tagsList = formatTags(item.tags);
