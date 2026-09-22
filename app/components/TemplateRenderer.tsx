@@ -10,6 +10,22 @@ interface TemplateRendererProps {
 
 const sanitizeText = (text: string) => text.replace(/—/g, "-");
 
+const checkIsUrl = (str: string) => {
+  try {
+    new URL(str);
+    return str.startsWith("http");
+  } catch (_) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
+  }
+};
+
+const getHref = (str: string) => {
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str) && !str.startsWith("mailto:")) {
+    return `mailto:${str}`;
+  }
+  return str;
+};
+
 const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(sanitizeText(initialValue));
@@ -58,9 +74,8 @@ const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
         readOnly={!isEditing}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className={`w-full min-h-[250px] p-3 pt-10 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm overflow-y-auto resize-none text-slate-800 ${
-          isEditing ? "ring-2 ring-blue-500/50 border-blue-500" : ""
-        }`}
+        className={`w-full min-h-[350px] p-3 pt-10 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm overflow-y-auto resize-none text-slate-800 ${isEditing ? "ring-2 ring-blue-500/50 border-blue-500" : ""
+          }`}
       />
     </div>
   );
@@ -76,11 +91,11 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
       await navigator.clipboard.writeText(value);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {}
+    } catch (err) { }
   };
 
   return (
-    <div className="flex items-start gap-2 group hover:bg-slate-50 transition-colors py-0.5 rounded-sm">
+    <li className="flex items-start gap-2 group hover:bg-slate-50 transition-colors py-0.5 rounded-sm">
       {isEditing ? (
         <textarea
           value={value}
@@ -88,13 +103,13 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
           className="flex-1 text-sm p-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none min-h-[40px]"
         />
       ) : isUrl ? (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="flex-1 text-sm text-blue-600 hover:underline break-words flex items-center gap-1">
+        <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="flex-1 text-sm text-blue-600 hover:underline break-words flex items-center gap-1">
           {value} <FiExternalLink className="w-3 h-3 inline opacity-50" />
         </a>
       ) : (
         <span className="flex-1 text-sm text-slate-700 break-words">{value}</span>
       )}
-      
+
       <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
           <button onClick={() => setIsEditing(false)} className="p-0.5 text-blue-600 hover:text-blue-700"><FiSave className="w-3.5 h-3.5" /></button>
@@ -105,7 +120,7 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
           {copied ? <FiCheck className="w-3.5 h-3.5 text-green-500" /> : <FiCopy className="w-3.5 h-3.5" />}
         </button>
       </div>
-    </div>
+    </li>
   );
 }
 
@@ -115,7 +130,7 @@ const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
     if (tag && !tag.startsWith("#")) tag = "#" + tag;
     return tag;
   });
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [textValue, setTextValue] = useState(formattedTags.join(", "));
   const [copied, setCopied] = useState(false);
@@ -125,7 +140,7 @@ const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
       await navigator.clipboard.writeText(textValue);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const currentTags = textValue.split(",").map(t => t.trim()).filter(Boolean);
@@ -171,7 +186,67 @@ const SceneTable = ({ items }: { items: any[] }) => {
     if (k.includes("prompt") || k.includes("description") || k.includes("script")) {
       return "w-[60%] min-w-[300px] whitespace-normal break-words px-6";
     }
-    return "w-auto whitespace-nowrap px-6";
+    if (k.includes("tag")) {
+      return "min-w-[100px] whitespace-normal break-words px-6";
+    }
+    if (k.includes("link") || k.includes("url") || k.includes("resource")) {
+      return "min-w-[700px] whitespace-normal break-words px-6";
+    }
+    return "w-auto whitespace-normal break-words px-6";
+  };
+
+  const renderTableCell = (value: any, keyName: string) => {
+    if (value === undefined || value === null) return "-";
+
+    const isTagArray = keyName.toLowerCase().includes('tag');
+    const isLinkArray = keyName.toLowerCase().includes('link') || keyName.toLowerCase().includes('url');
+
+    let itemsToRender: string[] = [];
+    if (Array.isArray(value)) {
+      itemsToRender = value.map(v => String(v));
+    } else if (typeof value === 'string' && value.includes(',') && (isTagArray || isLinkArray || value.includes('http'))) {
+      itemsToRender = value.split(',').map(s => s.trim());
+    } else {
+      itemsToRender = [String(value)];
+    }
+
+    if (isTagArray && itemsToRender.length > 0) {
+      return (
+        <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
+          {itemsToRender.map((tag, idx) => {
+            const formatted = tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`;
+            return (
+              <li key={idx} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-[11px] font-semibold rounded-full border border-orange-200 whitespace-nowrap">
+                {formatted}
+              </li>
+            );
+          })}
+        </ul>
+      );
+    }
+
+    if (itemsToRender.length > 1 || (itemsToRender.length === 1 && checkIsUrl(itemsToRender[0]))) {
+      return (
+        <ul className="flex flex-col p-0 m-0 list-none space-y-1">
+          {itemsToRender.map((v, idx) => {
+            const sanitized = sanitizeText(v);
+            if (checkIsUrl(sanitized)) {
+              return (
+                <li key={idx} className="p-0 m-0 leading-[1.2]">
+                  <a href={getHref(sanitized)} target={getHref(sanitized).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-start gap-1 break-all">
+                    <span className="flex-1">{sanitized}</span>
+                    <FiExternalLink className="w-3 h-3 flex-shrink-0 opacity-50 mt-0.5" />
+                  </a>
+                </li>
+              );
+            }
+            return <li key={idx} className="p-0 m-0 leading-[1.2]">{sanitized}</li>;
+          })}
+        </ul>
+      );
+    }
+
+    return sanitizeText(String(value));
   };
 
   return (
@@ -192,7 +267,7 @@ const SceneTable = ({ items }: { items: any[] }) => {
               <tr key={i} className="hover:bg-slate-50/50">
                 {keys.map(k => (
                   <td key={k} className={`py-4 align-top ${getColClass(k)} text-slate-700`}>
-                    {item[k] !== undefined ? sanitizeText(String(item[k])) : "-"}
+                    {renderTableCell(item[k], k)}
                   </td>
                 ))}
               </tr>
@@ -209,15 +284,6 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
     return null;
   }
 
-  const checkIsUrl = (str: string) => {
-    try {
-      new URL(str);
-      return str.startsWith("http");
-    } catch (_) {
-      return false;
-    }
-  };
-
   const formatKey = (key: string) => {
     return key
       .replace(/_/g, " ")
@@ -229,35 +295,35 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
     // If array of strings
     if (data.every((item) => typeof item === "string")) {
       return (
-        <div className="space-y-0.5">
+        <ul className="space-y-0.5 list-none pl-4 border-l-2 border-slate-200 ml-2 mt-2">
           {data.map((item, index) => (
             <EditableListItem key={index} initialValue={item} isUrl={checkIsUrl(item)} />
           ))}
-        </div>
+        </ul>
       );
     }
 
     // Array of objects (generic fallback if not caught by SceneTable)
     if (data.every((item) => typeof item === "object" && item !== null)) {
       return (
-        <div className="space-y-4">
+        <ul className="space-y-4 list-none p-0 m-0">
           {data.map((item, index) => (
-            <div key={index} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <li key={index} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
               <TemplateRenderer data={item} level={level + 1} />
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       );
     }
 
     return (
-      <div className="space-y-4">
+      <ul className="space-y-4 list-none p-0 m-0">
         {data.map((item, index) => (
-          <div key={index} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <li key={index} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
             {typeof item === "object" && item !== null ? (
               <TemplateRenderer data={item} level={level + 1} />
             ) : checkIsUrl(String(item)) ? (
-              <a href={String(item)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+              <a href={getHref(String(item))} target={getHref(String(item)).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
                 {sanitizeText(String(item))} <FiExternalLink className="w-3 h-3" />
               </a>
             ) : (
@@ -265,9 +331,9 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
                 {sanitizeText(String(item))}
               </span>
             )}
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     );
   }
 
@@ -311,9 +377,13 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
                   <TemplateRenderer data={value} level={level + 1} />
                 </div>
               ) : typeof value === "string" && checkIsUrl(value) ? (
-                <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 bg-slate-50 p-2.5 rounded-md border border-slate-200">
-                  {value} <FiExternalLink className="w-3 h-3" />
-                </a>
+                <ul className="list-none p-0 m-0">
+                  <li>
+                    <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                      {value} <FiExternalLink className="w-3 h-3" />
+                    </a>
+                  </li>
+                </ul>
               ) : typeof value === "string" && (value.length > 100 || value.includes("\n")) ? (
                 <PromptTextarea initialValue={value} />
               ) : (

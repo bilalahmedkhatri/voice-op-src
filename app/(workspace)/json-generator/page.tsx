@@ -249,9 +249,7 @@ export default function JsonPage() {
                 </button>
               </div>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
-              <TemplateRenderer data={parsedData} />
-            </div>
+            <TemplateRenderer data={parsedData} />
           </div>
         )}
       </div>

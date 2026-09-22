@@ -17,7 +17,7 @@ type Template = {
 
 const extractTemplateInfo = (jsonData: any) => {
   if (!jsonData || typeof jsonData !== 'object') {
-    return { title: "Unknown Template", channel: "Unknown Channel", contentInfo: "No data" };
+    return { title: "Unknown Template", channel: "Unknown Channel", contentInfo: "No data", statuses: [] };
   }
 
   let title = "Unknown Topic";
@@ -49,11 +49,17 @@ const extractTemplateInfo = (jsonData: any) => {
   }
 
   let contentParts = [];
+  let statuses: string[] = [];
+
   if (jsonData?.content_strategy?.shorts && Array.isArray(jsonData.content_strategy.shorts)) {
     contentParts.push(`${jsonData.content_strategy.shorts.length} Shorts`);
+    jsonData.content_strategy.shorts.forEach((short: any) => {
+      statuses.push(short.status || "pending");
+    });
   }
   if (jsonData?.content_strategy?.long_video) {
     contentParts.push(`1 Long Video`);
+    statuses.push(jsonData.content_strategy.long_video.status || "pending");
   }
 
   if (contentParts.length === 0) {
@@ -68,7 +74,8 @@ const extractTemplateInfo = (jsonData: any) => {
   return {
     title: title.length > 55 ? title.substring(0, 55) + "..." : title,
     channel,
-    contentInfo: contentParts.join(", ")
+    contentInfo: contentParts.join(", "),
+    statuses
   };
 };
 
@@ -128,15 +135,28 @@ export default function TemplatesDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case "published":
+        return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full border border-blue-200">{status}</span>;
       case "completed":
         return <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full border border-green-200">{status}</span>;
       case "pending":
+        return <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full border border-amber-200">{status}</span>;
       case "draft":
-        return <span className="px-2.5 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full border border-yellow-200">{status}</span>;
-      case "closed":
         return <span className="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
+      case "closed":
+        return <span className="px-2.5 py-1 bg-rose-100 text-rose-800 text-xs font-semibold rounded-full border border-rose-200">{status}</span>;
       default:
-        return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full border border-blue-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "published": return "bg-blue-500";
+      case "completed": return "bg-green-500";
+      case "pending": return "bg-amber-400";
+      case "draft": return "bg-slate-400";
+      case "closed": return "bg-rose-500";
+      default: return "bg-slate-200";
     }
   };
 
@@ -220,35 +240,37 @@ export default function TemplatesDashboard() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <Link
-                          href={`/content?id=${template.id}`}
-                          className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
-                        >
-                          {info.contentInfo}
-                        </Link>
+                        <div className="flex flex-col gap-1.5">
+                          <Link
+                            href={`/content?id=${template.id}`}
+                            className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors w-max"
+                          >
+                            {info.contentInfo}
+                          </Link>
+                          {info.statuses && info.statuses.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1">
+                              {info.statuses.map((status, idx) => (
+                                <div
+                                  key={idx}
+                                  title={`Status: ${status}`}
+                                  className={`h-1.5 flex-1 min-w-[8px] max-w-[24px] rounded-full ${getStatusColor(status)}`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         {getStatusBadge(template.status)}
                       </td>
                       <td className="px-6 py-4 text-slate-500 text-xs">
                         <div className="flex items-center gap-1.5">
-                          <FiClock className="w-3.5 h-3.5" />
                           {new Date(template.updated_at).toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-3">
-                          <select
-                            value={template.status}
-                            onChange={(e) => updateStatus(template.id, e.target.value)}
-                            className="text-xs border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="draft">Draft</option>
-                            <option value="completed">Completed</option>
-                            <option value="published">Published</option>
-                            <option value="closed">Closed</option>
-                          </select>
+
                           <button
                             onClick={() => deleteTemplate(template.id)}
                             className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"

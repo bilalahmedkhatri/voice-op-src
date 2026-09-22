@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiArrowLeft, FiRefreshCw, FiAlertCircle, FiVideo, FiYoutube, FiSave, FiCheck, FiCopy, FiMic } from "react-icons/fi";
+import { FiArrowLeft, FiRefreshCw, FiAlertCircle, FiVideo, FiYoutube, FiSave, FiCheck, FiCopy, FiMic, FiDownloadCloud, FiSearch } from "react-icons/fi";
 
 type ContentItem = {
   id: string;
@@ -13,6 +13,7 @@ type ContentItem = {
   script: string;
   tags: string;
   tags_count: number;
+  search_keywords: string;
   status: string;
   original_ref: any; // Reference to the object in the json_data to modify
 };
@@ -25,6 +26,8 @@ export default function ContentPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [downloadingItems, setDownloadingItems] = useState<{ [key: string]: boolean }>({});
+
   const router = useRouter();
 
   const handleSendToVoice = (text: string, type?: string, title?: string) => {
@@ -53,6 +56,18 @@ export default function ContentPage() {
     }).join(", ");
   };
 
+  const formatKeywords = (keywords: any) => {
+    if (!Array.isArray(keywords)) {
+      if (typeof keywords === 'string') return keywords;
+      return "";
+    }
+    return keywords.map((k: any) => {
+      if (typeof k === 'string') return k.trim();
+      if (typeof k === 'object' && k.keyword) return k.keyword.trim();
+      return "";
+    }).filter(Boolean).join(", ");
+  };
+
   const fetchContent = async (id: string) => {
     setIsLoading(true);
     setError(null);
@@ -60,7 +75,7 @@ export default function ContentPage() {
       const res = await fetch(`/api/templates?id=${id}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to fetch template");
-      
+
       const fetchedTemplate = data.template;
       setTemplate(fetchedTemplate);
 
@@ -77,11 +92,12 @@ export default function ContentPage() {
             script: strategy.long_video.script || "No script",
             tags: formatTags(strategy.long_video.tags),
             tags_count: Array.isArray(strategy.long_video.tags) ? strategy.long_video.tags.length : 0,
+            search_keywords: formatKeywords(strategy.long_video.search_keywords || strategy.long_video.media_search_keywords || strategy.long_video.keywords),
             status: strategy.long_video.status || "pending",
             original_ref: strategy.long_video,
           });
         }
-        
+
         if (Array.isArray(strategy.shorts)) {
           strategy.shorts.forEach((short: any, index: number) => {
             parsedItems.push({
@@ -92,6 +108,7 @@ export default function ContentPage() {
               script: short.script || "No script",
               tags: formatTags(short.tags),
               tags_count: Array.isArray(short.tags) ? short.tags.length : 0,
+              search_keywords: formatKeywords(short.search_keywords || short.media_search_keywords || short.keywords),
               status: short.status || "pending",
               original_ref: short,
             });
@@ -125,7 +142,7 @@ export default function ContentPage() {
   };
 
   const handleStatusChange = (itemId: string, newStatus: string) => {
-    setItems((prev) => 
+    setItems((prev) =>
       prev.map(item => {
         if (item.id === itemId) {
           // Mutate the reference object so the template's json_data is updated
@@ -137,6 +154,114 @@ export default function ContentPage() {
     );
   };
 
+  const handleDownloadMedia = async (item: ContentItem) => {
+    let urls: string[] = [];
+    Object.entries(item.original_ref).forEach(([key, val]) => {
+      if (key.toLowerCase().includes('url') || key.toLowerCase().includes('link')) {
+        if (typeof val === 'string') urls.push(val);
+        else if (Array.isArray(val)) {
+          val.forEach(v => { if (typeof v === 'string') urls.push(v); });
+        }
+      }
+    });
+
+    if (urls.length === 0) {
+      alert("No media URLs found in this item.");
+      return;
+    }
+
+    setDownloadingItems(prev => ({ ...prev, [item.id]: true }));
+
+    try {
+      const res = await fetch(`/api/media/process`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item_id: item.id,
+          urls
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to start download");
+
+      alert("Media download started in the background! You will be able to see the results here once completed.");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to start background download");
+    } finally {
+      setTimeout(() => {
+        setDownloadingItems(prev => ({ ...prev, [item.id]: false }));
+      }, 3000);
+    }
+  };
+
+  const handleFetchByKeywords = async (item: ContentItem) => {
+    let keywords: { keyword: string, quantity_to_download?: number }[] = [];
+
+    // First try to use the new object structure if available
+    const searchKeywords = item.original_ref?.search_keywords || item.original_ref?.media_search_keywords;
+
+    if (Array.isArray(searchKeywords)) {
+      searchKeywords.forEach(k => {
+        if (typeof k === 'object' && k.keyword) {
+          keywords.push({ keyword: k.keyword, quantity_to_download: k.quantity_to_download });
+        } else if (typeof k === 'string') {
+          keywords.push({ keyword: k.trim() });
+        }
+      });
+    } else {
+      // Fallback for older JSONs
+      Object.entries(item.original_ref).forEach(([key, val]) => {
+        if (key.toLowerCase().includes('keyword')) {
+          if (typeof val === 'string') {
+            val.split(',').forEach(s => keywords.push({ keyword: s.trim() }));
+          } else if (Array.isArray(val)) {
+            val.forEach(v => {
+              if (typeof v === 'string') keywords.push({ keyword: v.trim() });
+            });
+          }
+        }
+      });
+    }
+
+    keywords = keywords.filter(k => k.keyword && k.keyword.length > 0);
+
+    if (keywords.length === 0) {
+      alert("No search keywords found in this item.");
+      return;
+    }
+
+    setDownloadingItems(prev => ({ ...prev, [`${item.id}_keywords`]: true }));
+
+    try {
+      const filters = {
+        orientation: item.type === 'long_video' ? 'landscape' : 'portrait',
+        image_type: 'video', // Only videos
+      };
+
+      const res = await fetch(`/api/media/process`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item_id: item.id,
+          keywords,
+          filters
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to start keyword search");
+
+      alert("Keyword media search started in the background!");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to start background search");
+    } finally {
+      setTimeout(() => {
+        setDownloadingItems(prev => ({ ...prev, [`${item.id}_keywords`]: false }));
+      }, 3000);
+    }
+  };
+
   const saveChanges = async () => {
     if (!template) return;
     setIsSaving(true);
@@ -146,14 +271,14 @@ export default function ContentPage() {
       const res = await fetch("/api/templates", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          id: template.id, 
-          json_data: template.json_data 
+        body: JSON.stringify({
+          id: template.id,
+          json_data: template.json_data
         }),
       });
 
       if (!res.ok) throw new Error("Failed to save changes");
-      
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
@@ -186,6 +311,28 @@ export default function ContentPage() {
     );
   }
 
+  const mainTitle = (() => {
+    if (!template?.json_data) return "Content Details";
+    const jsonData = template.json_data;
+    if (jsonData.content_strategy?.long_video?.title) {
+      return jsonData.content_strategy.long_video.title;
+    }
+    const searchTitle = (obj: any): string | null => {
+      if (!obj || typeof obj !== 'object') return null;
+      if (typeof obj.title === 'string') return obj.title;
+      if (typeof obj.topic === 'string') return obj.topic;
+      if (typeof obj.project_name === 'string') return obj.project_name;
+      for (const key in obj) {
+        if (typeof obj[key] === 'object') {
+          const found = searchTitle(obj[key]);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return searchTitle(jsonData) || "Content Details";
+  })();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -193,8 +340,8 @@ export default function ContentPage() {
           <Link href="/templates" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline mb-2 font-medium">
             <FiArrowLeft /> Back to Templates
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            Content Details
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2 line-clamp-1">
+            {mainTitle}
           </h1>
           <p className="text-slate-500 font-mono text-xs">
             Template: #{template.id.split("_")[1]?.substring(0, 8) || template.id}
@@ -204,11 +351,10 @@ export default function ContentPage() {
         <button
           onClick={saveChanges}
           disabled={isSaving}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm ${
-            saveSuccess 
-              ? "bg-green-600 hover:bg-green-700 text-white" 
-              : "bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-70"
-          }`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm ${saveSuccess
+            ? "bg-green-600 hover:bg-green-700 text-white"
+            : "bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-70"
+            }`}
         >
           {isSaving ? (
             <><FiRefreshCw className="w-4 h-4 animate-spin" /> Saving...</>
@@ -237,92 +383,47 @@ export default function ContentPage() {
                 <th className="px-4 py-4 font-semibold w-[20%]">Title</th>
                 <th className="px-4 py-4 font-semibold w-[25%]">Description</th>
                 <th className="px-4 py-4 font-semibold w-[25%]">Script</th>
-                <th className="px-4 py-4 font-semibold w-[20%]">Tags</th>
-                <th className="px-2 py-4 font-semibold text-right w-24">Status</th>
+                <th className="px-2 py-4 font-semibold text-right w-28">Status</th>
+                <th className="px-4 py-4 font-semibold text-center w-24">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                     No content strategy (Shorts or Long Videos) found in this template.
                   </td>
                 </tr>
               ) : (
                 items.map((item) => (
-                  <tr key={item.id} className={`transition-colors ${item.type === 'short' ? 'bg-red-50/50 hover:bg-red-50' : 'bg-purple-50/50 hover:bg-purple-50'}`}>
-                    <td className="px-4 py-4 align-top group">
-                      <div className="flex items-start justify-between gap-2">
-                        <Link href={`/content/detail?templateId=${template.id}&itemId=${item.id}`} className="font-medium text-slate-900 hover:text-blue-600 break-words text-left" title="Click to view full details">
+                  <tr key={item.id} className={`transition-colors ${item.status === 'published' ? 'bg-green-50 hover:bg-green-100' : item.type === 'short' ? 'bg-red-50/50 hover:bg-red-50' : 'bg-purple-50/50 hover:bg-purple-50'}`}>
+                    <td className="px-4 py-4 align-top group relative">
+                      <div className="relative">
+                        <Link href={`/content/detail?templateId=${template.id}&itemId=${item.id}`} className="font-medium text-slate-900 hover:text-blue-600 break-words text-left line-clamp-3 pr-6" title="Click to view full details">
                           {item.title}
                         </Link>
-                        <button onClick={() => handleCopy(item.title, `${item.id}-title`)} className="text-slate-400 hover:text-blue-600 flex-shrink-0 transition-opacity cursor-pointer" title="Copy Title">
-                          {copiedId === `${item.id}-title` ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4 opacity-0 group-hover:opacity-100" />}
+                        <button onClick={() => handleCopy(item.title, `${item.id}-title`)} className="absolute top-0 -right-4 flex items-center justify-center p-1 text-slate-400 hover:text-blue-600 transition-opacity cursor-pointer opacity-0 group-hover:opacity-100" title="Copy Title">
+                          {copiedId === `${item.id}-title` ? <FiCheck className="w-5 h-5 text-green-500" /> : <FiCopy className="w-5 h-5" />}
                         </button>
                       </div>
                     </td>
-                    <td className="px-4 py-4 align-top group">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-slate-600 text-xs line-clamp-6" title={item.description}>{item.description}</span>
-                        <button onClick={() => handleCopy(item.description, `${item.id}-desc`)} className="text-slate-400 hover:text-blue-600 flex-shrink-0 transition-opacity cursor-pointer" title="Copy Description">
-                          {copiedId === `${item.id}-desc` ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4 opacity-0 group-hover:opacity-100" />}
-                        </button>
-                      </div>
-                      {item.description && !item.script && (
-                        <button
-                          onClick={() => handleSendToVoice(item.description, item.type, item.title)}
-                          className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 hover:border-blue-300 rounded-md text-xs font-semibold transition-colors cursor-pointer"
-                          title="Generate voiceover from description"
-                        >
-                          <FiMic className="w-3.5 h-3.5 text-blue-600" />
-                          <span>Voice from Desc</span>
-                        </button>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 align-top group">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-slate-600 text-xs line-clamp-6" title={item.script}>{item.script}</span>
-                        <button onClick={() => handleCopy(item.script, `${item.id}-script`)} className="text-slate-400 hover:text-blue-600 flex-shrink-0 transition-opacity cursor-pointer" title="Copy Script">
-                          {copiedId === `${item.id}-script` ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4 opacity-0 group-hover:opacity-100" />}
-                        </button>
-                      </div>
-                      {item.script && (
-                        <button
-                          onClick={() => handleSendToVoice(item.script, item.type, item.title)}
-                          className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-md text-xs font-semibold shadow-2xs hover:shadow-xs transition-all cursor-pointer"
-                          title="Send script to AI Voice Generator"
-                        >
-                          <FiMic className="w-3.5 h-3.5" />
-                          <span>Generate Voice</span>
-                        </button>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 align-top group">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="text-xs text-slate-600">
-                          {item.tags ? (
-                            <>
-                              {item.tags.split(',').slice(0, 6).map((t, i) => (
-                                <span key={i} className="inline-block bg-slate-200 text-slate-700 px-2 py-1 rounded-full text-[10px] mr-1.5 mb-1.5 font-medium shadow-sm border border-slate-300/50">
-                                  {t.trim()}
-                                </span>
-                              ))}
-                              {item.tags.split(',').length > 6 && (
-                                <span className="inline-block text-slate-400 text-[10px] font-medium ml-1">
-                                  +{item.tags.split(',').length - 6} more
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            <span className="italic text-slate-400">No tags</span>
-                          )}
-                        </div>
-                        <button onClick={() => handleCopy(item.tags, `${item.id}-tags`)} className="text-slate-400 hover:text-blue-600 flex-shrink-0 transition-opacity cursor-pointer" title="Copy Tags">
-                          {copiedId === `${item.id}-tags` ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4 opacity-0 group-hover:opacity-100" />}
+                    <td className="px-4 py-4 align-top group relative">
+                      <div className="relative">
+                        <span className="text-slate-600 text-xs line-clamp-6 pr-6" title={item.description}>{item.description}</span>
+                        <button onClick={() => handleCopy(item.description, `${item.id}-desc`)} className="absolute top-0 -right-4 flex items-center justify-center p-1 text-slate-400 hover:text-blue-600 transition-opacity cursor-pointer opacity-0 group-hover:opacity-100" title="Copy Description">
+                          {copiedId === `${item.id}-desc` ? <FiCheck className="w-5 h-5 text-green-500" /> : <FiCopy className="w-5 h-5" />}
                         </button>
                       </div>
                     </td>
-                    <td className="px-2 py-4 align-top text-right">
+                    <td className="px-4 py-4 align-top group relative">
+                      <div className="relative">
+                        <span className="text-slate-600 text-xs line-clamp-6 pr-6" title={item.script}>{item.script}</span>
+                        <button onClick={() => handleCopy(item.script, `${item.id}-script`)} className="absolute top-0 -right-4 flex items-center justify-center p-1 text-slate-400 hover:text-blue-600 transition-opacity cursor-pointer opacity-0 group-hover:opacity-100" title="Copy Script">
+                          {copiedId === `${item.id}-script` ? <FiCheck className="w-5 h-5 text-green-500" /> : <FiCopy className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-2 py-4 align-top text-right w-28">
                       <select
                         value={item.status}
                         onChange={(e) => handleStatusChange(item.id, e.target.value)}
@@ -333,6 +434,30 @@ export default function ContentPage() {
                         <option value="completed">Completed</option>
                         <option value="published">Published</option>
                       </select>
+                    </td>
+                    <td className="px-4 py-4 align-top text-right w-24">
+                      <div className="flex gap-2 items-center justify-end">
+                        <button
+                          onClick={() => handleFetchByKeywords(item)}
+                          disabled={downloadingItems[`${item.id}_keywords`]}
+                          className="flex items-center justify-center p-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-slate-400 disabled:to-slate-400 text-white rounded shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                          title="Generate Media"
+                        >
+                          {downloadingItems[`${item.id}_keywords`] ? (
+                            <FiRefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <FiSearch className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleSendToVoice(item.script || item.description, item.type, item.title)}
+                          disabled={!item.script && !item.description}
+                          className="flex items-center justify-center p-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-400 text-white rounded shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                          title="Generate Voice"
+                        >
+                          <FiMic className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
