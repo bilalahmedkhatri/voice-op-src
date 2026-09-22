@@ -21,6 +21,8 @@ export default function ContentDetailPage() {
   const [signedMediaUrls, setSignedMediaUrls] = useState<string[]>([]);
   const [selectedMediaUrls, setSelectedMediaUrls] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDownloadingBulk, setIsDownloadingBulk] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
 
   const fetchDetail = async (tId: string, iId: string) => {
@@ -298,6 +300,91 @@ export default function ContentDetailPage() {
       alert(err.message || "Failed to delete media");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleDownloadSelected = async () => {
+    if (selectedMediaUrls.length === 0) return;
+
+    let dirHandle: any = null;
+    
+    // Try using the File System Access API (Supported in Chrome/Edge/Opera)
+    if ('showDirectoryPicker' in window) {
+      try {
+        dirHandle = await (window as any).showDirectoryPicker({
+          id: 'bulk-media-download',
+          mode: 'readwrite'
+        });
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          // User cancelled the directory picker dialog, stop the whole process
+          return;
+        }
+        console.warn("Directory picker failed or blocked, falling back to traditional download:", err);
+      }
+    } else {
+      alert("Your browser does not support selecting a folder. The videos will be saved to your default 'Downloads' folder.");
+    }
+
+    setIsDownloadingBulk(true);
+    setDownloadProgress(0);
+
+    let savedCount = 0;
+
+    for (let i = 0; i < selectedMediaUrls.length; i++) {
+      const url = selectedMediaUrls[i];
+      try {
+        // Fetch the file
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        
+        const isVideo = url.toLowerCase().includes('.mp4') || url.toLowerCase().includes('.webm');
+        const ext = isVideo ? 'mp4' : 'jpg';
+        const filename = `extracted_media_${i + 1}_${Date.now()}.${ext}`;
+        
+        if (dirHandle) {
+          // Save directly to the chosen folder (No multiple browser prompts)
+          const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          savedCount++;
+        } else {
+          // Fallback to traditional browser download (Goes to default Downloads folder)
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          
+          // Delay revoking the object URL so the browser has time to start the download
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+          
+          savedCount++;
+          // Small delay for traditional method to prevent browser freezing
+          await new Promise(res => setTimeout(res, 800));
+        }
+      } catch (err) {
+        console.error(`Failed to download ${url}:`, err);
+        // We do not alert on individual failures to avoid spamming, but we log them.
+      }
+      setDownloadProgress(i + 1);
+    }
+    
+    setIsDownloadingBulk(false);
+    
+    // Show success alert
+    if (savedCount > 0) {
+      if (dirHandle) {
+        setTimeout(() => alert(`Successfully saved ${savedCount} items directly to your selected folder!`), 300);
+      } else {
+        setTimeout(() => alert(`${savedCount} items have been downloaded to your default Downloads folder.`), 300);
+      }
+    } else {
+      setTimeout(() => alert(`Failed to download items. This might be due to a CORS issue or network error. Please check the console for details.`), 300);
     }
   };
 
@@ -657,25 +744,35 @@ export default function ContentDetailPage() {
               </select>
 
               {selectedMediaUrls.length > 0 && (
-                <button
-                  onClick={() => handleDeleteMedia(selectedMediaUrls)}
-                  disabled={isDeleting}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 rounded-md text-xs font-semibold shadow-sm transition-colors cursor-pointer"
-                >
-                  {isDeleting ? <FiRefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FiTrash2 className="w-3.5 h-3.5" />}
-                  <span>{isDeleting ? 'Deleting...' : `Delete Selected (${selectedMediaUrls.length})`}</span>
-                </button>
+                <>
+                  <button
+                    onClick={handleDownloadSelected}
+                    disabled={isDownloadingBulk || isDeleting}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 text-blue-600 rounded-md text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                  >
+                    {isDownloadingBulk ? <FiRefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FiDownloadCloud className="w-3.5 h-3.5" />}
+                    <span>{isDownloadingBulk ? `Downloading ${downloadProgress}/${selectedMediaUrls.length}...` : `Download Selected (${selectedMediaUrls.length})`}</span>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMedia(selectedMediaUrls)}
+                    disabled={isDeleting || isDownloadingBulk}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 rounded-md text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                  >
+                    {isDeleting ? <FiRefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FiTrash2 className="w-3.5 h-3.5" />}
+                    <span>{isDeleting ? 'Deleting...' : `Delete Selected (${selectedMediaUrls.length})`}</span>
+                  </button>
+                </>
               )}
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-0">
+          <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 p-3">
             {signedMediaUrls.map((url, idx) => {
               const isVideo = url.toLowerCase().includes('.mp4') || url.toLowerCase().includes('.webm');
               const isSelected = selectedMediaUrls.includes(url);
               return (
                 <div
                   key={idx}
-                  className={`relative w-full aspect-square flex items-center justify-center overflow-hidden border ${isSelected ? 'border-blue-500 border-2' : 'border-slate-200/50 bg-black/5'} group cursor-pointer`}
+                  className={`relative w-full break-inside-avoid mb-3 rounded-md overflow-hidden border ${isSelected ? 'border-blue-500 border-2' : 'border-slate-200/50 bg-slate-50'} group cursor-pointer`}
                   onClick={() => setPreviewMediaUrl(url)}
                 >
                   {isVideo ? (
@@ -684,7 +781,7 @@ export default function ContentDetailPage() {
                         src={url} 
                         controls 
                         controlsList="nodownload" 
-                        className="w-full h-full object-cover" 
+                        className="w-full h-auto block" 
                       />
                       {/* Invisible overlay to capture clicks for the popup */}
                       <div className="absolute inset-0 z-[5] bg-transparent" />
@@ -693,7 +790,7 @@ export default function ContentDetailPage() {
                       </div>
                     </>
                   ) : (
-                    <img src={url} alt={`Media ${idx}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 pointer-events-none" />
+                    <img src={url} alt={`Media ${idx}`} className="w-full h-auto block transition-transform duration-300 group-hover:scale-105 pointer-events-none" />
                   )}
 
                   {/* Selection Checkbox */}
@@ -723,34 +820,57 @@ export default function ContentDetailPage() {
       {/* Media Preview Modal */}
       {previewMediaUrl && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-white/70 p-4 sm:p-8 backdrop-blur-sm transition-opacity duration-300"
           onClick={() => setPreviewMediaUrl(null)}
         >
-          <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-[101]"
-            onClick={() => setPreviewMediaUrl(null)}
-          >
-            <span className="text-4xl font-light">&times;</span>
-          </button>
-
           <div
-            className="relative w-full max-w-5xl max-h-[90vh] flex items-center justify-center rounded-lg overflow-hidden shadow-2xl"
+            className="relative w-full max-w-5xl bg-white rounded-xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col transform transition-all duration-300 scale-100"
             onClick={(e) => e.stopPropagation()}
           >
-            {(previewMediaUrl.toLowerCase().includes('.mp4') || previewMediaUrl.toLowerCase().includes('.webm')) ? (
-              <video
-                src={previewMediaUrl}
-                controls
-                autoPlay
-                className="max-w-full max-h-[90vh] object-contain"
-              />
-            ) : (
-              <img
-                src={previewMediaUrl}
-                alt="Preview"
-                className="max-w-full max-h-[90vh] object-contain"
-              />
-            )}
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-700 text-sm font-semibold flex items-center gap-2">
+                  <FiVideo className="w-4 h-4 text-blue-600" /> Media Preview
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <a 
+                  href={previewMediaUrl} 
+                  download 
+                  className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  title="Download File"
+                >
+                  <FiDownloadCloud className="w-4 h-4" />
+                </a>
+                <button
+                  className="text-slate-400 hover:text-red-400 transition-colors"
+                  onClick={() => setPreviewMediaUrl(null)}
+                  title="Close (Esc)"
+                >
+                  <span className="text-2xl leading-none">&times;</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex items-center justify-center w-full bg-black min-h-[40vh] max-h-[85vh] p-1 sm:p-2">
+              {(previewMediaUrl.toLowerCase().includes('.mp4') || previewMediaUrl.toLowerCase().includes('.webm')) ? (
+                <video
+                  src={previewMediaUrl}
+                  controls
+                  autoPlay
+                  controlsList="nodownload"
+                  className="max-w-full max-h-[80vh] object-contain rounded-md"
+                />
+              ) : (
+                <img
+                  src={previewMediaUrl}
+                  alt="Preview"
+                  className="max-w-full max-h-[80vh] object-contain rounded-md"
+                />
+              )}
+            </div>
           </div>
         </div>
       )}
