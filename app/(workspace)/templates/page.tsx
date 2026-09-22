@@ -273,7 +273,7 @@ export default function TemplatesDashboard() {
 
                           <button
                             onClick={() => deleteTemplate(template.id)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="p-1.5 flex items-center justify-center text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete Template"
                           >
                             <FiTrash2 className="w-4 h-4" />

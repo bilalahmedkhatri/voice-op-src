@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       const rows = await sql`
         SELECT id, json_data, status, confirmed_by_email, view_count, updated_by, created_at, updated_at
         FROM json_templates
-        WHERE id = ${id}
+        WHERE id = ${id} AND updated_by = ${user.id}
       `;
       if (rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
       
@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
     const rows = await sql`
       SELECT id, json_data, status, confirmed_by_email, view_count, updated_by, created_at, updated_at
       FROM json_templates
+      WHERE updated_by = ${user.id}
       ORDER BY created_at DESC
       LIMIT 100
     `;
@@ -153,7 +154,7 @@ export async function PATCH(request: NextRequest) {
         json_data = COALESCE(${json_data ? JSON.stringify(json_data) : null}::jsonb, json_data),
         updated_by = ${user.id},
         updated_at = NOW()
-      WHERE id = ${id}
+      WHERE id = ${id} AND updated_by = ${user.id}
     `;
 
     return NextResponse.json({ success: true, message: 'Template updated successfully' });
@@ -192,7 +193,7 @@ export async function DELETE(request: NextRequest) {
 
     await sql`
       DELETE FROM json_templates
-      WHERE id = ${id}
+      WHERE id = ${id} AND updated_by = ${user.id}
     `;
 
     return NextResponse.json({ success: true, message: 'Template deleted successfully' });
