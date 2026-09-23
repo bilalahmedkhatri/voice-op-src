@@ -146,7 +146,7 @@ const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
   const currentTags = textValue.split(",").map(t => t.trim()).filter(Boolean);
 
   return (
-    <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg relative group">
+    <div className="p-4 bg-white border border-slate-300 shadow-sm rounded-lg relative group">
       <div className="absolute top-2 right-2 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
           <button onClick={() => setIsEditing(false)} className="p-1.5 bg-blue-600 text-white rounded-md shadow-sm"><FiSave className="w-4 h-4" /></button>
@@ -298,7 +298,7 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
     // If array of strings
     if (data.every((item) => typeof item === "string")) {
       return (
-        <ul className="list-none p-0 m-0 w-full overflow-x-auto pb-2 scrollbar-thin">
+        <ul className="list-none bg-white border border-slate-300 rounded-md shadow-sm p-2 m-0 w-full overflow-x-auto pb-2 scrollbar-thin">
           {data.map((item, index) => (
             <EditableListItem key={index} initialValue={item} isUrl={checkIsUrl(item)} />
           ))}
@@ -381,7 +381,7 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
                 // </div>
               ) : typeof value === "string" && checkIsUrl(value) ? (
                 <ul className="list-none p-0 m-0">
-                  <li className="overflow-x-auto w-full bg-slate-50 border border-slate-200 rounded-md">
+                  <li className="overflow-x-auto w-full bg-white border border-slate-300 shadow-sm rounded-md">
                     <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1 p-2.5 whitespace-nowrap">
                       {value} <FiExternalLink className="w-3 h-3 flex-shrink-0" />
                     </a>
