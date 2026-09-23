@@ -200,12 +200,12 @@ export default function TemplatesDashboard() {
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-600 uppercase bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 font-semibold w-1/3">Topic / Title</th>
-                <th className="px-6 py-4 font-semibold">Channel</th>
-                <th className="px-6 py-4 font-semibold">Content</th>
-                <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold">Updated</th>
-                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                <th className="pr-6 pl-2 sm:px-6 py-4 font-semibold min-w-[200px] w-1/3 sm:w-auto">Topic / Title</th>
+                <th className="px-6 py-4 font-semibold min-w-[140px]">Channel</th>
+                <th className="px-6 py-4 font-semibold min-w-[160px]">Content</th>
+                <th className="px-6 py-4 font-semibold min-w-[100px]">Status</th>
+                <th className="px-6 py-4 font-semibold min-w-[140px]">Updated</th>
+                <th className="px-6 py-4 font-semibold text-right min-w-[80px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -223,7 +223,7 @@ export default function TemplatesDashboard() {
                       key={template.id}
                       className="hover:bg-slate-50 transition-colors group"
                     >
-                      <td className="px-6 py-4">
+                      <td className="pr-6 pl-2 sm:px-6 py-4">
                         <Link
                           href={`/json-generator?id=${template.id}`}
                           className="font-medium text-slate-900 hover:text-blue-600 transition-colors"
