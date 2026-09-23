@@ -227,26 +227,19 @@ export default function JsonPage() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-3">
               <h2 className="text-2xl font-bold">Generated Interface</h2>
               <div className="flex items-center gap-3">
                 {/* Save to Database */}
-                <button
-                  onClick={handleSaveToDb}
-                  disabled={saveStatus === "saving" || saveStatus === "saved"}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-60 ${saveButtonClass()}`}
-                >
-                  {saveButtonContent()}
-                </button>
-                {savedId && saveStatus === "idle" && (
-                  <span className="text-xs text-slate-400 font-mono">#{savedId.slice(-8)}</span>
+                {saveStatus !== "saved" && (
+                  <button
+                    onClick={handleSaveToDb}
+                    disabled={saveStatus === "saving"}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-60 ${saveButtonClass()}`}
+                  >
+                    {saveButtonContent()}
+                  </button>
                 )}
-                <button
-                  onClick={() => setIsGenerated(false)}
-                  className="text-sm text-blue-600 hover:underline font-medium"
-                >
-                  ← Back to Input
-                </button>
               </div>
             </div>
             <TemplateRenderer data={parsedData} />

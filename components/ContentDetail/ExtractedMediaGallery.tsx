@@ -174,6 +174,7 @@ export default function ExtractedMediaGallery({
                     src={url} 
                     controls 
                     controlsList="nodownload" 
+                    preload="none"
                     className="w-full h-auto block" 
                   />
                   {/* Invisible overlay to capture clicks for the popup */}

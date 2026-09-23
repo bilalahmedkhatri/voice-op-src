@@ -95,19 +95,19 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
   };
 
   return (
-    <li className="flex items-start gap-2 group hover:bg-slate-50 transition-colors py-0.5 rounded-sm">
+    <li className="flex items-center gap-2 group hover:bg-slate-50 transition-colors rounded-sm w-max min-w-full pr-4">
       {isEditing ? (
-        <textarea
+        <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="flex-1 text-sm p-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none min-h-[40px]"
+          className="flex-1 text-sm px-1 py-0.5 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-full"
         />
       ) : isUrl ? (
-        <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="flex-1 text-sm text-blue-600 hover:underline break-words flex items-center gap-1">
-          {value} <FiExternalLink className="w-3 h-3 inline opacity-50" />
+        <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="flex-1 text-sm text-blue-600 hover:underline flex items-center gap-1 whitespace-nowrap">
+          {value} <FiExternalLink className="w-3 h-3 shrink-0 opacity-50" />
         </a>
       ) : (
-        <span className="flex-1 text-sm text-slate-700 break-words">{value}</span>
+        <span className="flex-1 text-sm text-slate-700 whitespace-nowrap">{value}</span>
       )}
 
       <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -184,15 +184,18 @@ const SceneTable = ({ items }: { items: any[] }) => {
   const getColClass = (keyName: string) => {
     const k = keyName.toLowerCase();
     if (k.includes("prompt") || k.includes("description") || k.includes("script")) {
-      return "w-[60%] min-w-[300px] whitespace-normal break-words px-6";
+      return "w-[60%] min-w-[300px] whitespace-nowrap px-6";
+    }
+    if (k.includes("title") || k.includes("topic") || k.includes("name")) {
+      return "min-w-[200px] whitespace-nowrap px-6";
     }
     if (k.includes("tag")) {
-      return "min-w-[100px] whitespace-normal break-words px-6";
+      return "min-w-[100px] whitespace-nowrap px-6";
     }
     if (k.includes("link") || k.includes("url") || k.includes("resource")) {
-      return "min-w-[700px] whitespace-normal break-words px-6";
+      return "min-w-[300px] whitespace-nowrap px-6";
     }
-    return "w-auto whitespace-normal break-words px-6";
+    return "w-auto whitespace-nowrap px-6";
   };
 
   const renderTableCell = (value: any, keyName: string) => {
@@ -233,9 +236,9 @@ const SceneTable = ({ items }: { items: any[] }) => {
             if (checkIsUrl(sanitized)) {
               return (
                 <li key={idx} className="p-0 m-0 leading-[1.2]">
-                  <a href={getHref(sanitized)} target={getHref(sanitized).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-start gap-1 break-all">
+                  <a href={getHref(sanitized)} target={getHref(sanitized).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 whitespace-nowrap">
                     <span className="flex-1">{sanitized}</span>
-                    <FiExternalLink className="w-3 h-3 flex-shrink-0 opacity-50 mt-0.5" />
+                    <FiExternalLink className="w-3 h-3 flex-shrink-0 opacity-50" />
                   </a>
                 </li>
               );
@@ -246,7 +249,7 @@ const SceneTable = ({ items }: { items: any[] }) => {
       );
     }
 
-    return sanitizeText(String(value));
+    return <div className="line-clamp-6">{sanitizeText(String(value))}</div>;
   };
 
   return (
@@ -295,7 +298,7 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
     // If array of strings
     if (data.every((item) => typeof item === "string")) {
       return (
-        <ul className="space-y-0.5 list-none pl-4 border-l-2 border-slate-200 ml-2 mt-2">
+        <ul className="list-none p-0 m-0 w-full overflow-x-auto pb-2 scrollbar-thin">
           {data.map((item, index) => (
             <EditableListItem key={index} initialValue={item} isUrl={checkIsUrl(item)} />
           ))}
@@ -339,7 +342,7 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
 
   if (typeof data === "object" && data !== null) {
     return (
-      <div className={`space-y-6 ${level > 0 ? "pl-2" : ""}`}>
+      <div className="space-y-6">
         {Object.entries(data).map(([key, value]) => {
           const isComplex = typeof value === "object" && value !== null;
           const label = formatKey(key);
@@ -373,14 +376,14 @@ export default function TemplateRenderer({ data, level = 0 }: TemplateRendererPr
               </label>
 
               {isComplex ? (
-                <div className="p-5 bg-white border border-slate-200 rounded-xl shadow-sm mt-3">
-                  <TemplateRenderer data={value} level={level + 1} />
-                </div>
+                // <div className="p-2 sm:p-5 bg-white border border-slate-200 rounded-xl shadow-sm mt-3">
+                <TemplateRenderer data={value} level={level + 1} />
+                // </div>
               ) : typeof value === "string" && checkIsUrl(value) ? (
                 <ul className="list-none p-0 m-0">
-                  <li>
-                    <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 bg-slate-50 p-2.5 rounded-md border border-slate-200">
-                      {value} <FiExternalLink className="w-3 h-3" />
+                  <li className="overflow-x-auto w-full bg-slate-50 border border-slate-200 rounded-md">
+                    <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1 p-2.5 whitespace-nowrap">
+                      {value} <FiExternalLink className="w-3 h-3 flex-shrink-0" />
                     </a>
                   </li>
                 </ul>
