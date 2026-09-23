@@ -451,22 +451,22 @@ const VoiceControls = memo(function VoiceControls({
                   <div
                     key={voice.voice_id}
                     onClick={() => onApiVoiceChange && onApiVoiceChange(voice.voice_id)}
-                    className={`group relative flex items-center justify-between p-2.5 sm:p-3 rounded-2xl cursor-pointer transition-all duration-200 border ${
+                    className={`group relative flex items-center justify-between p-1.5 sm:p-3 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200 border ${
                       isSelected
-                        ? 'bg-white border-[#ff9b8f] ring-2 ring-[#ff9b8f]/20 shadow-xs'
+                        ? 'bg-white border-[#ff9b8f] ring-1 sm:ring-2 ring-[#ff9b8f]/20 shadow-xs'
                         : 'bg-white/90 border-gray-100/90 hover:bg-white hover:border-gray-200 hover:shadow-2xs'
                     }`}
                   >
                     {/* Left: Avatar & Info */}
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                       {/* Avatar with dynamic initials & gradient */}
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm text-gray-700 bg-gradient-to-tr ${meta.avatarGradient} flex-shrink-0 shadow-2xs ${
+                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-sm text-gray-700 bg-gradient-to-tr ${meta.avatarGradient} flex-shrink-0 shadow-2xs ${
                           isLoadingThis ? 'animate-pulse ring-2 ring-[#ff9b8f]/60' : ''
                         }`}
                       >
                         {isLoadingThis ? (
-                          <FaSync className="text-xs animate-spin text-gray-800" />
+                          <FaSync className="text-[10px] sm:text-xs animate-spin text-gray-800" />
                         ) : (
                           meta.cleanName.substring(0, 2).toUpperCase()
                         )}
@@ -475,31 +475,31 @@ const VoiceControls = memo(function VoiceControls({
                       {/* Info & Badges */}
                       <div className="flex flex-col min-w-0 flex-1">
                         {/* Top Line: Name + Lang Tag + Tone */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-bold text-xs sm:text-sm text-gray-900 truncate">
+                        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                          <span className="font-bold text-[11px] sm:text-sm text-gray-900 truncate max-w-[120px] sm:max-w-[200px]">
                             {meta.cleanName}
                           </span>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200/60">
+                          <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200/60 flex-shrink-0">
                             {meta.langMeta.code}
                           </span>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-700 border border-red-100/80">
+                          <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-medium bg-red-50 text-red-700 border border-red-100/80 flex-shrink-0 truncate">
                             {meta.tone}
                           </span>
                         </div>
 
                         {/* Subtitle Line: Gender • Accent • Usage count */}
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-0.5 flex-wrap">
-                          <span>{genderLabel}</span>
-                          <span className="text-gray-300">•</span>
-                          <span>{voice.accent || 'Natural'}</span>
-                          <span className="text-gray-300">•</span>
-                          <span className="text-gray-400 font-medium">{meta.usageCount} uses</span>
+                        <div className="flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[11px] text-gray-500 mt-0.5 flex-wrap">
+                          <span className="flex-shrink-0">{genderLabel}</span>
+                          <span className="text-gray-300 flex-shrink-0">•</span>
+                          <span className="truncate max-w-[80px] sm:max-w-none">{voice.accent || 'Natural'}</span>
+                          <span className="text-gray-300 flex-shrink-0">•</span>
+                          <span className="text-gray-400 font-medium flex-shrink-0">{meta.usageCount} uses</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Right: Actions (Play Preview, Like with Count, Selection Check) */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 ml-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2 flex-shrink-0">
                       {voice.sample_url && (
                         <button
                           type="button"
@@ -511,20 +511,20 @@ const VoiceControls = memo(function VoiceControls({
                               ? 'Pause sample'
                               : 'Play sample'
                           }
-                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                          className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all cursor-pointer flex-shrink-0 ${
                             isLoadingThis
-                              ? 'bg-amber-50 text-amber-600 border border-amber-300/80 ring-2 ring-amber-300/30'
+                              ? 'bg-amber-50 text-amber-600 border border-amber-300/80 ring-1 sm:ring-2 ring-amber-300/30'
                               : isPlayingThis
                               ? 'bg-[#ff9b8f] text-white shadow-xs scale-105 animate-pulse'
                               : 'bg-gray-100 hover:bg-[#ff9b8f]/20 text-gray-600 hover:text-gray-900'
                           }`}
                         >
                           {isLoadingThis ? (
-                            <FaSync className="text-[10px] animate-spin text-amber-600" />
+                            <FaSync className="text-[8px] sm:text-[10px] animate-spin text-amber-600" />
                           ) : isPlayingThis ? (
-                            <FaPause className="text-[10px]" />
+                            <FaPause className="text-[8px] sm:text-[10px]" />
                           ) : (
-                            <FaPlay className="text-[10px] ml-0.5" />
+                            <FaPlay className="text-[8px] sm:text-[10px] ml-0.5" />
                           )}
                         </button>
                       )}
@@ -533,19 +533,19 @@ const VoiceControls = memo(function VoiceControls({
                         type="button"
                         onClick={(e) => handleToggleLike(e, voice.voice_id)}
                         aria-label={isLiked ? 'Unlike' : 'Like'}
-                        className="flex items-center gap-1 px-1.5 py-1 rounded-full text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                        className="flex items-center gap-0.5 sm:gap-1 px-1 sm:px-1.5 py-1 rounded-full text-gray-400 hover:text-red-500 transition-colors cursor-pointer flex-shrink-0"
                       >
                         {isLiked ? (
-                          <FaHeart className="text-red-500 text-xs" />
+                          <FaHeart className="text-red-500 text-[10px] sm:text-xs" />
                         ) : (
-                          <FaRegHeart className="text-gray-400 hover:text-red-400 text-xs" />
+                          <FaRegHeart className="text-gray-400 hover:text-red-400 text-[10px] sm:text-xs" />
                         )}
-                        <span className="text-[10px] font-medium text-gray-500">{meta.likesCount}</span>
+                        <span className="text-[8px] sm:text-[10px] font-medium text-gray-500">{meta.likesCount}</span>
                       </button>
 
                       {isSelected && (
-                        <div className="w-5 h-5 rounded-full bg-[#ff9b8f] text-white flex items-center justify-center ml-0.5 flex-shrink-0">
-                          <FaCheck className="text-[9px]" />
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#ff9b8f] text-white flex items-center justify-center ml-0.5 flex-shrink-0">
+                          <FaCheck className="text-[7px] sm:text-[9px]" />
                         </div>
                       )}
                     </div>

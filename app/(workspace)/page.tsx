@@ -306,12 +306,12 @@ export default function VoiceGeneratorPage() {
       {/* Main Studio Card */}
       <section
         aria-label="Voiceover generation controls"
-        className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm"
+        className="bg-white border-y sm:border border-slate-200 sm:rounded-2xl py-4 sm:py-6 px-1 sm:px-6 shadow-sm"
       >
         {/* ElevenLabs-style Split Workspace Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-6">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 items-stretch mb-6">
           {/* Left Column: Text Input */}
-          <div className="lg:col-span-7 flex flex-col">
+          <div className="xl:col-span-7 flex flex-col px-1 sm:px-0">
             <TextInput
               text={params.text}
               onTextChange={(text) => setParams({ ...params, text })}
@@ -321,7 +321,7 @@ export default function VoiceGeneratorPage() {
           </div>
 
           {/* Right Column: Scrollable Playable Voices & Parameters */}
-          <div className="lg:col-span-5 flex flex-col bg-slate-50/70 rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-2xs">
+          <div className="xl:col-span-5 flex flex-col bg-slate-50/70 rounded-xl sm:rounded-2xl p-1 sm:p-5 border border-slate-200/80 shadow-2xs">
             <section aria-label="Voice parameters">
               <h3 className="sr-only">Adjust Voice Parameters</h3>
               <VoiceControls
