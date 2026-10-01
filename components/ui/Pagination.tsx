@@ -81,7 +81,7 @@ export default function Pagination({
           <button
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage <= 1}
-            className="inline-flex items-center justify-center p-2 rounded-lg text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center p-2 rounded-xl text-slate-600 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-orange-200 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors cursor-pointer"
             title="Previous Page"
           >
             <FiChevronLeft className="w-4 h-4" />
@@ -106,10 +106,10 @@ export default function Pagination({
                 <button
                   key={pageNum}
                   onClick={() => onPageChange(pageNum)}
-                  className={`min-w-[34px] h-[34px] text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
+                  className={`min-w-[34px] h-[34px] text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-2xs border border-blue-600"
-                      : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+                      ? "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white shadow-xs border border-[#ff7d6e]"
+                      : "bg-white text-slate-700 hover:bg-orange-50/50 hover:border-orange-200 border border-slate-200"
                   }`}
                 >
                   {pageNum}
@@ -122,7 +122,7 @@ export default function Pagination({
           <button
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage >= totalPages}
-            className="inline-flex items-center justify-center p-2 rounded-lg text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center p-2 rounded-xl text-slate-600 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-orange-200 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors cursor-pointer"
             title="Next Page"
           >
             <FiChevronRight className="w-4 h-4" />

@@ -196,7 +196,7 @@ const FormatSelectionModal = memo(function FormatSelectionModal({
             )}
 
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-600 flex items-center justify-center text-lg shadow-xs group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 text-[#ff7d6e] flex items-center justify-center text-lg shadow-xs group-hover:scale-110 transition-transform">
                 <FaTv />
               </div>
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700">
@@ -205,16 +205,16 @@ const FormatSelectionModal = memo(function FormatSelectionModal({
             </div>
 
             <div>
-              <h3 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+              <h3 className="text-base font-bold text-gray-900 group-hover:text-[#ff7d6e] transition-colors flex items-center gap-1.5">
                 <span>Long Video</span>
-                <FaVideo className="text-indigo-500 text-xs" />
+                <FaVideo className="text-[#ff7d6e] text-xs" />
               </h3>
               <p className="text-[11px] text-gray-500 mt-1 leading-snug">
                 YouTube Videos, Explainers, Podcasts, Documentaries (<strong className="text-gray-700">&gt; 1 min</strong>)
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+            <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#ff7d6e]">
               <span>Generate Long</span>
               <span className="text-base leading-none">&rarr;</span>
             </div>

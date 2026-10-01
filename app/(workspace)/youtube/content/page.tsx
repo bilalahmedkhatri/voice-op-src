@@ -13,6 +13,7 @@ import {
   FiMic,
   FiSearch,
 } from "react-icons/fi";
+import { Button, IconButton } from "@/components/ui";
 
 type ContentItem = {
   id: string;
@@ -119,8 +120,8 @@ export default function YouTubeContentPage() {
             tags_count: Array.isArray(strategy.long_video.tags) ? strategy.long_video.tags.length : 0,
             search_keywords: formatKeywords(
               strategy.long_video.search_keywords ||
-                strategy.long_video.media_search_keywords ||
-                strategy.long_video.keywords
+              strategy.long_video.media_search_keywords ||
+              strategy.long_video.keywords
             ),
             status: strategy.long_video.status || "pending",
             original_ref: strategy.long_video,
@@ -312,7 +313,7 @@ export default function YouTubeContentPage() {
         <div className="space-y-1">
           <Link
             href="/youtube/templates"
-            className="inline-flex items-center gap-2 text-sm text-red-600 hover:underline mb-1 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline mb-1 font-medium"
           >
             <FiArrowLeft /> Back to YouTube Strategies
           </Link>
@@ -324,43 +325,31 @@ export default function YouTubeContentPage() {
           </p>
         </div>
 
-        <button
+        <Button
           onClick={saveChanges}
           disabled={isSaving}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-xs cursor-pointer ${
-            saveSuccess
-              ? "bg-green-600 hover:bg-green-700 text-white"
-              : "bg-red-600 hover:bg-red-700 text-white disabled:opacity-70"
-          }`}
+          isLoading={isSaving}
+          size="md"
+          variant="primary"
+          className={saveSuccess ? "!bg-emerald-600 hover:!bg-emerald-700 text-white" : ""}
+          icon={saveSuccess ? <FiCheck className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
         >
-          {isSaving ? (
-            <>
-              <FiRefreshCw className="w-4 h-4 animate-spin" /> Saving...
-            </>
-          ) : saveSuccess ? (
-            <>
-              <FiCheck className="w-4 h-4" /> Changes Saved!
-            </>
-          ) : (
-            <>
-              <FiSave className="w-4 h-4" /> Save Status Changes
-            </>
-          )}
-        </button>
+          {saveSuccess ? "Changes Saved!" : "Save Status Changes"}
+        </Button>
       </div>
 
       {/* Video Format Legend */}
       <div className="flex items-center gap-5 px-1 pb-1">
         <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
-          <span className="w-3.5 h-3.5 rounded bg-red-100 border border-red-300"></span> Short Videos
+          <span className="w-3.5 h-3.5 rounded bg-orange-100 border border-orange-300"></span> Short Videos
         </span>
         <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
-          <span className="w-3.5 h-3.5 rounded bg-purple-100 border border-purple-300"></span> Long Videos
+          <span className="w-3.5 h-3.5 rounded bg-slate-100 border border-slate-300"></span> Long Videos
         </span>
       </div>
 
       {/* Structured Video Strategy Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-600 uppercase bg-slate-50 border-b border-slate-200">
@@ -383,35 +372,31 @@ export default function YouTubeContentPage() {
                 items.map((item) => (
                   <tr
                     key={item.id}
-                    className={`transition-colors ${
-                      item.status === "published"
-                        ? "bg-green-50/60 hover:bg-green-100/60"
-                        : item.type === "short"
-                        ? "bg-red-50/40 hover:bg-red-50/80"
-                        : "bg-purple-50/40 hover:bg-purple-50/80"
-                    }`}
+                    className={`transition-colors ${item.status === "published"
+                      ? "bg-emerald-50/50 hover:bg-emerald-50/80"
+                      : item.type === "short"
+                        ? "bg-orange-50/30 hover:bg-orange-50/60"
+                        : "bg-slate-50/40 hover:bg-slate-100/60"
+                      }`}
                   >
                     {/* Title */}
                     <td className="px-4 py-4 align-top group relative">
                       <div className="relative">
                         <Link
                           href={`/youtube/content/detail?templateId=${template.id}&itemId=${item.id}`}
-                          className="font-semibold text-slate-900 hover:text-red-600 break-words text-left line-clamp-3 pr-6 transition-colors"
+                          className="font-semibold text-slate-900 hover:text-[#c83a2a] break-words text-left line-clamp-3 pr-6 transition-colors"
                           title="Click to view full details"
                         >
                           {item.title}
                         </Link>
-                        <button
-                          onClick={() => handleCopy(item.title, `${item.id}-title`)}
-                          className="absolute top-0 -right-2 flex items-center justify-center p-1 text-slate-400 hover:text-red-600 transition-opacity cursor-pointer opacity-0 group-hover:opacity-100"
+                        <IconButton
+                          icon={copiedId === `${item.id}-title` ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />}
                           title="Copy Title"
-                        >
-                          {copiedId === `${item.id}-title` ? (
-                            <FiCheck className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <FiCopy className="w-4 h-4" />
-                          )}
-                        </button>
+                          size="xs"
+                          variant="ghost"
+                          onClick={() => handleCopy(item.title, `${item.id}-title`)}
+                          className="absolute top-0 -right-2 opacity-0 group-hover:opacity-100"
+                        />
                       </div>
                     </td>
 
@@ -424,17 +409,14 @@ export default function YouTubeContentPage() {
                         >
                           {item.description}
                         </span>
-                        <button
-                          onClick={() => handleCopy(item.description, `${item.id}-desc`)}
-                          className="absolute top-0 -right-2 flex items-center justify-center p-1 text-slate-400 hover:text-red-600 transition-opacity cursor-pointer opacity-0 group-hover:opacity-100"
+                        <IconButton
+                          icon={copiedId === `${item.id}-desc` ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />}
                           title="Copy Description"
-                        >
-                          {copiedId === `${item.id}-desc` ? (
-                            <FiCheck className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <FiCopy className="w-4 h-4" />
-                          )}
-                        </button>
+                          size="xs"
+                          variant="ghost"
+                          onClick={() => handleCopy(item.description, `${item.id}-desc`)}
+                          className="absolute top-0 -right-2 opacity-0 group-hover:opacity-100"
+                        />
                       </div>
                     </td>
 
@@ -447,17 +429,14 @@ export default function YouTubeContentPage() {
                         >
                           {item.script}
                         </span>
-                        <button
-                          onClick={() => handleCopy(item.script, `${item.id}-script`)}
-                          className="absolute top-0 -right-2 flex items-center justify-center p-1 text-slate-400 hover:text-red-600 transition-opacity cursor-pointer opacity-0 group-hover:opacity-100"
+                        <IconButton
+                          icon={copiedId === `${item.id}-script` ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />}
                           title="Copy Script"
-                        >
-                          {copiedId === `${item.id}-script` ? (
-                            <FiCheck className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <FiCopy className="w-4 h-4" />
-                          )}
-                        </button>
+                          size="xs"
+                          variant="ghost"
+                          onClick={() => handleCopy(item.script, `${item.id}-script`)}
+                          className="absolute top-0 -right-2 opacity-0 group-hover:opacity-100"
+                        />
                       </div>
                     </td>
 
@@ -466,11 +445,7 @@ export default function YouTubeContentPage() {
                       <select
                         value={item.status}
                         onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                        className={`text-xs font-semibold border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-red-500 w-full cursor-pointer shadow-2xs ${
-                          item.type === "short"
-                            ? "bg-red-50 border-red-200 text-red-900"
-                            : "bg-purple-50 border-purple-200 text-purple-900"
-                        }`}
+                        className="text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] w-full cursor-pointer shadow-2xs bg-white text-slate-800"
                       >
                         <option value="pending">Pending</option>
                         <option value="draft">Draft</option>
@@ -482,28 +457,25 @@ export default function YouTubeContentPage() {
                     {/* Actions: Generate Media & Voice */}
                     <td className="px-4 py-4 align-top text-right w-24">
                       <div className="flex gap-2 items-center justify-end">
-                        <button
-                          onClick={() => handleFetchByKeywords(item)}
-                          disabled={downloadingItems[`${item.id}_keywords`]}
-                          className="flex items-center justify-center p-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-slate-400 disabled:to-slate-400 text-white rounded-lg shadow-2xs transition-all cursor-pointer"
+                        <IconButton
+                          icon={<FiSearch className="w-3.5 h-3.5 text-slate-600" />}
                           title="Generate Media"
-                        >
-                          {downloadingItems[`${item.id}_keywords`] ? (
-                            <FiRefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <FiSearch className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                        <button
+                          size="sm"
+                          variant="secondary"
+                          isLoading={downloadingItems[`${item.id}_keywords`]}
+                          disabled={downloadingItems[`${item.id}_keywords`]}
+                          onClick={() => handleFetchByKeywords(item)}
+                        />
+                        <IconButton
+                          icon={<FiMic className="w-3.5 h-3.5" />}
+                          title="Generate Voice"
+                          size="sm"
+                          variant="primary"
+                          disabled={!item.script && !item.description}
                           onClick={() =>
                             handleSendToVoice(item.script || item.description, item.type, item.title)
                           }
-                          disabled={!item.script && !item.description}
-                          className="flex items-center justify-center p-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:from-slate-400 disabled:to-slate-400 text-white rounded-lg shadow-2xs transition-all cursor-pointer"
-                          title="Generate Voice"
-                        >
-                          <FiMic className="w-3.5 h-3.5" />
-                        </button>
+                        />
                       </div>
                     </td>
                   </tr>

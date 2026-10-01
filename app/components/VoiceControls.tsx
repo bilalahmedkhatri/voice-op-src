@@ -362,20 +362,20 @@ const VoiceControls = memo(function VoiceControls({
               <FaMicrophone className="text-[#ff9b8f]" />
               Select Voice
             </label>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-orange-50 text-[#c83a2a] border border-orange-200/80">
               {apiVoices.length} {apiVoices.length === 1 ? 'voice' : 'voices'} loaded
             </span>
           </div>
 
           {/* Search Bar */}
           <div className="relative w-full">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
             <input
               type="text"
               placeholder="Search voices by name, accent, gender..."
               value={apiVoicesSearch}
               onChange={(e) => setApiVoicesSearch?.(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-[#ff9b8f] focus:bg-white focus:ring-2 focus:ring-[#ff9b8f]/20 transition-all text-gray-800"
+              className="w-full pl-8 pr-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl outline-none focus:border-[#ff9b8f] focus:ring-2 focus:ring-[#ff9b8f]/20 transition-all text-slate-800 placeholder-slate-400 shadow-2xs"
             />
           </div>
         </div>
@@ -441,10 +441,10 @@ const VoiceControls = memo(function VoiceControls({
                         <span className="font-bold text-[11px] sm:text-sm text-gray-900 truncate max-w-[120px] sm:max-w-[200px]">
                           {meta.cleanName}
                         </span>
-                        <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200/60 flex-shrink-0">
+                        <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 flex-shrink-0">
                           {meta.langMeta.code}
                         </span>
-                        <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-medium bg-red-50 text-red-700 border border-red-100/80 flex-shrink-0 truncate">
+                        <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-medium bg-orange-50 text-orange-800 border border-orange-200/80 flex-shrink-0 truncate">
                           {meta.tone}
                         </span>
                       </div>
@@ -521,12 +521,12 @@ const VoiceControls = memo(function VoiceControls({
                   type="button"
                   onClick={() => apiVoicesLoadMore?.()}
                   disabled={apiVoicesLoadingMore}
-                  className="px-4 py-1.5 rounded-full text-xs font-bold text-[#ff9b8f] bg-[#ff9b8f]/10 hover:bg-[#ff9b8f]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-1.5 rounded-xl text-xs font-bold text-[#c83a2a] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer shadow-2xs"
                 >
                   {apiVoicesLoadingMore ? (
                     <><FaSync className="animate-spin text-xs" /> Loading...</>
                   ) : (
-                    'Load More'
+                    'Load More Voices'
                   )}
                 </button>
               </div>

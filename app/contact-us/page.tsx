@@ -1,39 +1,57 @@
-// app/components/legal/ContactUsContent.tsx
 import React from 'react';
+import Link from 'next/link';
 
-const ContactUs = () => {
+export default function ContactUs() {
   return (
-    <>
-      <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center' }}>Contact Us</h1>
-      <div style={{ fontSize: '1.1rem', lineHeight: '1.7' }}>
-        <p style={{ marginBottom: '2rem', textAlign: 'center' }}>
-          We'd love to hear from you! Whether you have a question about our features, a suggestion for improvement, or a business inquiry, please don't hesitate to reach out.
+    <div className="space-y-6">
+      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 text-center">
+        Contact Us
+      </h1>
+      <div className="space-y-6 text-base text-slate-600 leading-relaxed">
+        <p className="text-center text-slate-500 max-w-lg mx-auto">
+          We&apos;d love to hear from you! Whether you have a question about our features, a suggestion for improvement, or a business inquiry, please don&apos;t hesitate to reach out.
         </p>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '0.5rem', borderBottom: '2px solid #ffe4e1', paddingBottom: '0.5rem' }}>General Inquiries</h2>
-          <p>
+        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+          <h2 className="text-lg font-bold text-slate-800">
+            General Inquiries
+          </h2>
+          <p className="text-sm">
             For general questions, feedback, or support, please email us at:
             <br />
-            <a href="mailto:info@azeemlab.com" style={{ color: '#d9534f', textDecoration: 'none', fontWeight: '500' }}>info@azeemlab.com</a>
+            <a
+              href="mailto:info@azeemlab.com"
+              className="text-[#c83a2a] hover:underline font-semibold"
+            >
+              info@azeemlab.com
+            </a>
           </p>
         </div>
 
-        <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '0.5rem', borderBottom: '2px solid #ffe4e1', paddingBottom: '0.5rem' }}>Business & Press</h2>
-          <p>
+        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+          <h2 className="text-lg font-bold text-slate-800">
+            Business &amp; Press
+          </h2>
+          <p className="text-sm">
             For partnership opportunities or press inquiries, please contact our business team at:
             <br />
-            <a href="mailto:info@azeemlab.com" style={{ color: '#d9534f', textDecoration: 'none', fontWeight: '500' }}>info@azeemlab.com</a>
+            <a
+              href="mailto:info@azeemlab.com"
+              className="text-[#c83a2a] hover:underline font-semibold"
+            >
+              info@azeemlab.com
+            </a>
           </p>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: '1rem', color: '#555' }}>
-          Before reaching out, you might find a quick answer to your question in our <a href="/faq" style={{ color: '#d9534f', textDecoration: 'underline' }}>FAQ section</a>.
+        <p className="text-center text-sm text-slate-500 pt-2">
+          Before reaching out, you might find a quick answer to your question in our{' '}
+          <Link href="/faq" className="text-[#c83a2a] hover:underline font-semibold">
+            FAQ section
+          </Link>
+          .
         </p>
       </div>
-    </>
+    </div>
   );
 }
-
-export default ContactUs;

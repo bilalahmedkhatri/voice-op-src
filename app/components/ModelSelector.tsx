@@ -109,7 +109,7 @@ const ModelSelector = memo(function ModelSelector({
               <span className="font-bold text-xs sm:text-sm text-gray-900 truncate">
                 {activeModel.name}
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200/70">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-50 text-orange-950 border border-orange-200/80">
                 {activeBadge}
               </span>
             </div>
@@ -121,7 +121,7 @@ const ModelSelector = memo(function ModelSelector({
 
         <FaChevronDown
           className={`text-gray-400 text-xs flex-shrink-0 ml-2 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-[#ff9b8f]' : ''
+            isOpen ? 'rotate-180 text-[#ff7d6e]' : ''
           }`}
         />
       </button>
@@ -142,7 +142,7 @@ const ModelSelector = memo(function ModelSelector({
                 onClick={() => handleSelect(model.name)}
                 className={`w-full flex items-center justify-between p-2.5 sm:p-3 rounded-xl text-left transition-all duration-150 cursor-pointer ${
                   isSelected
-                    ? 'bg-red-50/70 border border-[#ff9b8f]/40 text-gray-900'
+                    ? 'bg-orange-50/70 border border-[#ff9b8f]/40 text-slate-900'
                     : 'hover:bg-gray-50 text-gray-700 border border-transparent'
                 }`}
               >
@@ -162,7 +162,7 @@ const ModelSelector = memo(function ModelSelector({
                       <span
                         className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
                           isSelected
-                            ? 'bg-[#ff9b8f]/20 text-red-700'
+                            ? 'bg-orange-100 text-orange-900'
                             : 'bg-gray-100 text-gray-600'
                         }`}
                       >
@@ -176,7 +176,7 @@ const ModelSelector = memo(function ModelSelector({
                 </div>
 
                 {isSelected && (
-                  <FaCheck className="text-[#ff9b8f] text-xs flex-shrink-0 ml-2" />
+                  <FaCheck className="text-[#ff7d6e] text-xs flex-shrink-0 ml-2" />
                 )}
               </button>
             );

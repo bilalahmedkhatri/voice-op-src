@@ -87,3 +87,47 @@ UPDATE json_templates SET user_id = updated_by WHERE user_id IS NULL AND updated
 
 CREATE INDEX IF NOT EXISTS idx_templates_user_date ON json_templates(user_id, created_at DESC);
 
+-- 7. Connected Facebook Pages & Instagram Business Accounts
+CREATE TABLE IF NOT EXISTS facebook_pages (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    page_id TEXT NOT NULL,
+    page_name TEXT NOT NULL,
+    page_category TEXT,
+    picture_url TEXT,
+    instagram_business_account_id TEXT,
+    instagram_username TEXT,
+    instagram_profile_picture_url TEXT,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    CONSTRAINT uq_user_page UNIQUE (user_id, page_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_fb_pages_user ON facebook_pages(user_id);
+
+-- 8. Unified Scheduled & Published Posts Table (FB + IG)
+CREATE TABLE IF NOT EXISTS scheduled_posts (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    page_id TEXT NOT NULL,
+    page_name TEXT,
+    destination VARCHAR(30) DEFAULT 'facebook' NOT NULL,
+    post_type VARCHAR(30) DEFAULT 'reel' NOT NULL,
+    title VARCHAR(255),
+    message TEXT NOT NULL,
+    media_url TEXT,
+    scheduled_publish_time TIMESTAMPTZ,
+    status VARCHAR(30) DEFAULT 'published' NOT NULL,
+    fb_post_id TEXT,
+    ig_media_id TEXT,
+    template_id TEXT REFERENCES json_templates(id) ON DELETE SET NULL,
+    content_item_id TEXT,
+    error_message TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_scheduled_posts_user ON scheduled_posts(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_scheduled_posts_status ON scheduled_posts(status, scheduled_publish_time);
+

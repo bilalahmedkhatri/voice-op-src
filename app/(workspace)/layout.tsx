@@ -123,9 +123,9 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
                         <Link
                           href={link.href}
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                             isActive
-                              ? "bg-gradient-to-r from-orange-50 to-orange-100/60 text-[#c83a2a] font-semibold border-l-2 border-[#ff7d6e]"
+                              ? "bg-orange-50/80 text-[#c83a2a] font-semibold border-l-2 border-[#ff7d6e]"
                               : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                           }`}
                         >

@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiTrash2, FiDatabase, FiRefreshCw, FiAlertCircle, FiVideo } from "react-icons/fi";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import IconButton from "@/components/ui/IconButton";
+import FilterTab from "@/components/ui/FilterTab";
 import { detectTemplatePlatform, getContentUrl } from "@/lib/platformDetector";
 
 type Template = {
@@ -143,7 +145,7 @@ export default function TemplatesDashboard() {
   const confirmDelete = async () => {
     if (!templateToDelete) return;
     const id = templateToDelete;
-    
+
     setIsDeleting(true);
     setDeleteSuccess(false);
 
@@ -167,24 +169,24 @@ export default function TemplatesDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case "published":
-        return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full border border-blue-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">{status}</span>;
       case "completed":
-        return <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full border border-green-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">{status}</span>;
       case "pending":
-        return <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full border border-amber-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-xs font-semibold rounded-full border border-amber-200/80">{status}</span>;
       case "draft":
-        return <span className="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
       case "closed":
-        return <span className="px-2.5 py-1 bg-rose-100 text-rose-800 text-xs font-semibold rounded-full border border-rose-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-semibold rounded-full border border-rose-200/80">{status}</span>;
       default:
-        return <span className="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "published": return "bg-blue-500";
-      case "completed": return "bg-green-500";
+      case "published": return "bg-emerald-500";
+      case "completed": return "bg-emerald-500";
       case "pending": return "bg-amber-400";
       case "draft": return "bg-slate-400";
       case "closed": return "bg-rose-500";
@@ -223,56 +225,46 @@ export default function TemplatesDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <FiDatabase className="w-6 h-6 text-blue-600" /> Saved Templates
+            <FiDatabase className="w-6 h-6 text-[#ff7d6e]" /> Saved Templates
           </h1>
           <p className="text-slate-500 text-sm mt-1">Manage and track YouTube strategies and Facebook content plans saved in your database.</p>
         </div>
-        <button
-          onClick={fetchTemplates}
-          className="p-2 bg-white border border-slate-200 rounded-md hover:bg-slate-50 text-slate-600 shadow-2xs cursor-pointer self-start sm:self-auto"
+        <IconButton
+          icon={<FiRefreshCw className="w-4 h-4" />}
           title="Refresh"
-        >
-          <FiRefreshCw className="w-4 h-4" />
-        </button>
+          variant="secondary"
+          size="md"
+          isLoading={isLoading}
+          onClick={fetchTemplates}
+          className="self-start sm:self-auto"
+        />
       </div>
 
       {/* Platform Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <button
+        <FilterTab
+          label="All Templates"
+          count={templates.length}
+          isActive={platformFilter === "all"}
           onClick={() => setPlatformFilter("all")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-            platformFilter === "all"
-              ? "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white shadow-xs"
-              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-          }`}
-        >
-          All Templates ({templates.length})
-        </button>
-        <button
+        />
+        <FilterTab
+          label="YouTube Strategies"
+          count={ytCount}
+          isActive={platformFilter === "youtube"}
           onClick={() => setPlatformFilter("youtube")}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-            platformFilter === "youtube"
-              ? "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white shadow-xs"
-              : "bg-white text-slate-600 hover:bg-orange-50/50 border border-slate-200"
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-red-500"></span>
-          YouTube Strategies ({ytCount})
-        </button>
-        <button
+          icon={<span className="w-2 h-2 rounded-full bg-red-500"></span>}
+        />
+        <FilterTab
+          label="Facebook Plans"
+          count={fbCount}
+          isActive={platformFilter === "facebook"}
           onClick={() => setPlatformFilter("facebook")}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-            platformFilter === "facebook"
-              ? "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white shadow-xs"
-              : "bg-white text-slate-600 hover:bg-orange-50/50 border border-slate-200"
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-          Facebook Plans ({fbCount})
-        </button>
+          icon={<span className="w-2 h-2 rounded-full bg-[#1877F2]"></span>}
+        />
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-600 uppercase bg-slate-50 border-b border-slate-200">
@@ -317,11 +309,11 @@ export default function TemplatesDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         {platform === "youtube" ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-700 border border-red-200">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-orange-50 text-[#c83a2a] border border-orange-200/80">
                             YouTube
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                             Facebook
                           </span>
                         )}
@@ -362,13 +354,13 @@ export default function TemplatesDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-3">
-                          <button
-                            onClick={() => setTemplateToDelete(template.id)}
-                            className="p-1.5 flex items-center justify-center text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                          <IconButton
+                            icon={<FiTrash2 className="w-4 h-4" />}
                             title="Delete Template"
-                          >
-                            <FiTrash2 className="w-4 h-4" />
-                          </button>
+                            variant="danger"
+                            size="sm"
+                            onClick={() => setTemplateToDelete(template.id)}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -380,12 +372,12 @@ export default function TemplatesDashboard() {
         </div>
       </div>
 
-      <ConfirmModal 
-        isOpen={!!templateToDelete} 
+      <ConfirmModal
+        isOpen={!!templateToDelete}
         onClose={() => {
           setTemplateToDelete(null);
           setDeleteSuccess(false);
-        }} 
+        }}
         onConfirm={confirmDelete}
         title="Delete Template"
         message="Are you sure you want to delete this template? This action cannot be undone."

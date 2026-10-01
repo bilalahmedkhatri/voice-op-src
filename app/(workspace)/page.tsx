@@ -250,12 +250,12 @@ export default function VoiceGeneratorPage() {
             {isAuthenticated && remainingGenerations !== null ? (
               <div
                 className={`text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 border ${isLimitReached
-                  ? 'bg-red-50 border-red-200 text-red-600'
-                  : 'bg-white border-slate-200 text-slate-700 shadow-xs'
+                  ? 'bg-rose-50 border-rose-200 text-rose-700'
+                  : 'bg-white border-slate-200 text-slate-700 shadow-2xs'
                   }`}
               >
                 <span
-                  className={`w-2 h-2 rounded-full ${isLimitReached ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'
+                  className={`w-2 h-2 rounded-full ${isLimitReached ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'
                     }`}
                 />
                 <span>
@@ -264,7 +264,7 @@ export default function VoiceGeneratorPage() {
                 </span>
               </div>
             ) : (
-              <div className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 bg-white border border-slate-200 text-emerald-700 shadow-xs">
+              <div className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 bg-white border border-slate-200 text-emerald-700 shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span>Free Studio Plan</span>
               </div>
@@ -277,7 +277,7 @@ export default function VoiceGeneratorPage() {
 
       {/* Script Source Notification */}
       {sourceInfo && (
-        <div className="flex items-center justify-between p-3.5 bg-orange-50/90 border border-orange-200 rounded-xl text-xs text-orange-950 shadow-2xs animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="flex items-center justify-between p-3.5 bg-orange-50/90 border border-orange-200/80 rounded-xl text-xs text-orange-950 shadow-2xs animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center gap-2.5">
             <span className="p-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white rounded-lg shadow-2xs">
               <FiMic className="w-3.5 h-3.5" />
@@ -303,13 +303,13 @@ export default function VoiceGeneratorPage() {
       {/* Main Studio Card */}
       <section
         aria-label="Voiceover generation controls"
-        className="bg-white border-y sm:border border-slate-200 sm:rounded-2xl py-4 sm:py-6 px-1 sm:px-6 shadow-sm"
+        className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-6 shadow-xs"
       >
         {/* ElevenLabs-style Split Workspace Layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 items-stretch mb-6">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 sm:gap-6 items-stretch mb-6">
           {/* Left Column: Text Input */}
-          <div className="xl:col-span-7 flex flex-col px-1 sm:px-0">
-          <TextInput
+          <div className="xl:col-span-7 flex flex-col">
+            <TextInput
               text={params.text}
               onTextChange={(text) => setParams({ ...params, text })}
               disabled={isLimitReached}
@@ -317,7 +317,7 @@ export default function VoiceGeneratorPage() {
           </div>
 
           {/* Right Column: Scrollable Playable Voices & Parameters */}
-          <div className="xl:col-span-5 flex flex-col bg-slate-50/70 rounded-xl sm:rounded-2xl p-1 sm:p-5 border border-slate-200/80 shadow-2xs">
+          <div className="xl:col-span-5 flex flex-col bg-slate-50/70 rounded-2xl p-3.5 sm:p-5 border border-slate-200/80 shadow-2xs">
             <section aria-label="Voice parameters">
               <h3 className="sr-only">Adjust Voice Parameters</h3>
               <VoiceControls

@@ -28,10 +28,10 @@ export default function SettingsStats({ quota, totalTemplates }: SettingsStatsPr
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Card 1: Generations */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition-all">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:border-slate-300 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Daily Generations</span>
-          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#ff7d6e] flex items-center justify-center">
             <FiZap className="w-4 h-4" />
           </div>
         </div>
@@ -49,7 +49,7 @@ export default function SettingsStats({ quota, totalTemplates }: SettingsStatsPr
                   ? "bg-rose-500"
                   : generationsPercent >= 70
                   ? "bg-amber-500"
-                  : "bg-blue-600"
+                  : "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e]"
               }`}
               style={{ width: `${generationsPercent}%` }}
             />
@@ -61,10 +61,10 @@ export default function SettingsStats({ quota, totalTemplates }: SettingsStatsPr
       </div>
 
       {/* Card 2: Characters Used */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition-all">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:border-slate-300 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Characters Used</span>
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
             <FiBarChart2 className="w-4 h-4" />
           </div>
         </div>
@@ -93,10 +93,10 @@ export default function SettingsStats({ quota, totalTemplates }: SettingsStatsPr
       </div>
 
       {/* Card 3: Max Per Request */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition-all">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:border-slate-300 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Request Limit</span>
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
             <FiLayers className="w-4 h-4" />
           </div>
         </div>
@@ -112,10 +112,10 @@ export default function SettingsStats({ quota, totalTemplates }: SettingsStatsPr
       </div>
 
       {/* Card 4: Saved Templates (Replacing Daily Reset with user DB metric) */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition-all">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:border-slate-300 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Saved Templates</span>
-          <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#ff7d6e] flex items-center justify-center">
             <FiDatabase className="w-4 h-4" />
           </div>
         </div>

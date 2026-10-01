@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiTrash2, FiRefreshCw, FiAlertCircle, FiPlus, FiShare2, FiCalendar } from "react-icons/fi";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import Button from "@/components/ui/Button";
+import IconButton from "@/components/ui/IconButton";
 import { detectTemplatePlatform } from "@/lib/platformDetector";
 
 type Template = {
@@ -121,22 +123,22 @@ export default function FacebookTemplatesPage() {
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case "published":
-        return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full border border-blue-200">Published</span>;
+        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">Published</span>;
       case "completed":
-        return <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full border border-green-200">Completed</span>;
+        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">Completed</span>;
       case "pending":
-        return <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full border border-amber-200">Pending</span>;
+        return <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-xs font-semibold rounded-full border border-amber-200/80">Pending</span>;
       case "draft":
-        return <span className="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-full border border-slate-200">Draft</span>;
+        return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">Draft</span>;
       default:
-        return <span className="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "published": return "bg-blue-500";
-      case "completed": return "bg-green-500";
+      case "published": return "bg-emerald-500";
+      case "completed": return "bg-emerald-500";
       case "pending": return "bg-amber-400";
       case "draft": return "bg-slate-400";
       default: return "bg-slate-200";
@@ -153,8 +155,8 @@ export default function FacebookTemplatesPage() {
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
-        <FiAlertCircle className="w-5 h-5" />
+      <div className="flex items-center gap-2 p-4 bg-rose-50 text-rose-700 rounded-xl border border-rose-200">
+        <FiAlertCircle className="w-5 h-5 shrink-0" />
         <p>{error}</p>
       </div>
     );
@@ -165,13 +167,8 @@ export default function FacebookTemplatesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[11px] font-bold rounded border border-blue-200 uppercase tracking-wider">
-              Facebook Hub
-            </span>
-          </div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2 mt-1">
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#1877F2] text-white text-xs font-black">
               f
             </span>
             Facebook Content Plans
@@ -182,30 +179,35 @@ export default function FacebookTemplatesPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={fetchTemplates}
-            className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
+          <IconButton
+            icon={<FiRefreshCw className="w-4 h-4" />}
             title="Refresh"
-          >
-            <FiRefreshCw className="w-4 h-4" />
-          </button>
-          <Link
+            variant="secondary"
+            size="md"
+            isLoading={isLoading}
+            onClick={fetchTemplates}
+          />
+          <Button
             href="/facebook/integration"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-semibold shadow-2xs transition-colors"
+            variant="secondary"
+            size="md"
+            icon={<FiShare2 className="w-4 h-4 text-[#ff7d6e]" />}
           >
-            <FiShare2 className="w-4 h-4 text-blue-600" /> Page Integration
-          </Link>
-          <Link
+            Page Integration
+          </Button>
+          <Button
             href="/json-generator"
-            className="inline-flex items-center gap-2 px-3.5 py-2 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-sm font-semibold shadow-xs transition-all"
+            variant="primary"
+            size="md"
+            icon={<FiPlus className="w-4 h-4" />}
           >
-            <FiPlus className="w-4 h-4" /> New Facebook Plan
-          </Link>
+            New Facebook Plan
+          </Button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-600 uppercase bg-slate-50 border-b border-slate-200">
@@ -278,13 +280,13 @@ export default function FacebookTemplatesPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-3">
-                          <button
-                            onClick={() => setTemplateToDelete(template.id)}
-                            className="p-1.5 flex items-center justify-center text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                          <IconButton
+                            icon={<FiTrash2 className="w-4 h-4" />}
                             title="Delete Plan"
-                          >
-                            <FiTrash2 className="w-4 h-4" />
-                          </button>
+                            variant="danger"
+                            size="sm"
+                            onClick={() => setTemplateToDelete(template.id)}
+                          />
                         </div>
                       </td>
                     </tr>

@@ -21,52 +21,26 @@ const truncateText = (text: string, maxLength: number) => {
 
 const PostCard: React.FC<PostCardProps> = ({ slug, title, description, imageUrl, tag }) => {
   return (
-    <Link href={`/blog/${slug}`} passHref className='text' style={{ textDecoration: "none" }} >
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-        overflow: 'hidden',
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-        cursor: 'pointer',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-5px)';
-        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
-      }}
-      >
-        <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%' /* 16:9 Aspect Ratio */ }}>
+    <Link href={`/blog/${slug}`} className="block group text-inherit no-underline h-full">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden flex flex-col h-full cursor-pointer hover:-translate-y-1">
+        <div className="relative w-full aspect-video">
           <Image
             src={imageUrl}
             alt={title}
-            layout="fill"
-            objectFit="cover"
+            fill
+            className="object-cover"
           />
-          <span style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '1rem',
-            zIndex: 1,
-            background: 'rgba(255, 228, 225, 0.9)',
-            color: '#d9534f',
-            padding: '0.25rem 0.75rem',
-            borderRadius: '9999px',
-            fontSize: '0.8rem',
-            fontWeight: '500',
-            backdropFilter: 'blur(4px)',
-          }}>
+          <span className="absolute top-3 right-3 z-10 bg-orange-50/90 text-[#c83a2a] border border-orange-200/80 px-2.5 py-0.5 rounded-full text-xs font-semibold backdrop-blur-xs shadow-2xs">
             {tag}
           </span>
         </div>
-        <div style={{ padding: '1rem' }}>
-          <h3 style={{ fontSize: '1.25rem', textAlign: 'left', fontWeight: 'bold', margin: '0 0 0.5rem 0', color: '#1a1a1a' }}>{truncateText(title, 100)}</h3>
+        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-[#c83a2a] transition-colors leading-snug line-clamp-2">
+            {truncateText(title, 100)}
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-500 mt-2 line-clamp-2 leading-relaxed">
+            {truncateText(description, 120)}
+          </p>
         </div>
       </div>
     </Link>

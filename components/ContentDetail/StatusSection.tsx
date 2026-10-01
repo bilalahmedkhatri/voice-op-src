@@ -20,15 +20,15 @@ export default function StatusSection({ item, itemType, handleStatusChange, isSa
           value={item.status || "pending"}
           onChange={(e) => handleStatusChange(e.target.value)}
           disabled={isSaving}
-          className={`text-sm font-medium border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full cursor-pointer shadow-sm disabled:opacity-50 ${itemType === 'short' ? 'bg-red-50' : 'bg-purple-50'}`}
+          className="text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] w-full cursor-pointer shadow-xs disabled:opacity-50"
         >
           <option value="pending">Pending</option>
           <option value="draft">Draft</option>
           <option value="completed">Completed</option>
           <option value="published">Published</option>
         </select>
-        {isSaving && <span className="text-xs text-blue-600 flex items-center gap-1"><FiRefreshCw className="w-3 h-3 animate-spin" /> Updating status...</span>}
-        {saveSuccess && <span className="text-xs text-green-600 flex items-center gap-1"><FiCheck className="w-3 h-3" /> Status updated!</span>}
+        {isSaving && <span className="text-xs text-[#c83a2a] flex items-center gap-1"><FiRefreshCw className="w-3 h-3 animate-spin" /> Updating status...</span>}
+        {saveSuccess && <span className="text-xs text-emerald-600 flex items-center gap-1"><FiCheck className="w-3 h-3" /> Status updated!</span>}
       </div>
     </Card>
   );

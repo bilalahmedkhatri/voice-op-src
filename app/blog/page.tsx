@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import PostList from '../components/PostList';
-import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'Blog | Free AI Voice Generator',
@@ -9,36 +8,36 @@ export const metadata: Metadata = {
 };
 
 async function fetchPosts() {
+  try {
+    const res = await fetch(`http://localhost:3000/api/blog?limit=12`, {
+      cache: 'no-store',
+    });
 
-  const res = await fetch(`http://localhost:3000/api/blog?limit=12`, {
-    cache: 'no-store',
-  });
+    if (!res.ok) {
+      return { items: [] as any[] };
+    }
 
-  if (!res.ok) {
+    return (await res.json()) as { items: any[] };
+  } catch {
     return { items: [] as any[] };
   }
-
-  return (await res.json()) as { items: any[] };
 }
 
-const Blogs = async () => {
+export default async function Blogs() {
   const data = await fetchPosts();
 
   return (
-    <>
-      <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center' }}>
-        Our Blog
-      </h1>
-      <div style={{ fontSize: '1.1rem', lineHeight: '1.7', textAlign: 'center' }}>
-        <p style={{ marginBottom: '2rem' }}>
-          Welcome to our blog! Here you'll find the latest news, tutorials, and insights into the world of AI voice generation and text-to-speech technology.
+    <div className="space-y-8">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+          Our Blog
+        </h1>
+        <p className="text-base text-slate-500 max-w-xl mx-auto">
+          Explore the latest tutorials, audio AI updates, and content creator workflows with free text-to-speech synthesis.
         </p>
-
-        <PostList posts={data.items} />
       </div>
 
-    </>
+      <PostList posts={data.items} />
+    </div>
   );
-};
-
-export default Blogs;
+}

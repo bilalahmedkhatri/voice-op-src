@@ -1,31 +1,28 @@
-"use client";
+'use client';
+
 import React from 'react';
 
-const AboutUsContent = () => {
+export default function AboutUsContent() {
   return (
-    <>
-        <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center' }}>About Us</h1>
-        <div style={{fontSize: '1.1rem', lineHeight: '1.6'}}>
+    <div className="space-y-6">
+      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 text-center">
+        About Us
+      </h1>
+      <div className="space-y-4 text-base sm:text-lg text-slate-600 leading-relaxed">
         <p>
           Welcome to the home of the most advanced Free AI Voice Generator. Our
           mission is to make high-quality voice synthesis accessible to everyone.
-          Whether you're a content creator, a student, a developer, or just someone
+          Whether you&apos;re a content creator, a student, a developer, or just someone
           looking to bring text to life, our tool is designed for you.
         </p>
         <p>
-          We believe in the power of voice. That's why we've invested in
+          We believe in the power of voice. That&apos;s why we&apos;ve invested in
           state-of-the-art artificial intelligence to create a text-to-speech (TTS)
           engine that produces incredibly realistic and natural-sounding voices. Our
           platform is intuitive, easy to use, and, best of all, free for your basic
           needs.
         </p>
       </div>
-    </>
-
-  )
-};
-
-export default AboutUsContent;
-
-
-
+    </div>
+  );
+}

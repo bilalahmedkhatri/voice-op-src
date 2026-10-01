@@ -132,7 +132,7 @@ export default function SidebarAuth() {
   const maxQuota = quota?.max_daily_generations || 5;
 
   return (
-    <div className="relative p-4 border-slate-200 bg-slate-500/50" ref={menuRef}>
+    <div className="relative p-4 border-t border-slate-200/80 bg-slate-50/50" ref={menuRef}>
       {menuOpen && (
         <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="p-4 border-b border-slate-100 bg-slate-50/50">
@@ -143,14 +143,14 @@ export default function SidebarAuth() {
           <div className="p-4 border-b border-slate-100">
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                <FaBolt className="text-amber-500" />
+                <FaBolt className="text-[#ff7d6e]" />
                 Remaining Credits
               </span>
               <span className="font-bold text-slate-900">{remainingQuota} / {maxQuota}</span>
             </div>
             <div className="w-full bg-slate-100 rounded-full h-1.5">
               <div
-                className="bg-amber-500 h-1.5 rounded-full"
+                className="bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] h-1.5 rounded-full"
                 style={{ width: `${Math.min(100, (remainingQuota / maxQuota) * 100)}%` }}
               ></div>
             </div>
@@ -160,14 +160,14 @@ export default function SidebarAuth() {
             <Link
               href="/settings"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors"
+              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 hover:bg-orange-50/60 hover:text-[#c83a2a] rounded-lg transition-colors font-medium"
             >
               <FaUser className="w-4 h-4" />
               View Profile
             </Link>
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium cursor-pointer"
             >
               <FaSignOutAlt className="w-4 h-4" />
               Sign Out
@@ -178,7 +178,7 @@ export default function SidebarAuth() {
 
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className="flex items-center w-full p-2 -m-2 rounded-xl hover:bg-slate-100 transition-colors text-left"
+        className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-slate-100 transition-colors text-left cursor-pointer"
       >
         {user.image ? (
           <img
@@ -187,7 +187,7 @@ export default function SidebarAuth() {
             className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center border border-blue-200">
+          <div className="w-10 h-10 rounded-full bg-orange-100 text-[#ff7d6e] flex items-center justify-center border border-orange-200">
             <FaUserCircle className="w-6 h-6" />
           </div>
         )}

@@ -16,29 +16,29 @@ export default function Toast({ message, type = 'info', onClose }: ToastProps) {
   }, [onClose]);
 
   const bgColors = {
-    error: 'bg-red-100',
-    warning: 'bg-yellow-100',
-    success: 'bg-green-100',
-    info: 'bg-blue-100',
+    error: 'bg-rose-50',
+    warning: 'bg-amber-50',
+    success: 'bg-emerald-50',
+    info: 'bg-orange-50',
   };
 
   const borderColors = {
-    error: 'border-red-300',
-    warning: 'border-yellow-300',
-    success: 'border-green-300',
-    info: 'border-blue-300',
+    error: 'border-rose-200',
+    warning: 'border-amber-200',
+    success: 'border-emerald-200',
+    info: 'border-orange-200',
   };
 
   const icons = {
     error: '❌',
     warning: '⚠️',
     success: '✅',
-    info: 'ℹ️',
+    info: '💡',
   };
 
   return (
     <div
-      className={`fixed bottom-8 right-8 rounded-xl p-4 pr-6 shadow-lg max-w-md z-[9999] flex items-start gap-3 animate-slideInRight ${bgColors[type]} border-2 ${borderColors[type]}`}
+      className={`fixed bottom-8 right-8 rounded-2xl p-4 pr-6 shadow-lg max-w-md z-[9999] flex items-start gap-3 animate-slideInRight ${bgColors[type]} border ${borderColors[type]}`}
       style={{ animation: 'slideInRight 0.3s ease-out, fadeOut 0.5s ease-out 9.5s forwards' }}
     >
       <span className="text-xl flex-shrink-0">

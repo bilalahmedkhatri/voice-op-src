@@ -49,13 +49,13 @@ export default function ContentRedirectDispatcher() {
         <div className="flex items-center gap-3 pt-2">
           <Link
             href="/youtube/templates"
-            className="flex-1 text-center py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors"
+            className="flex-1 text-center py-2.5 px-4 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
           >
             Go to YouTube Strategies
           </Link>
           <Link
             href="/facebook/templates"
-            className="flex-1 text-center py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors"
+            className="flex-1 text-center py-2.5 px-4 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-orange-200 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs"
           >
             Go to Facebook Plans
           </Link>
@@ -66,7 +66,7 @@ export default function ContentRedirectDispatcher() {
 
   return (
     <div className="flex flex-col items-center justify-center h-80 space-y-3">
-      <FiRefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+      <FiRefreshCw className="w-8 h-8 text-[#ff7d6e] animate-spin" />
       <p className="text-sm font-semibold text-slate-700">Opening content workspace...</p>
       <p className="text-xs text-slate-400">Detecting platform strategy...</p>
     </div>

@@ -16,39 +16,19 @@ const GenerationStatus = memo(function GenerationStatus({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: ds.spacing.sm, marginTop: ds.spacing.md }}>
+    <div className="flex flex-col gap-2 mt-4">
       <div
         role="alert"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
-          color: ds.colors.error,
-          border: `1px solid ${ds.colors.error}`,
-          borderRadius: ds.borderRadius.lg,
-          padding: `${ds.spacing.sm} ${ds.spacing.lg}`,
-          boxShadow: ds.shadows.sm,
-          fontFamily: ds.typography.fonts.body,
-          gap: ds.spacing.sm,
-          flexWrap: 'wrap',
-        }}
+        className="flex items-center justify-between p-3.5 px-4 bg-rose-50 text-rose-700 border border-rose-200/80 rounded-xl shadow-xs text-xs font-medium gap-3 flex-wrap"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: ds.spacing.sm, flex: 1 }}>
-          <FaExclamationTriangle />
+        <div className="flex items-center gap-2 flex-1">
+          <FaExclamationTriangle className="text-rose-500 shrink-0 text-sm" />
           <span>{errorMessage}</span>
         </div>
         {onDismissError && (
           <button
             onClick={onDismissError}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              color: ds.colors.error,
-              cursor: 'pointer',
-              fontWeight: ds.typography.weights.semibold,
-              textDecoration: 'underline',
-            }}
+            className="text-xs font-bold text-rose-600 hover:text-rose-800 underline cursor-pointer"
           >
             Dismiss
           </button>

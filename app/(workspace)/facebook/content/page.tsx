@@ -17,7 +17,9 @@ import {
   FiShare2,
   FiExternalLink,
 } from "react-icons/fi";
+import { FaFacebook } from "react-icons/fa";
 import Pagination from "@/components/ui/Pagination";
+import { Button, IconButton } from "@/components/ui";
 
 type ContentItem = {
   id: string;
@@ -35,6 +37,7 @@ type ContentItem = {
 const PAGE_SIZE = 10;
 
 export default function FacebookContentPage() {
+  const router = useRouter();
   const [template, setTemplate] = useState<any>(null);
   const [items, setItems] = useState<ContentItem[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -112,9 +115,8 @@ export default function FacebookContentPage() {
               parsedItems.push({
                 id: post.id || `post_${dayIdx}_${postIdx}`,
                 type: "post",
-                title: `Post #${postNum}${post.time ? ` • ${post.time}` : ""}${
-                  day.theme ? ` (${day.theme})` : ""
-                }`,
+                title: `Post #${postNum}${post.time ? ` • ${post.time}` : ""}${day.theme ? ` (${day.theme})` : ""
+                  }`,
                 description: post.caption || "No caption",
                 script: post.generation_prompt || post.caption || "No script/prompt",
                 tags: formatTags(post.tags),
@@ -207,6 +209,18 @@ export default function FacebookContentPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleSendToFacebookStudio = (item: ContentItem) => {
+    const payload = {
+      title: item.title,
+      caption: `${item.description && item.description !== "No description" ? item.description : item.script}\n\n${item.tags}`,
+      type: item.type === "post" ? "post" : "reel",
+      templateId: template?.id,
+      itemId: item.id,
+    };
+    sessionStorage.setItem("fb_composer_prefill", JSON.stringify(payload));
+    router.push("/facebook/integration");
+  };
+
   const handleStatusChange = (itemId: string, newStatus: string) => {
     setItems((prev) =>
       prev.map((item) => {
@@ -265,8 +279,8 @@ export default function FacebookContentPage() {
         item.description && item.description !== "No description"
           ? item.description
           : item.script && item.script !== "No script"
-          ? item.script
-          : "";
+            ? item.script
+            : "";
 
       if (text) {
         parts.push(text);
@@ -324,18 +338,18 @@ export default function FacebookContentPage() {
       item.description && item.description !== "No description"
         ? item.description
         : item.script && item.script !== "No script"
-        ? item.script
-        : "";
+          ? item.script
+          : "";
 
     const formattedTags = item.tags
       ? item.tags
-          .split(",")
-          .map((t) => {
-            const tr = t.trim();
-            return tr.startsWith("#") ? tr : `#${tr}`;
-          })
-          .filter(Boolean)
-          .join(" ")
+        .split(",")
+        .map((t) => {
+          const tr = t.trim();
+          return tr.startsWith("#") ? tr : `#${tr}`;
+        })
+        .filter(Boolean)
+        .join(" ")
       : "";
 
     const text = [captionText, formattedTags].filter(Boolean).join("\n\n");
@@ -434,11 +448,11 @@ export default function FacebookContentPage() {
       <div className="space-y-4">
         <Link
           href="/facebook/templates"
-          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+          className="inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline font-medium"
         >
           <FiArrowLeft /> Back to Facebook Plans
         </Link>
-        <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
+        <div className="flex items-center gap-2 p-4 bg-rose-50 text-rose-700 rounded-xl border border-rose-200">
           <FiAlertCircle className="w-5 h-5" />
           <p>{error}</p>
         </div>
@@ -483,12 +497,12 @@ export default function FacebookContentPage() {
         <div className="space-y-1">
           <Link
             href="/facebook/templates"
-            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline mb-1 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline mb-1 font-medium"
           >
             <FiArrowLeft /> Back to Facebook Plans
           </Link>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 border border-blue-200 uppercase tracking-wider">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-orange-50 text-[#c83a2a] border border-orange-200/80 uppercase tracking-wider">
               {pageName}
             </span>
           </div>
@@ -503,31 +517,33 @@ export default function FacebookContentPage() {
         </div>
 
         <div className="flex items-center gap-2.5 relative">
-          <Link
+          <Button
             href={`/facebook/integration?templateId=${template.id}`}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-semibold shadow-2xs transition-colors"
+            variant="secondary"
+            size="md"
+            icon={<FiShare2 className="w-4 h-4 text-[#ff7d6e]" />}
+            className="hidden sm:inline-flex"
           >
-            <FiShare2 className="w-4 h-4 text-blue-600" /> Page Integration
-          </Link>
+            Page Integration
+          </Button>
 
           {/* Copy Options Dropdown Button */}
           <div className="relative">
             <button
               onClick={() => setIsCopyMenuOpen((prev) => !prev)}
-              className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-sm font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-xl text-sm font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 transition-colors shadow-2xs cursor-pointer"
               title="Open Copy Options"
             >
-              <FiCopy className="w-4 h-4 text-blue-600" />
+              <FiCopy className="w-4 h-4 text-[#ff7d6e]" />
               <span>Copy Content</span>
               {selectedItemIds.size > 0 && (
-                <span className="px-1.5 py-0.2 bg-blue-600 text-white text-[11px] font-bold rounded-full">
+                <span className="px-1.5 py-0.2 bg-[#ff7d6e] text-white text-[11px] font-bold rounded-full">
                   {selectedItemIds.size}
                 </span>
               )}
               <FiChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                  isCopyMenuOpen ? "rotate-180" : ""
-                }`}
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${isCopyMenuOpen ? "rotate-180" : ""
+                  }`}
               />
             </button>
 
@@ -538,11 +554,11 @@ export default function FacebookContentPage() {
                   className="fixed inset-0 z-40"
                   onClick={() => setIsCopyMenuOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-2 w-[320px] sm:w-[380px] bg-white rounded-xl shadow-2xl border border-slate-200 z-50 p-4 space-y-4 max-h-[85vh] overflow-y-auto">
+                <div className="absolute right-0 top-full mt-2 w-[320px] sm:w-[380px] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 space-y-4 max-h-[85vh] overflow-y-auto">
                   {/* Popover Header */}
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                      <FiCopy className="w-4 h-4 text-blue-600" />
+                      <FiCopy className="w-4 h-4 text-[#ff7d6e]" />
                       <h4 className="text-sm font-bold text-slate-800">
                         Copy Facebook Content
                       </h4>
@@ -556,7 +572,7 @@ export default function FacebookContentPage() {
                   </div>
 
                   {/* Content Filter Checkboxes */}
-                  <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg text-xs font-semibold text-slate-700">
+                  <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-700">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Include:
                     </span>
@@ -568,7 +584,7 @@ export default function FacebookContentPage() {
                           if (!e.target.checked && !includeTags) return;
                           setIncludeDescription(e.target.checked);
                         }}
-                        className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+                        className="w-4 h-4 accent-[#ff7d6e] rounded border-slate-300 cursor-pointer"
                       />
                       <span>Caption</span>
                     </label>
@@ -580,7 +596,7 @@ export default function FacebookContentPage() {
                           if (!e.target.checked && !includeDescription) return;
                           setIncludeTags(e.target.checked);
                         }}
-                        className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+                        className="w-4 h-4 accent-[#ff7d6e] rounded border-slate-300 cursor-pointer"
                       />
                       <span>Tags / Hashtags</span>
                     </label>
@@ -590,7 +606,7 @@ export default function FacebookContentPage() {
                   <div>
                     <button
                       onClick={() => handleCopyBatch(items, `All ${items.length} posts`)}
-                      className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                      className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
                     >
                       <FiCopy className="w-3.5 h-3.5" />
                       Copy All ({items.length} Posts)
@@ -615,7 +631,7 @@ export default function FacebookContentPage() {
                               `Posts ${chunk.start}-${chunk.end}`
                             )
                           }
-                          className="px-2 py-1.5 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 border border-slate-200 text-slate-700 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1"
+                          className="px-2 py-1.5 bg-slate-50 hover:bg-orange-50 hover:text-[#c83a2a] hover:border-orange-300 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1"
                           title={`Copy posts ${chunk.start} to ${chunk.end}`}
                         >
                           <span>{chunk.start} - {chunk.end}</span>
@@ -642,7 +658,7 @@ export default function FacebookContentPage() {
                                 `Posts ${chunk.start}-${chunk.end}`
                               )
                             }
-                            className="px-2.5 py-1.5 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 border border-slate-200 text-slate-700 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1"
+                            className="px-2.5 py-1.5 bg-slate-50 hover:bg-orange-50 hover:text-[#c83a2a] hover:border-orange-300 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1"
                             title={`Copy posts ${chunk.start} to ${chunk.end}`}
                           >
                             <span>Posts {chunk.start} - {chunk.end}</span>
@@ -666,7 +682,7 @@ export default function FacebookContentPage() {
                           max={items.length}
                           value={customRangeStart}
                           onChange={(e) => setCustomRangeStart(e.target.value)}
-                          className="w-14 px-2 py-1 bg-white border border-slate-300 rounded-md text-xs font-semibold text-slate-800 text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-14 px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
                         />
                       </div>
                       <div className="flex items-center gap-1 text-xs text-slate-600">
@@ -677,12 +693,12 @@ export default function FacebookContentPage() {
                           max={items.length}
                           value={customRangeEnd}
                           onChange={(e) => setCustomRangeEnd(e.target.value)}
-                          className="w-14 px-2 py-1 bg-white border border-slate-300 rounded-md text-xs font-semibold text-slate-800 text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-14 px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
                         />
                       </div>
                       <button
                         onClick={handleCopyCustomRange}
-                        className="flex-1 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-xs font-bold transition-colors cursor-pointer"
+                        className="flex-1 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
                       >
                         Copy Range
                       </button>
@@ -698,7 +714,7 @@ export default function FacebookContentPage() {
                       <div className="flex items-center gap-1.5 text-[11px]">
                         <button
                           onClick={handleSelectAll}
-                          className="text-blue-600 hover:underline cursor-pointer font-medium"
+                          className="text-[#c83a2a] hover:underline cursor-pointer font-medium"
                         >
                           Select All
                         </button>
@@ -715,7 +731,7 @@ export default function FacebookContentPage() {
                     {selectedItemIds.size > 0 ? (
                       <button
                         onClick={handleCopySelected}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
                       >
                         <FiCheck className="w-3.5 h-3.5" />
                         Copy Selected ({selectedItemIds.size} Posts)
@@ -732,29 +748,17 @@ export default function FacebookContentPage() {
           </div>
 
           {/* Save Status Changes Button */}
-          <button
+          <Button
             onClick={saveChanges}
             disabled={isSaving}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-xs cursor-pointer ${
-              saveSuccess
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-70"
-            }`}
+            isLoading={isSaving}
+            size="md"
+            variant="primary"
+            className={saveSuccess ? "!bg-emerald-600 hover:!bg-emerald-700 text-white" : ""}
+            icon={saveSuccess ? <FiCheck className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
           >
-            {isSaving ? (
-              <>
-                <FiRefreshCw className="w-4 h-4 animate-spin" /> Saving Changes...
-              </>
-            ) : saveSuccess ? (
-              <>
-                <FiCheck className="w-4 h-4" /> Changes Saved!
-              </>
-            ) : (
-              <>
-                <FiSave className="w-4 h-4" /> Save Status Changes
-              </>
-            )}
-          </button>
+            {saveSuccess ? "Changes Saved!" : "Save Status Changes"}
+          </Button>
         </div>
       </div>
 
@@ -765,11 +769,10 @@ export default function FacebookContentPage() {
             setStatusFilter("all");
             setCurrentPage(1);
           }}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-            statusFilter === "all"
-              ? "bg-slate-900 text-white shadow-2xs"
-              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-          }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${statusFilter === "all"
+            ? "bg-slate-900 text-white shadow-2xs"
+            : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+            }`}
         >
           All ({items.length})
         </button>
@@ -778,11 +781,10 @@ export default function FacebookContentPage() {
             setStatusFilter("pending");
             setCurrentPage(1);
           }}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-            statusFilter === "pending"
-              ? "bg-amber-500 text-white shadow-2xs"
-              : "bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200"
-          }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${statusFilter === "pending"
+            ? "bg-amber-500 text-white shadow-2xs"
+            : "bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200"
+            }`}
         >
           Pending ({pendingCount})
         </button>
@@ -792,11 +794,10 @@ export default function FacebookContentPage() {
               setStatusFilter("completed");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-              statusFilter === "completed"
-                ? "bg-green-600 text-white shadow-2xs"
-                : "bg-green-50 text-green-800 hover:bg-green-100 border border-green-200"
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${statusFilter === "completed"
+              ? "bg-emerald-600 text-white shadow-2xs"
+              : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200"
+              }`}
           >
             Completed ({completedCount})
           </button>
@@ -807,11 +808,10 @@ export default function FacebookContentPage() {
               setStatusFilter("published");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-              statusFilter === "published"
-                ? "bg-blue-600 text-white shadow-2xs"
-                : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200"
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${statusFilter === "published"
+              ? "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white shadow-xs"
+              : "bg-orange-50 text-[#c83a2a] hover:bg-orange-100 border border-orange-200"
+              }`}
           >
             Published ({publishedCount})
           </button>
@@ -822,11 +822,10 @@ export default function FacebookContentPage() {
               setStatusFilter("draft");
               setCurrentPage(1);
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-              statusFilter === "draft"
-                ? "bg-slate-600 text-white shadow-2xs"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${statusFilter === "draft"
+              ? "bg-slate-600 text-white shadow-2xs"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
+              }`}
           >
             Draft ({draftCount})
           </button>
@@ -835,19 +834,19 @@ export default function FacebookContentPage() {
 
       {/* Selected Items Quick Action Bar */}
       {selectedItemIds.size > 0 && (
-        <div className="flex items-center justify-between px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 shadow-2xs">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-orange-50 border border-orange-200/80 rounded-xl text-orange-950 shadow-2xs">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
+            <span className="text-xs font-bold bg-[#ff7d6e] text-white px-2 py-0.5 rounded-full">
               {selectedItemIds.size}
             </span>
-            <span className="text-xs font-semibold text-blue-900">
+            <span className="text-xs font-semibold text-orange-950">
               post{selectedItemIds.size > 1 ? "s" : ""} selected
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopySelected}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              className="px-3 py-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
             >
               <FiCopy className="w-3.5 h-3.5" />
               Copy Selected
@@ -864,7 +863,7 @@ export default function FacebookContentPage() {
 
       {/* Items List rendered as Boxes / Cards */}
       {paginatedItems.length === 0 ? (
-        <div className="p-12 text-center bg-white border border-slate-200 rounded-xl text-slate-500 space-y-2">
+        <div className="p-12 text-center bg-white border border-slate-200/80 rounded-2xl text-slate-500 space-y-2">
           <FiLayers className="w-8 h-8 text-slate-400 mx-auto" />
           <p className="font-medium text-slate-700">No Facebook posts found.</p>
           {statusFilter !== "all" && (
@@ -882,15 +881,14 @@ export default function FacebookContentPage() {
             return (
               <div
                 key={item.id}
-                className={`bg-white border rounded-xl p-4 sm:p-5 shadow-xs transition-all space-y-3.5 ${
-                  isSelected
-                    ? "ring-2 ring-blue-500/40 border-blue-400"
-                    : item.status === "published"
-                    ? "border-blue-200 hover:border-blue-300"
+                className={`bg-white border rounded-2xl p-4 sm:p-5 shadow-xs transition-all space-y-3.5 ${isSelected
+                  ? "ring-2 ring-[#ff7d6e]/40 border-[#ff7d6e]"
+                  : item.status === "published"
+                    ? "border-emerald-200/80 hover:border-emerald-300"
                     : item.status === "completed"
-                    ? "border-green-200 hover:border-green-300"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
+                      ? "border-green-200/80 hover:border-green-300"
+                      : "border-slate-200/80 hover:border-slate-300"
+                  }`}
               >
                 {/* Box Header: Checkbox + Number + Title + Copy Post + Status Dropdown */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -899,15 +897,15 @@ export default function FacebookContentPage() {
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleToggleSelect(item.id)}
-                      className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer shrink-0"
+                      className="w-4 h-4 accent-[#ff7d6e] rounded border-slate-300 cursor-pointer shrink-0"
                       title="Select this post"
                     />
-                    <span className="px-2 py-0.5 rounded-md text-[11px] font-bold shrink-0 bg-blue-600 text-white">
+                    <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold shrink-0 bg-slate-900 text-white">
                       #{itemIndex}
                     </span>
                     <Link
                       href={`/facebook/content/detail?templateId=${template.id}&itemId=${item.id}`}
-                      className="font-bold text-base text-slate-900 hover:text-blue-600 transition-colors truncate flex items-center gap-1.5"
+                      className="font-bold text-base text-slate-900 hover:text-[#c83a2a] transition-colors truncate flex items-center gap-1.5"
                       title="View post detail & preview"
                     >
                       <span>{item.title}</span>
@@ -917,23 +915,25 @@ export default function FacebookContentPage() {
 
                   {/* Header Right Area: Copy Post Button + Status Dropdown */}
                   <div className="flex items-center gap-2 shrink-0">
-                    <button
+                    <Button
+                      size="xs"
+                      variant="soft"
                       onClick={() => handleCopyFullItem(item)}
-                      className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+                      icon={copiedId === `${item.id}-full` ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />}
                       title="Copy Single Post (Caption + Tags, without item number or commas)"
                     >
-                      {copiedId === `${item.id}-full` ? (
-                        <>
-                          <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                          <span className="text-green-600 font-semibold">Copied</span>
-                        </>
-                      ) : (
-                        <>
-                          <FiCopy className="w-3.5 h-3.5" />
-                          <span className="font-medium">Copy Post</span>
-                        </>
-                      )}
-                    </button>
+                      {copiedId === `${item.id}-full` ? "Copied" : "Copy Post"}
+                    </Button>
+
+                    <Button
+                      size="xs"
+                      onClick={() => handleSendToFacebookStudio(item)}
+                      icon={<FaFacebook className="w-3.5 h-3.5 text-blue-600" />}
+                      className="bg-blue-50/70 hover:bg-blue-100/80 text-blue-700 border border-blue-200/80"
+                      title="Open in Facebook & Instagram Studio"
+                    >
+                      FB Studio
+                    </Button>
 
                     <div className="flex items-center gap-1.5 ml-1">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
@@ -942,15 +942,14 @@ export default function FacebookContentPage() {
                       <select
                         value={item.status}
                         onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                        className={`text-xs font-semibold rounded-lg px-2.5 py-1 border transition-colors cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          item.status === "published"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : item.status === "completed"
-                            ? "bg-green-50 text-green-700 border-green-200"
+                        className={`text-xs font-semibold rounded-xl px-2.5 py-1.5 border transition-colors cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] ${item.status === "published"
+                          ? "bg-orange-50 text-[#c83a2a] border-orange-200"
+                          : item.status === "completed"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : item.status === "draft"
-                            ? "bg-slate-100 text-slate-700 border-slate-300"
-                            : "bg-amber-50 text-amber-800 border-amber-300"
-                        }`}
+                              ? "bg-slate-100 text-slate-700 border-slate-300"
+                              : "bg-amber-50 text-amber-800 border-amber-300"
+                          }`}
                       >
                         <option value="pending">Pending</option>
                         <option value="draft">Draft</option>
@@ -970,13 +969,13 @@ export default function FacebookContentPage() {
                       </span>
                       <button
                         onClick={() => handleCopy(item.description, `${item.id}-desc`)}
-                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
                         title="Copy Caption"
                       >
                         {copiedId === `${item.id}-desc` ? (
                           <>
-                            <FiCheck className="w-3 h-3 text-green-500" />
-                            <span className="text-green-600">Copied</span>
+                            <FiCheck className="w-3 h-3 text-emerald-500" />
+                            <span className="text-emerald-600 font-semibold">Copied</span>
                           </>
                         ) : (
                           <>
@@ -986,7 +985,7 @@ export default function FacebookContentPage() {
                         )}
                       </button>
                     </div>
-                    <p className="text-sm text-slate-800 bg-slate-50/80 p-3 rounded-lg border border-slate-200/80 leading-relaxed whitespace-pre-wrap selection:bg-blue-100">
+                    <p className="text-sm text-slate-800 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 leading-relaxed whitespace-pre-wrap selection:bg-orange-100">
                       {item.description}
                     </p>
                   </div>
@@ -1003,23 +1002,23 @@ export default function FacebookContentPage() {
                         </span>
                         <button
                           onClick={() => handleCopy(item.script, `${item.id}-script`)}
-                          className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
                           title="Copy Prompt"
                         >
                           {copiedId === `${item.id}-script` ? (
                             <>
-                              <FiCheck className="w-3 h-3 text-green-500" />
-                              <span className="text-green-600">Copied</span>
+                              <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                              <span className="text-emerald-600 font-semibold">Copied</span>
                             </>
                           ) : (
                             <>
-                              <FiCopy className="w-3 h-3" />
+                              <FiCopy className="w-3.5 h-3.5" />
                               <span>Copy Prompt</span>
                             </>
                           )}
                         </button>
                       </div>
-                      <p className="text-xs font-mono text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 leading-relaxed">
+                      <p className="text-xs font-mono text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 leading-relaxed">
                         {item.script}
                       </p>
                     </div>
@@ -1043,13 +1042,13 @@ export default function FacebookContentPage() {
                             `${item.id}-tags`
                           )
                         }
-                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
                         title="Copy Tags (Space-separated, no commas)"
                       >
                         {copiedId === `${item.id}-tags` ? (
                           <>
-                            <FiCheck className="w-3 h-3 text-green-500" />
-                            <span className="text-green-600">Copied</span>
+                            <FiCheck className="w-3 h-3 text-emerald-500" />
+                            <span className="text-emerald-600 font-semibold">Copied</span>
                           </>
                         ) : (
                           <>
@@ -1067,7 +1066,7 @@ export default function FacebookContentPage() {
                         return (
                           <span
                             key={tIdx}
-                            className="inline-flex items-center px-2.5 py-0.5 bg-blue-50 text-blue-900 border border-blue-200/80 rounded-full text-xs font-medium"
+                            className="inline-flex items-center px-2.5 py-0.5 bg-orange-50 text-orange-900 border border-orange-200/80 rounded-full text-xs font-medium"
                           >
                             {formatted}
                           </span>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FiImage, FiRefreshCw, FiDownloadCloud, FiTrash2, FiVideo, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
+import { FiImage, FiDownloadCloud, FiTrash2, FiVideo, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { Button } from '@/components/ui';
 
 interface ExtractedMediaGalleryProps {
   signedMediaUrls: string[];
@@ -27,14 +28,14 @@ export default function ExtractedMediaGallery({
   downloadProgress,
   setDownloadProgress
 }: ExtractedMediaGalleryProps) {
-  
+
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
 
   const handleDownloadSelected = async () => {
     if (selectedMediaUrls.length === 0) return;
 
     let dirHandle: any = null;
-    
+
     // Try using the File System Access API
     if ('showDirectoryPicker' in window) {
       try {
@@ -60,9 +61,9 @@ export default function ExtractedMediaGallery({
         // Use Next.js API proxy instead of direct fetch to avoid CORS and hide endpoints
         const response = await fetch(`/api/media/download?url=${encodeURIComponent(url)}`);
         if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-        
+
         const blob = await response.blob();
-        
+
         const isVideo = url.toLowerCase().includes('.mp4') || url.toLowerCase().includes('.webm');
         const ext = isVideo ? 'mp4' : 'jpg';
         const filename = `media_${i + 1}_${Date.now()}.${ext}`;
@@ -90,9 +91,9 @@ export default function ExtractedMediaGallery({
       }
       setDownloadProgress(i + 1);
     }
-    
+
     setIsDownloadingBulk(false);
-    
+
     if (savedCount > 0) {
       if (dirHandle) {
         setTimeout(() => setAlertConfig({ isOpen: true, title: "Download Complete", message: `Successfully saved ${savedCount} items to your folder!`, isError: false }), 300);
@@ -107,10 +108,10 @@ export default function ExtractedMediaGallery({
   if (signedMediaUrls.length === 0) return null;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mt-6">
+    <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden mt-6">
       <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <FiImage className="w-5 h-5 text-slate-600" />
+          <FiImage className="w-5 h-5 text-[#ff7d6e]" />
           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Extracted Media Gallery</h3>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -128,7 +129,7 @@ export default function ExtractedMediaGallery({
               }
               e.target.value = "";
             }}
-            className="text-xs font-medium border border-slate-200 rounded-md px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm bg-white"
+            className="text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] cursor-pointer shadow-xs bg-white"
             defaultValue=""
           >
             <option value="" disabled>Select Multiple...</option>
@@ -141,22 +142,26 @@ export default function ExtractedMediaGallery({
 
           {selectedMediaUrls.length > 0 && (
             <>
-              <button
+              <Button
                 onClick={handleDownloadSelected}
                 disabled={isDownloadingBulk || isDeleting}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 text-blue-600 rounded-md text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                isLoading={isDownloadingBulk}
+                size="sm"
+                variant="soft"
+                icon={<FiDownloadCloud className="w-3.5 h-3.5" />}
               >
-                {isDownloadingBulk ? <FiRefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FiDownloadCloud className="w-3.5 h-3.5" />}
-                <span>{isDownloadingBulk ? `Downloading ${downloadProgress}/${selectedMediaUrls.length}...` : `Download Selected (${selectedMediaUrls.length})`}</span>
-              </button>
-              <button
+                {isDownloadingBulk ? `Downloading ${downloadProgress}/${selectedMediaUrls.length}...` : `Download Selected (${selectedMediaUrls.length})`}
+              </Button>
+              <Button
                 onClick={() => handleDeleteMedia(selectedMediaUrls)}
                 disabled={isDeleting || isDownloadingBulk}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 rounded-md text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                isLoading={isDeleting}
+                size="sm"
+                variant="dangerSoft"
+                icon={<FiTrash2 className="w-3.5 h-3.5" />}
               >
-                {isDeleting ? <FiRefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FiTrash2 className="w-3.5 h-3.5" />}
-                <span>{isDeleting ? 'Deleting...' : `Delete Selected (${selectedMediaUrls.length})`}</span>
-              </button>
+                {isDeleting ? 'Deleting...' : `Delete Selected (${selectedMediaUrls.length})`}
+              </Button>
             </>
           )}
         </div>
@@ -168,17 +173,17 @@ export default function ExtractedMediaGallery({
           return (
             <div
               key={idx}
-              className={`relative w-full break-inside-avoid mb-3 rounded-md overflow-hidden border ${isSelected ? 'border-blue-500 border-2' : 'border-slate-200/50 bg-slate-50'} group cursor-pointer`}
+              className={`relative w-full break-inside-avoid mb-3 rounded-xl overflow-hidden border transition-all ${isSelected ? 'border-[#ff7d6e] ring-2 ring-[#ff7d6e]/30' : 'border-slate-200/70 bg-slate-50 hover:border-slate-300'} group cursor-pointer`}
               onClick={() => setPreviewMediaUrl(url)}
             >
               {isVideo ? (
                 <>
-                  <video 
-                    src={url} 
-                    controls 
-                    controlsList="nodownload" 
+                  <video
+                    src={url}
+                    controls
+                    controlsList="nodownload"
                     preload="none"
-                    className="w-full h-auto block" 
+                    className="w-full h-auto block"
                   />
                   {/* Invisible overlay to capture clicks for the popup */}
                   <div className="absolute inset-0 z-[5] bg-transparent" />
@@ -202,7 +207,7 @@ export default function ExtractedMediaGallery({
                     if (e.target.checked) setSelectedMediaUrls(prev => [...prev, url]);
                     else setSelectedMediaUrls(prev => prev.filter(u => u !== url));
                   }}
-                  className="w-4 h-4 cursor-pointer accent-blue-600 bg-white rounded-sm"
+                  className="w-4 h-4 cursor-pointer accent-[#ff7d6e] bg-white rounded-sm"
                 />
               </div>
             </div>

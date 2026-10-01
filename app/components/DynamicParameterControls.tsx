@@ -104,13 +104,13 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
   }
 
   return (
-    <div className="pt-2.5 border-t border-gray-100 flex flex-col gap-3">
-      <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-gray-700">
+    <div className="pt-3 border-t border-slate-200/80 flex flex-col gap-3">
+      <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-800">
         <div className="flex items-center gap-1.5">
-          <FaSlidersH className="text-gray-500" />
+          <FaSlidersH className="text-slate-400" />
           <span>Model Parameters</span>
         </div>
-        <span className="text-[11px] font-normal text-gray-500">
+        <span className="text-[11px] font-normal text-slate-500 font-mono">
           {model.name}
         </span>
       </div>
@@ -128,7 +128,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
 
             return (
               <div key={param.id} className="flex flex-col gap-1.5">
-                <div className="flex justify-between items-center text-xs sm:text-sm font-medium text-gray-700">
+                <div className="flex justify-between items-center text-xs sm:text-sm font-medium text-slate-700">
                   <label
                     htmlFor={`param-${param.id}`}
                     className="flex items-center gap-1.5 cursor-pointer"
@@ -137,7 +137,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
                     {param.description && (
                       <span
                         title={param.description}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-slate-400 hover:text-slate-600"
                       >
                         <FaInfoCircle className="text-[10px]" />
                       </span>
@@ -145,7 +145,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
                   </label>
 
                   {/* Interactive Editable Number Input */}
-                  <div className="flex items-center justify-center bg-red-50/90 px-2 py-0.5 rounded-md border border-red-200/80 focus-within:ring-2 focus-within:ring-[#ff9b8f]/30 focus-within:border-[#ff9b8f] transition-all">
+                  <div className="flex items-center justify-center bg-orange-50/90 px-2 py-0.5 rounded-lg border border-orange-200/80 focus-within:ring-2 focus-within:ring-[#ff9b8f]/30 focus-within:border-[#ff9b8f] transition-all shadow-2xs">
                     <input
                       type="number"
                       min={min}
@@ -160,11 +160,11 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
                           onParamChange(param.id, clamped);
                         }
                       }}
-                      className="w-10 text-center bg-transparent text-xs font-bold text-red-600 font-mono outline-none border-none p-0 cursor-text"
+                      className="w-10 text-center bg-transparent text-xs font-bold text-[#c83a2a] font-mono outline-none border-none p-0 cursor-text"
                       title="Type value or use up/down arrow keys"
                     />
                     {unit && (
-                      <span className="text-[11px] font-bold text-red-600 font-mono select-none">
+                      <span className="text-[11px] font-bold text-[#c83a2a] font-mono select-none">
                         {unit}
                       </span>
                     )}
@@ -183,10 +183,10 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
                   onChange={(e) =>
                     onParamChange(param.id, parseFloat(e.target.value))
                   }
-                  className="theme-range-slider w-full h-2 rounded-full appearance-none bg-red-100 outline-none cursor-pointer disabled:opacity-50"
+                  className="theme-range-slider w-full h-2 rounded-full appearance-none bg-orange-100 outline-none cursor-pointer disabled:opacity-50"
                 />
 
-                <div className="flex justify-between text-[11px] text-gray-400 font-mono">
+                <div className="flex justify-between text-[11px] text-slate-400 font-mono">
                   <span>
                     {min}
                     {unit}
@@ -209,7 +209,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
               <div key={param.id} className="flex justify-between items-center py-1">
                 <label
                   htmlFor={`param-${param.id}`}
-                  className="text-xs sm:text-sm font-medium text-gray-700 cursor-pointer"
+                  className="text-xs sm:text-sm font-medium text-slate-700 cursor-pointer"
                 >
                   {param.label}
                 </label>
@@ -230,7 +230,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
               <div key={param.id} className="flex justify-between items-center py-1">
                 <label
                   htmlFor={`param-${param.id}`}
-                  className="text-xs sm:text-sm font-medium text-gray-700"
+                  className="text-xs sm:text-sm font-medium text-slate-700"
                 >
                   {param.label}
                 </label>
@@ -239,7 +239,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
                   value={currentValue}
                   disabled={disabled}
                   onChange={(e) => onParamChange(param.id, e.target.value)}
-                  className="text-xs border border-gray-200 rounded px-2 py-1 bg-white outline-none focus:border-[#ff9b8f]"
+                  className="text-xs border border-slate-200 rounded-lg px-2.5 py-1 bg-white text-slate-800 outline-none focus:border-[#ff9b8f] focus:ring-2 focus:ring-[#ff9b8f]/20 shadow-2xs"
                 >
                   {param.options.map((opt) => (
                     <option key={opt.value} value={opt.value}>

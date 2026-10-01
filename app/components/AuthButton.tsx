@@ -123,7 +123,7 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
     return (
       <a
         href="/api/auth/google"
-        className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-sm font-semibold bg-white text-gray-800 border border-gray-200/90 hover:border-gray-300 hover:bg-gray-50/90 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+        className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-semibold bg-white text-slate-700 border border-slate-200 hover:border-[#ff9b8f]/60 hover:bg-orange-50/50 shadow-2xs transition-all duration-200 cursor-pointer"
         title="Sign in with Google"
       >
         <GoogleIcon className="w-4 h-4" />
@@ -137,22 +137,22 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
       <button
         type="button"
         onClick={() => setMenuOpen(!menuOpen)}
-        className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white text-gray-900 border border-gray-200/90 hover:border-gray-300 shadow-sm hover:shadow-md transition-all cursor-pointer"
+        className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-white text-slate-800 border border-slate-200 hover:border-[#ff9b8f]/60 shadow-2xs transition-all cursor-pointer"
       >
         {user.image ? (
           <img
             src={user.image}
             alt={user.name || 'User'}
-            className="w-7 h-7 rounded-full object-cover ring-2 ring-[#ff9b8f]/50"
+            className="w-6 h-6 rounded-full object-cover ring-2 ring-[#ff9b8f]/50"
           />
         ) : (
-          <FaUserCircle className="w-7 h-7 text-gray-400" />
+          <FaUserCircle className="w-6 h-6 text-slate-400" />
         )}
-        <span className="text-xs font-bold text-gray-800 max-w-[140px] truncate">
+        <span className="text-xs font-bold text-slate-800 max-w-[140px] truncate">
           {user.name || user.email}
         </span>
         {quota && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200/60">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-50 text-[#c83a2a] border border-orange-200/80">
             {Math.max(0, (quota.max_daily_generations || 5) - (quota.generations_used || 0))}/{quota.max_daily_generations || 5}
           </span>
         )}
@@ -160,19 +160,19 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
 
       {/* Dropdown Menu */}
       {menuOpen && (
-        <div className="absolute right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-fadeIn text-left">
+        <div className="absolute right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/80 py-2 z-50 animate-fadeIn text-left">
           {/* User Info Header */}
-          <div className="px-4 py-2.5 border-b border-gray-100">
-            <p className="text-xs font-bold text-gray-900 truncate">{user.name || 'Account'}</p>
-            <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
+          <div className="px-4 py-2.5 border-b border-slate-100">
+            <p className="text-xs font-bold text-slate-900 truncate">{user.name || 'Account'}</p>
+            <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
             
             {quota && (
-              <div className="mt-2 pt-2 border-t border-gray-50 flex items-center justify-between text-[11px] text-gray-600">
+              <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
                 <span className="flex items-center gap-1">
-                  <FaBolt className="text-amber-500 text-[10px]" />
+                  <FaBolt className="text-[#ff7d6e] text-[10px]" />
                   <span>Today's Limit:</span>
                 </span>
-                <span className="font-bold text-gray-800">
+                <span className="font-bold text-slate-800">
                   {Math.max(0, (quota.max_daily_generations || 5) - (quota.generations_used || 0))} / {quota.max_daily_generations || 5} left
                 </span>
               </div>
@@ -183,7 +183,7 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-full px-4 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
+            className="w-full px-4 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors cursor-pointer"
           >
             <FaSignOutAlt />
             <span>Sign Out</span>

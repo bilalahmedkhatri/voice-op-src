@@ -98,7 +98,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-80 space-y-3">
-        <FiRefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+        <FiRefreshCw className="w-8 h-8 text-[#ff7d6e] animate-spin" />
         <p className="text-sm font-medium text-slate-500">Loading account settings...</p>
       </div>
     );
@@ -106,14 +106,14 @@ export default function SettingsPage() {
 
   if (error) {
     return (
-      <div className="w-full flex items-center justify-between p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 shadow-sm">
+      <div className="w-full flex items-center justify-between p-4 bg-rose-50 text-rose-700 rounded-xl border border-rose-200 shadow-xs">
         <div className="flex items-center gap-3">
-          <FiAlertCircle className="w-5 h-5 flex-shrink-0 text-red-500" />
+          <FiAlertCircle className="w-5 h-5 flex-shrink-0 text-rose-500" />
           <p className="text-sm font-medium">{error}</p>
         </div>
         <button
           onClick={fetchSettings}
-          className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-xs font-semibold transition-colors"
+          className="px-3.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
         >
           Retry
         </button>
@@ -123,8 +123,8 @@ export default function SettingsPage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="w-full max-w-xl mx-auto mt-16 p-8 bg-white border border-slate-200 rounded-2xl shadow-sm text-center space-y-5">
-        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto text-blue-600">
+      <div className="w-full max-w-xl mx-auto mt-16 p-8 bg-white border border-slate-200/80 rounded-2xl shadow-xs text-center space-y-5">
+        <div className="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto text-[#ff7d6e]">
           <FiSettings className="w-8 h-8" />
         </div>
         <div>
@@ -135,7 +135,7 @@ export default function SettingsPage() {
         </div>
         <a
           href="/api/auth/google"
-          className="inline-flex items-center gap-2.5 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-sm hover:shadow"
+          className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl font-semibold transition-all shadow-xs cursor-pointer"
         >
           <FaGoogle className="text-sm" />
           Sign in with Google

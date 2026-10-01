@@ -496,7 +496,7 @@ export default function YouTubeContentDetailPage() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                   <span>Generated Voiceovers</span>
-                  <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold">
+                  <span className="px-1.5 py-0.5 bg-orange-100 text-[#c83a2a] rounded-full text-[10px] font-bold">
                     {item.audio_list.length}
                   </span>
                 </h3>
@@ -513,15 +513,14 @@ export default function YouTubeContentDetailPage() {
                         key={aud.job_id || idx}
                         type="button"
                         onClick={() => setSelectedAudioIndex(idx)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 flex-shrink-0 border ${
-                          isSelected
-                            ? 'bg-red-600 text-white border-red-700 shadow-xs'
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-                        }`}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 flex-shrink-0 border ${isSelected
+                          ? 'bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white border-[#ff7d6e] shadow-xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-orange-50/50 hover:border-orange-200'
+                          }`}
                       >
                         <span>🔊 {label}</span>
                         {aud.created_at && (
-                          <span className={`text-[10px] ${isSelected ? 'text-red-100' : 'text-slate-400'}`}>
+                          <span className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
                             {new Date(aud.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}

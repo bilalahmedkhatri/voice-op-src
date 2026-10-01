@@ -71,11 +71,11 @@ const CaptionCard = ({
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
       {/* Card Header */}
       <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-900 text-white">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-900 text-white">
             Caption #{capNumber}
           </span>
         </div>
@@ -84,13 +84,13 @@ const CaptionCard = ({
         {!isEditing && (
           <button
             onClick={handleCopyFullPost}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#c83a2a] hover:bg-orange-100/80 bg-orange-50/70 border border-orange-200/80 px-2.5 py-1 rounded-xl transition-colors cursor-pointer"
             title="Copy Caption + Tags"
           >
             {copiedId === fullPostId ? (
               <>
-                <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                <span className="text-green-600">Copied All</span>
+                <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-emerald-600">Copied All</span>
               </>
             ) : (
               <>
@@ -111,13 +111,13 @@ const CaptionCard = ({
           {!isEditing && item.caption && (
             <button
               onClick={() => onCopy(item.caption, captionId)}
-              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
               title="Copy Caption Only"
             >
               {copiedId === captionId ? (
                 <>
-                  <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                  <span className="text-green-600">Copied</span>
+                  <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-600">Copied</span>
                 </>
               ) : (
                 <>
@@ -135,10 +135,10 @@ const CaptionCard = ({
             value={item.caption || ""}
             onChange={(e) => onItemChange(index, "caption", e.target.value)}
             placeholder="Enter caption text..."
-            className="w-full p-2.5 bg-white rounded-lg border border-blue-400 text-sm text-slate-800 leading-relaxed shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+            className="w-full p-2.5 bg-white rounded-xl border border-slate-300 text-sm text-slate-800 leading-relaxed shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] resize-y"
           />
         ) : item.caption ? (
-          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200/80 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap selection:bg-blue-100">
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap selection:bg-orange-100">
             {sanitizeText(item.caption)}
           </div>
         ) : (
@@ -158,13 +158,13 @@ const CaptionCard = ({
           {!isEditing && tagsArray.length > 0 && (
             <button
               onClick={() => onCopy(formattedTagsString, tagsId)}
-              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
               title="Copy All Tags (Space separated)"
             >
               {copiedId === tagsId ? (
                 <>
-                  <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                  <span className="text-green-600">Copied</span>
+                  <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-600">Copied</span>
                 </>
               ) : (
                 <>
@@ -190,7 +190,7 @@ const CaptionCard = ({
               onItemChange(index, "tags", arr);
             }}
             placeholder="#KarachiFashion, #Summer (comma-separated)"
-            className="w-full p-2 bg-white rounded-lg border border-blue-400 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2.5 bg-white rounded-xl border border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
           />
         ) : tagsArray.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
@@ -201,7 +201,7 @@ const CaptionCard = ({
               return (
                 <span
                   key={tIdx}
-                  className="inline-flex items-center px-2.5 py-0.5 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-full text-xs font-medium"
+                  className="inline-flex items-center px-2.5 py-0.5 bg-orange-50 text-orange-900 border border-orange-200/80 rounded-full text-xs font-medium"
                 >
                   {formatted}
                 </span>
@@ -244,7 +244,7 @@ export default function CaptionsTemplateView({
 
   if (!Array.isArray(captions) || captions.length === 0) {
     return (
-      <div className="p-8 text-center bg-white border border-slate-200 rounded-xl text-slate-500">
+      <div className="p-8 text-center bg-white border border-slate-200/80 rounded-2xl text-slate-500">
         No captions available.
       </div>
     );
@@ -253,9 +253,9 @@ export default function CaptionsTemplateView({
   return (
     <div className="space-y-6">
       {/* Top Summary Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#ff7d6e] shrink-0">
             <FiLayers className="w-6 h-6" />
           </div>
           <div>
@@ -269,7 +269,7 @@ export default function CaptionsTemplateView({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="px-3.5 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-200 flex items-center gap-1.5">
+          <span className="px-3.5 py-1.5 bg-orange-50 text-[#c83a2a] rounded-full text-xs font-semibold border border-orange-200/80 flex items-center gap-1.5">
             {captions.length} {captions.length === 1 ? "Caption" : "Captions"}
           </span>
         </div>

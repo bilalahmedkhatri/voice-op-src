@@ -2,6 +2,7 @@ import React from 'react';
 import { FiCheck, FiCopy } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
 import SectionHeader from '@/components/ui/SectionHeader';
+import IconButton from '@/components/ui/IconButton';
 
 interface TagsSectionProps {
   tagsList: string[];
@@ -14,9 +15,13 @@ export default function TagsSection({ tagsList, copiedId, handleCopy, rawTagsDat
   return (
     <Card>
       <SectionHeader title="Tags">
-        <button onClick={() => handleCopy(tagsList.join(' '), 'tags')} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer p-1" title="Copy Tags">
-          {copiedId === 'tags' ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
-        </button>
+        <IconButton
+          icon={copiedId === 'tags' ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />}
+          title="Copy Tags"
+          variant="ghost"
+          size="xs"
+          onClick={() => handleCopy(tagsList.join(' '), 'tags')}
+        />
       </SectionHeader>
       {tagsList.length > 0 ? (
         <div className="flex flex-wrap gap-2">

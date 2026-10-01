@@ -8,15 +8,11 @@ export default function BlogLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ background: 'linear-gradient(135deg, #fef3f2 0%, #ffe4e1 100%)', minHeight: '100vh', color: '#1a1a1a' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem)' }}>
-        <header style={{ marginBottom: '2rem' }}>
-          <BackButton />
-        </header>
-        <main>
-          {children}
-        </main>
-      </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-900 font-sans">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-8 sm:py-12 md:py-16">
+        <BackButton />
+        {children}
+      </main>
       <Footer />
     </div>
   );

@@ -1,5 +1,6 @@
 import React from "react";
-import { FiVideo, FiDownloadCloud } from "react-icons/fi";
+import { FiVideo, FiDownloadCloud, FiX } from "react-icons/fi";
+import { IconButton } from "@/components/ui";
 
 interface PreviewModalProps {
   previewMediaUrl: string | null;
@@ -63,31 +64,32 @@ export default function PreviewModal({ previewMediaUrl, setPreviewMediaUrl }: Pr
       onClick={() => setPreviewMediaUrl(null)}
     >
       <div
-        className="relative w-full max-w-5xl bg-white rounded-xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col transform transition-all duration-300 scale-100"
+        className="relative w-full max-w-5xl bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col transform transition-all duration-300 scale-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
           <div className="flex items-center gap-2">
             <span className="text-slate-700 text-sm font-semibold flex items-center gap-2">
-              <FiVideo className="w-4 h-4 text-blue-600" /> Media Preview
+              <FiVideo className="w-4 h-4 text-[#ff7d6e]" /> Media Preview
             </span>
           </div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => handleSingleDownload(previewMediaUrl)} 
-              className="text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
+          <div className="flex items-center gap-2">
+            <IconButton
+              icon={<FiDownloadCloud className="w-4 h-4" />}
               title="Download File"
-            >
-              <FiDownloadCloud className="w-5 h-5" />
-            </button>
-            <button
-              className="text-slate-500 hover:text-red-500 transition-colors"
-              onClick={() => setPreviewMediaUrl(null)}
+              size="sm"
+              variant="ghost"
+              onClick={() => handleSingleDownload(previewMediaUrl)}
+            />
+            <IconButton
+              icon={<FiX className="w-4 h-4" />}
               title="Close (Esc)"
-            >
-              <span className="text-2xl leading-none">&times;</span>
-            </button>
+              size="sm"
+              variant="ghost"
+              onClick={() => setPreviewMediaUrl(null)}
+              className="hover:text-red-500 hover:bg-red-50"
+            />
           </div>
         </div>
 
@@ -99,13 +101,13 @@ export default function PreviewModal({ previewMediaUrl, setPreviewMediaUrl }: Pr
               controls
               autoPlay
               controlsList="nodownload"
-              className="max-w-full max-h-[75vh] object-contain rounded shadow-sm"
+              className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-sm"
             />
           ) : (
             <img
               src={previewMediaUrl}
               alt="Preview"
-              className="max-w-full max-h-[75vh] object-contain rounded shadow-sm"
+              className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-sm"
             />
           )}
         </div>

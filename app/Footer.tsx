@@ -1,9 +1,8 @@
-// app/components/Footer.tsx
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { FaHeart } from 'react-icons/fa';
-import { designSystem as ds } from './lib/designSystem';
 
 const footerLinks = [
   { href: '/about-us', text: 'About Us' },
@@ -14,64 +13,41 @@ const footerLinks = [
   { href: '/blog', text: 'Blog' },
 ];
 
-const Footer = () => {
+export default function Footer() {
   return (
-    <footer style={{
-      textAlign: 'center',
-      padding: `${ds.spacing['2xl']} ${ds.spacing.xl}`,
-      color: ds.colors.gray[600],
-      fontSize: ds.typography.sizes.sm,
-      fontFamily: ds.typography.fonts.body,
-      background: 'rgba(255, 255, 255, 0.5)',
-      borderTop: '1px solid rgba(0, 0, 0, 0.05)',
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        gap: ds.spacing.lg,
-        flexWrap: 'wrap',
-        marginBottom: ds.spacing.lg,
-      }}>
-        {footerLinks.map(link => (
-          <a
-            key={link.href}
-            href={link.href}
-            style={{
-              color: ds.colors.gray[700],
-              textDecoration: 'none',
-              fontWeight: ds.typography.weights.medium,
-              transition: 'color 0.2s',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as any).style.color = ds.colors.primary[600]; }}
-            onMouseLeave={(e) => { (e.currentTarget as any).style.color = ds.colors.gray[700]; }}
-          >
-            {link.text}
-          </a>
-        ))}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: ds.spacing.md }}>
-        <p style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-          Made with <FaHeart style={{ color: '#ef4444' }} /> using <b>
+    <footer className="w-full text-center py-8 px-4 text-xs sm:text-sm text-slate-500 bg-white/60 border-t border-slate-200/80 backdrop-blur-xs">
+      <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
+        {/* Navigation links */}
+        <nav className="flex justify-center gap-4 sm:gap-6 flex-wrap">
+          {footerLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-slate-600 hover:text-[#c83a2a] font-medium transition-colors cursor-pointer"
+            >
+              {link.text}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Branding & credits */}
+        <div className="flex flex-col items-center gap-1.5 text-xs text-slate-400">
+          <p className="flex items-center gap-1.5 justify-center">
+            <span>Made with</span>
+            <FaHeart className="text-[#ff7d6e] text-xs" />
+            <span>using</span>
             <a
               href="https://www.azeemlab.com"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                color: ds.colors.primary[600],
-                textDecoration: 'none',
-                fontWeight: ds.typography.weights.bold,
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as any).style.textDecoration = 'underline'; }}
-              onMouseLeave={(e) => { (e.currentTarget as any).style.textDecoration = 'none'; }}
+              className="font-bold text-slate-700 hover:text-[#c83a2a] transition-colors"
             >
               AzeemLAB API
             </a>
-          </b>
-        </p>
-        <p>&copy; {new Date().getFullYear()} AI Voiceover Generator. All rights reserved.</p>
+          </p>
+          <p>&copy; {new Date().getFullYear()} AI Voiceover Generator. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

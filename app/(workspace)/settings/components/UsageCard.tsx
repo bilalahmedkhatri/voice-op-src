@@ -43,10 +43,10 @@ export default function UsageCard({ quota }: UsageCardProps) {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+    <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
+      <div className="px-5 py-4 border-b border-slate-200/80 bg-slate-50/70 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FiBarChart2 className="w-4 h-4 text-blue-600" />
+          <FiBarChart2 className="w-4 h-4 text-[#ff7d6e]" />
           <h3 className="text-sm font-semibold text-slate-900">Usage Details</h3>
         </div>
         <span className="text-[11px] text-slate-400 font-mono">24h Quota</span>
@@ -68,7 +68,7 @@ export default function UsageCard({ quota }: UsageCardProps) {
                   ? "bg-rose-500"
                   : generationsPercent >= 70
                   ? "bg-amber-500"
-                  : "bg-blue-600"
+                  : "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e]"
               }`}
               style={{ width: `${generationsPercent}%` }}
             />
@@ -104,8 +104,8 @@ export default function UsageCard({ quota }: UsageCardProps) {
         </div>
 
         {/* Daily Reset Info Box */}
-        <div className="p-3 bg-blue-50/60 rounded-lg border border-blue-100">
-          <p className="text-xs text-blue-800 leading-relaxed">
+        <div className="p-3 bg-orange-50/70 rounded-xl border border-orange-200/80">
+          <p className="text-xs text-orange-950 leading-relaxed">
             💡 All daily limits reset automatically every morning at{" "}
             <strong>{formatResetTime(quota.reset_at)}</strong>.
           </p>

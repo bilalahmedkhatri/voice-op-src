@@ -231,19 +231,19 @@ const GenerationHistory = memo(function GenerationHistory({
   // If online mode but guest with no history
   if (!isOfflineMode && !authenticated && historyItems.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center bg-gray-50/60 rounded-2xl border border-gray-100">
-        <div className="w-12 h-12 rounded-2xl bg-red-50 text-[#ff9b8f] flex items-center justify-center mb-3">
+      <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center bg-slate-50/60 rounded-2xl border border-slate-200/80">
+        <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#ff7d6e] flex items-center justify-center mb-3">
           <FaHistory className="text-xl" />
         </div>
-        <h4 className="text-sm font-bold text-gray-900 mb-1">
+        <h4 className="text-sm font-bold text-slate-900 mb-1">
           Sign In to Sync History
         </h4>
-        <p className="text-xs text-gray-500 max-w-xs mb-4">
+        <p className="text-xs text-slate-500 max-w-xs mb-4">
           Save your generated voiceovers in the cloud, reuse prompts, and access them across all devices.
         </p>
         <a
           href="/api/auth/google"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-800 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 shadow-2xs transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-800 border border-slate-200 hover:border-[#ff9b8f]/60 hover:bg-orange-50/50 shadow-2xs transition-all cursor-pointer"
         >
           <FaGoogle className="text-red-500" />
           <span>Sign In with Google</span>
@@ -254,14 +254,14 @@ const GenerationHistory = memo(function GenerationHistory({
 
   if (historyItems.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50/60 rounded-2xl border border-gray-100">
-        <div className="w-12 h-12 rounded-2xl bg-[#ff9b8f]/10 text-[#ff9b8f] flex items-center justify-center mb-3">
+      <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-50/60 rounded-2xl border border-slate-200/80">
+        <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#ff7d6e] flex items-center justify-center mb-3">
           <FaVolumeUp className="text-xl" />
         </div>
-        <h4 className="text-sm font-bold text-gray-900 mb-1">
+        <h4 className="text-sm font-bold text-slate-900 mb-1">
           No Voiceovers in History Yet
         </h4>
-        <p className="text-xs text-gray-500 max-w-xs">
+        <p className="text-xs text-slate-500 max-w-xs">
           Generate your first speech audio on the left and it will automatically appear here with playback and download options.
         </p>
       </div>
@@ -271,9 +271,9 @@ const GenerationHistory = memo(function GenerationHistory({
   return (
     <div className="flex flex-col gap-3">
       {/* History Header & Clear Action */}
-      <div className="flex items-center justify-between px-1 pb-1 border-b border-gray-100">
+      <div className="flex items-center justify-between px-1 pb-1 border-b border-slate-100">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
             {historyItems.length} Saved Voiceover{historyItems.length !== 1 ? 's' : ''}
           </span>
           {isOfflineMode && (
@@ -285,7 +285,7 @@ const GenerationHistory = memo(function GenerationHistory({
         <button
           type="button"
           onClick={() => setShowClearAllModal(true)}
-          className="text-[11px] font-semibold text-red-500 hover:text-red-700 hover:underline cursor-pointer"
+          className="text-[11px] font-semibold text-rose-500 hover:text-rose-700 hover:underline cursor-pointer"
         >
           Clear All
         </button>
@@ -298,7 +298,7 @@ const GenerationHistory = memo(function GenerationHistory({
           return (
             <div
               key={item.id}
-              className="p-3 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 shadow-2xs hover:shadow-xs transition-all flex flex-col gap-2"
+              className="p-3.5 bg-white rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs transition-all flex flex-col gap-2.5"
             >
               {/* Top Row: Meta Tags & Actions */}
               <div className="flex items-center justify-between gap-2">
@@ -313,7 +313,7 @@ const GenerationHistory = memo(function GenerationHistory({
                         className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
                           isShort
                             ? 'bg-rose-50 text-rose-700 border-rose-200/80'
-                            : 'bg-indigo-50 text-indigo-700 border-indigo-200/80'
+                            : 'bg-amber-50 text-amber-900 border-amber-200/80'
                         }`}
                       >
                         {isShort ? '⚡ Short' : '🎬 Long'}
@@ -321,10 +321,10 @@ const GenerationHistory = memo(function GenerationHistory({
                     );
                   })()}
 
-                  <span className="px-2 py-0.5 bg-[#ff9b8f]/15 text-gray-900 rounded-lg text-[10px] font-bold">
+                  <span className="px-2 py-0.5 bg-orange-50 text-orange-950 border border-orange-200/80 rounded-lg text-[10px] font-bold">
                     {item.voice_name}
                   </span>
-                  <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-medium">
+                  <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">
                     {item.model_name}
                   </span>
                   {item.generation_time_sec && (
@@ -335,14 +335,14 @@ const GenerationHistory = memo(function GenerationHistory({
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                <div className="flex items-center gap-2 text-[10px] text-slate-400">
                   <span>{formatRelativeTime(item.created_at)}</span>
                   <button
                     type="button"
                     onClick={() => handleDeleteItem(item.id)}
                     disabled={deletingId === item.id}
                     title="Delete item"
-                    className="text-gray-400 hover:text-red-500 transition-colors p-1 cursor-pointer"
+                    className="text-slate-400 hover:text-rose-500 transition-colors p-1 cursor-pointer"
                   >
                     <FaTrash className="text-[10px]" />
                   </button>
@@ -372,9 +372,9 @@ const GenerationHistory = memo(function GenerationHistory({
                       return (
                         <span
                           key={key}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-gray-50 text-gray-600 border border-gray-200/60"
+                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-50 text-slate-600 border border-slate-200/60"
                         >
-                          {label}: <strong className="text-gray-800 font-semibold">{formattedVal}</strong>
+                          {label}: <strong className="text-slate-800 font-semibold">{formattedVal}</strong>
                         </span>
                       );
                     })}
@@ -382,26 +382,27 @@ const GenerationHistory = memo(function GenerationHistory({
                 );
               })()}
 
-              {/* Short Prompt Snippet (First 15-20 characters only) */}
-              <div className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50/70 px-2.5 py-1.5 rounded-xl border border-gray-100">
-                <span className="text-gray-400 font-serif text-xs">&ldquo;</span>
-                <span className="truncate font-normal text-gray-700">
+              {/* Short Prompt Snippet */}
+              <div className="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100">
+                <span className="text-slate-400 font-serif text-xs">&ldquo;</span>
+                <span className="truncate font-normal text-slate-700">
                   {item.prompt_text.length > 70
                     ? `${item.prompt_text.substring(0, 70).trim()}...`
                     : item.prompt_text}
                 </span>
-                <span className="text-gray-400 font-serif text-xs">&rdquo;</span>
+                <span className="text-slate-400 font-serif text-xs">&rdquo;</span>
               </div>
 
-              {/* Bottom Actions Row: Polished Play & Download Buttons */}
+              {/* Bottom Actions Row */}
               <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => handlePlayToggle(item)}
-                  className={`h-9 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs ${isPlaying
-                    ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                    : 'bg-[#ff9b8f] hover:bg-[#f8887a] text-white hover:shadow-xs'
-                    }`}
+                  className={`h-9 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs ${
+                    isPlaying
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                      : 'bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white'
+                  }`}
                 >
                   {isPlaying ? (
                     <>
@@ -425,10 +426,10 @@ const GenerationHistory = memo(function GenerationHistory({
                       parameters: item.parameters,
                       date: item.created_at,
                     })}
-                    className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200/80 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-orange-50/50 text-slate-700 border border-slate-200 hover:border-[#ff9b8f]/60 flex items-center justify-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                     title="Download audio"
                   >
-                    <FaDownload className="text-[10px] text-gray-500" />
+                    <FaDownload className="text-[10px] text-slate-500" />
                     <span>Download</span>
                   </a>
                 )}

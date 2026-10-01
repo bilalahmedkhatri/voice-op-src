@@ -62,7 +62,7 @@ const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
         {isEditing ? (
           <button
             onClick={() => setIsEditing(false)}
-            className="p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-sm flex items-center justify-center transition-colors"
+            className="p-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-lg shadow-xs flex items-center justify-center transition-all cursor-pointer"
             title="Save changes"
           >
             <FiSave className="w-4 h-4" />
@@ -70,7 +70,7 @@ const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 shadow-sm flex items-center justify-center transition-colors"
+            className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 hover:text-[#c83a2a] shadow-2xs flex items-center justify-center transition-all cursor-pointer"
             title="Edit text"
           >
             <FiEdit2 className="w-4 h-4" />
@@ -78,10 +78,10 @@ const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
         )}
         <button
           onClick={handleCopy}
-          className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 shadow-sm flex items-center justify-center transition-colors"
+          className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 hover:text-[#c83a2a] shadow-2xs flex items-center justify-center transition-all cursor-pointer"
           title="Copy text"
         >
-          {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
+          {copied ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />}
         </button>
       </div>
 
@@ -89,8 +89,9 @@ const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
         readOnly={!isEditing}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className={`w-full min-h-[350px] p-3 pt-10 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm overflow-y-auto resize-none text-slate-800 ${isEditing ? "ring-2 ring-blue-500/50 border-blue-500" : ""
-          }`}
+        className={`w-full min-h-[350px] p-3.5 pt-10 bg-white border border-slate-200/80 rounded-xl shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] text-sm overflow-y-auto resize-none text-slate-800 transition-all ${
+          isEditing ? "ring-2 ring-[#ff9b8f]/30 border-[#ff9b8f]" : ""
+        }`}
       />
     </div>
   );
@@ -110,15 +111,15 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
   };
 
   return (
-    <li className="flex items-center gap-2 group hover:bg-slate-50 transition-colors rounded-sm w-max min-w-full pr-4">
+    <li className="flex items-center gap-2 group hover:bg-slate-50 transition-colors rounded-lg w-max min-w-full pr-4 py-1">
       {isEditing ? (
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="flex-1 text-sm px-1 py-0.5 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-full"
+          className="flex-1 text-sm px-2 py-1 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] w-full"
         />
       ) : isUrl ? (
-        <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="flex-1 text-sm text-blue-600 hover:underline flex items-center gap-1 whitespace-nowrap">
+        <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="flex-1 text-sm text-[#c83a2a] hover:underline flex items-center gap-1 whitespace-nowrap font-medium">
           {value} <FiExternalLink className="w-3 h-3 shrink-0 opacity-50" />
         </a>
       ) : (
@@ -127,12 +128,12 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
 
       <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
-          <button onClick={() => setIsEditing(false)} className="p-0.5 text-blue-600 hover:text-blue-700"><FiSave className="w-3.5 h-3.5" /></button>
+          <button onClick={() => setIsEditing(false)} className="p-1 text-[#c83a2a] hover:text-[#b03022] cursor-pointer"><FiSave className="w-3.5 h-3.5" /></button>
         ) : (
-          <button onClick={() => setIsEditing(true)} className="p-0.5 text-slate-400 hover:text-blue-600"><FiEdit2 className="w-3.5 h-3.5" /></button>
+          <button onClick={() => setIsEditing(true)} className="p-1 text-slate-400 hover:text-[#c83a2a] cursor-pointer"><FiEdit2 className="w-3.5 h-3.5" /></button>
         )}
-        <button onClick={handleCopy} className="p-0.5 text-slate-400 hover:text-blue-600">
-          {copied ? <FiCheck className="w-3.5 h-3.5 text-green-500" /> : <FiCopy className="w-3.5 h-3.5" />}
+        <button onClick={handleCopy} className="p-1 text-slate-400 hover:text-[#c83a2a] cursor-pointer">
+          {copied ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />}
         </button>
       </div>
     </li>
@@ -161,15 +162,15 @@ const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
   const currentTags = textValue.split(",").map(t => t.trim()).filter(Boolean);
 
   return (
-    <div className="p-4 bg-white border border-slate-300 shadow-sm rounded-lg relative group">
+    <div className="p-4 bg-white border border-slate-200/80 shadow-xs rounded-xl relative group">
       <div className="absolute top-2 right-2 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
-          <button onClick={() => setIsEditing(false)} className="p-1.5 bg-blue-600 text-white rounded-md shadow-sm"><FiSave className="w-4 h-4" /></button>
+          <button onClick={() => setIsEditing(false)} className="p-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-lg shadow-xs cursor-pointer"><FiSave className="w-4 h-4" /></button>
         ) : (
-          <button onClick={() => setIsEditing(true)} className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-md shadow-sm"><FiEdit2 className="w-4 h-4" /></button>
+          <button onClick={() => setIsEditing(true)} className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 hover:text-[#c83a2a] shadow-2xs cursor-pointer"><FiEdit2 className="w-4 h-4" /></button>
         )}
-        <button onClick={handleCopy} className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-md shadow-sm">
-          {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
+        <button onClick={handleCopy} className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 hover:text-[#c83a2a] shadow-2xs cursor-pointer">
+          {copied ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />}
         </button>
       </div>
 
@@ -177,12 +178,12 @@ const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
         <textarea
           value={textValue}
           onChange={(e) => setTextValue(e.target.value)}
-          className="w-full min-h-[100px] mt-6 p-2 bg-white border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full min-h-[100px] mt-6 p-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
         />
       ) : (
         <div className="flex flex-wrap gap-2 mt-2">
           {currentTags.map((tag, i) => (
-            <span key={i} className="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-semibold rounded-full border border-orange-200">
+            <span key={i} className="px-3 py-1 bg-orange-50 text-orange-900 text-xs font-semibold rounded-full border border-orange-200/80">
               {tag}
             </span>
           ))}
@@ -227,8 +228,8 @@ const SceneTable = ({ items }: { items: any[] }) => {
                 {item.format && (
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                     item.format.toLowerCase() === 'video' 
-                      ? 'bg-purple-100 text-purple-700 border border-purple-200' 
-                      : 'bg-sky-100 text-sky-700 border border-sky-200'
+                      ? 'bg-orange-50 text-orange-800 border border-orange-200/80' 
+                      : 'bg-slate-100 text-slate-700 border border-slate-200'
                   }`}>
                     {item.format}
                   </span>
@@ -278,7 +279,7 @@ const SceneTable = ({ items }: { items: any[] }) => {
           {itemsToRender.map((tag, idx) => {
             const formatted = tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`;
             return (
-              <li key={idx} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-[11px] font-semibold rounded-full border border-orange-200 whitespace-nowrap">
+              <li key={idx} className="px-2 py-0.5 bg-orange-50 text-orange-900 text-[11px] font-semibold rounded-full border border-orange-200/80 whitespace-nowrap">
                 {formatted}
               </li>
             );
@@ -295,7 +296,7 @@ const SceneTable = ({ items }: { items: any[] }) => {
             if (checkIsUrl(sanitized)) {
               return (
                 <li key={idx} className="p-0 m-0 leading-[1.2]">
-                  <a href={getHref(sanitized)} target={getHref(sanitized).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 whitespace-nowrap">
+                  <a href={getHref(sanitized)} target={getHref(sanitized).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-[#c83a2a] hover:underline flex items-center gap-1 whitespace-nowrap font-medium">
                     <span className="flex-1">{sanitized}</span>
                     <FiExternalLink className="w-3 h-3 flex-shrink-0 opacity-50" />
                   </a>
@@ -312,7 +313,7 @@ const SceneTable = ({ items }: { items: any[] }) => {
   };
 
   return (
-    <div className="w-full border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
+    <div className="w-full border border-slate-200/80 rounded-2xl overflow-hidden bg-white shadow-xs">
       <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
         <table className="w-full text-sm text-left">
           <thead className="text-xs text-slate-600 uppercase bg-slate-50 sticky top-0 z-10 shadow-sm">
@@ -407,7 +408,7 @@ const ContentPlanPostCard = ({
   }, [post.tags]);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 transition-colors">
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4 transition-colors">
       {/* Post Card Header (Format is static, Time is editable in edit mode) */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 sm:pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
@@ -415,8 +416,8 @@ const ContentPlanPostCard = ({
             Post #{postNum}
           </span>
           {isEditing ? (
-            <div className="flex items-center gap-1.5 bg-white border border-blue-400 rounded-md px-2 py-0.5 shadow-xs">
-              <FiClock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+            <div className="flex items-center gap-1.5 bg-white border border-slate-200 focus-within:border-[#ff9b8f] focus-within:ring-2 focus-within:ring-[#ff9b8f]/25 rounded-lg px-2 py-0.5 shadow-2xs">
+              <FiClock className="w-3.5 h-3.5 text-[#ff7d6e] shrink-0" />
               <input
                 type="text"
                 value={post.time || ""}
@@ -437,14 +438,14 @@ const ContentPlanPostCard = ({
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold border ${
               isVideo
-                ? "bg-purple-50 text-purple-700 border-purple-200"
-                : "bg-sky-50 text-sky-700 border-sky-200"
+                ? "bg-orange-50 text-[#c83a2a] border-orange-200/80"
+                : "bg-slate-100 text-slate-700 border-slate-200"
             }`}
           >
             {isVideo ? (
-              <FiVideo className="w-3.5 h-3.5 text-purple-600" />
+              <FiVideo className="w-3.5 h-3.5 text-[#ff7d6e]" />
             ) : (
-              <FiImage className="w-3.5 h-3.5 text-sky-600" />
+              <FiImage className="w-3.5 h-3.5 text-slate-500" />
             )}
             {post.format}
           </span>
@@ -460,13 +461,13 @@ const ContentPlanPostCard = ({
           {!isEditing && post.caption && (
             <button
               onClick={() => post.caption && onCopy(post.caption, captionId)}
-              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
               title="Copy Caption"
             >
               {copiedId === captionId ? (
                 <>
-                  <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                  <span className="text-green-600">Copied</span>
+                  <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-600">Copied</span>
                 </>
               ) : (
                 <>
@@ -483,10 +484,10 @@ const ContentPlanPostCard = ({
             value={post.caption || ""}
             onChange={(e) => onPostChange(dayIdx, postIdx, "caption", e.target.value)}
             placeholder="Enter post caption..."
-            className="w-full p-2.5 bg-white rounded-lg border border-blue-400 text-sm text-slate-800 leading-relaxed shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+            className="w-full p-3 bg-white rounded-xl border border-slate-200 text-sm text-slate-800 leading-relaxed shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] resize-y"
           />
         ) : post.caption ? (
-          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200/80 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap selection:bg-blue-100">
+          <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
             {sanitizeText(post.caption)}
           </div>
         ) : null}
@@ -510,13 +511,13 @@ const ContentPlanPostCard = ({
                   .join(" ");
                 onCopy(allTags, tagsId);
               }}
-              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
               title="Copy All Tags"
             >
               {copiedId === tagsId ? (
                 <>
-                  <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                  <span className="text-green-600">Copied</span>
+                  <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-600">Copied</span>
                 </>
               ) : (
                 <>
@@ -538,7 +539,7 @@ const ContentPlanPostCard = ({
               onPostChange(dayIdx, postIdx, "tags", arr);
             }}
             placeholder="#Fashion, #Shopping (comma-separated)"
-            className="w-full p-2 bg-white rounded-lg border border-blue-400 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
           />
         ) : Array.isArray(post.tags) && post.tags.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
@@ -549,7 +550,7 @@ const ContentPlanPostCard = ({
               return (
                 <span
                   key={tIdx}
-                  className="inline-flex items-center px-2.5 py-0.5 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-full text-xs font-medium"
+                  className="inline-flex items-center px-2.5 py-0.5 bg-orange-50 text-orange-900 border border-orange-200/80 rounded-full text-xs font-medium"
                 >
                   {formatted}
                 </span>
@@ -568,13 +569,13 @@ const ContentPlanPostCard = ({
           {!isEditing && post.generation_prompt && (
             <button
               onClick={() => post.generation_prompt && onCopy(post.generation_prompt, promptId)}
-              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
               title="Copy Generation Prompt"
             >
               {copiedId === promptId ? (
                 <>
-                  <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                  <span className="text-green-600">Copied Prompt</span>
+                  <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-600">Copied Prompt</span>
                 </>
               ) : (
                 <>
@@ -591,10 +592,10 @@ const ContentPlanPostCard = ({
             value={post.generation_prompt || ""}
             onChange={(e) => onPostChange(dayIdx, postIdx, "generation_prompt", e.target.value)}
             placeholder="Enter AI prompt for image/video generation..."
-            className="w-full p-2.5 bg-white rounded-lg border border-blue-400 text-xs font-mono text-slate-800 leading-relaxed shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+            className="w-full p-3 bg-white rounded-xl border border-slate-200 text-xs font-mono text-slate-800 leading-relaxed shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] resize-y"
           />
         ) : post.generation_prompt ? (
-          <div className="p-3.5 text-slate-800 bg-slate-50 rounded-lg text-xs font-mono leading-relaxed border border-slate-300 selection:bg-blue-500 selection:text-white">
+          <div className="p-3.5 text-slate-800 bg-slate-50/80 rounded-xl text-xs font-mono leading-relaxed border border-slate-200/80">
             {sanitizeText(post.generation_prompt)}
           </div>
         ) : null}
@@ -675,9 +676,9 @@ const ContentPlanView = ({
     <div className="space-y-6">
       {/* Brand & Summary Header Card (Page name remains static) */}
       {pageName && (
-        <div className="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 flex-1">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-orange-50 border border-orange-200/80 flex items-center justify-center text-[#ff7d6e] shrink-0">
               <FiLayers className="w-6 h-6" />
             </div>
             <div>
@@ -689,7 +690,7 @@ const ContentPlanView = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-200 flex items-center gap-1.5">
+            <span className="px-3 py-1 bg-orange-50 text-orange-900 rounded-full text-xs font-semibold border border-orange-200/80 flex items-center gap-1.5">
               {totalPosts} {totalPosts === 1 ? "Post" : "Posts"}
             </span>
             {imagesCount > 0 && (
@@ -699,8 +700,8 @@ const ContentPlanView = ({
               </span>
             )}
             {videosCount > 0 && (
-              <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold border border-purple-200 flex items-center gap-1.5">
-                <FiVideo className="w-3.5 h-3.5 text-purple-600" />
+              <span className="px-3 py-1 bg-orange-50 text-[#c83a2a] rounded-full text-xs font-semibold border border-orange-200/80 flex items-center gap-1.5">
+                <FiVideo className="w-3.5 h-3.5 text-[#ff7d6e]" />
                 {videosCount} {videosCount === 1 ? "Video" : "Videos"}
               </span>
             )}
@@ -710,7 +711,7 @@ const ContentPlanView = ({
 
       {/* Extra Top-Level Meta Fields (Static) */}
       {extraMeta && Object.keys(extraMeta).length > 0 && (
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {Object.entries(extraMeta).map(([k, v]) => (
             <div key={k} className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -742,7 +743,7 @@ const ContentPlanView = ({
                         value={dayPlan.theme || dayPlan.title || ""}
                         onChange={(e) => handleThemeChange(dayIdx, e.target.value)}
                         placeholder="Content Title / Theme..."
-                        className="w-full text-sm sm:text-base font-semibold text-slate-900 bg-white border border-blue-400 rounded-lg px-3 py-1.5 shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full text-sm sm:text-base font-semibold text-slate-900 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
                       />
                     </div>
                   ) : (dayPlan.theme || dayPlan.title) ? (
@@ -898,7 +899,7 @@ export default function TemplateRenderer({
     // If array of strings
     if (data.every((item) => typeof item === "string")) {
       return (
-        <ul className="list-none bg-white border border-slate-300 rounded-md shadow-sm p-2 m-0 w-full overflow-x-auto pb-2 scrollbar-thin">
+        <ul className="list-none bg-white border border-slate-200/80 rounded-xl shadow-xs p-2.5 m-0 w-full overflow-x-auto pb-2 scrollbar-thin">
           {data.map((item, index) => (
             <EditableListItem key={index} initialValue={item} isUrl={checkIsUrl(item)} />
           ))}
@@ -911,7 +912,7 @@ export default function TemplateRenderer({
       return (
         <ul className="space-y-4 list-none p-0 m-0">
           {data.map((item, index) => (
-            <li key={index} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <li key={index} className="p-4 bg-slate-50/70 rounded-xl border border-slate-200/80">
               <TemplateRenderer data={item} level={level + 1} />
             </li>
           ))}
@@ -922,11 +923,11 @@ export default function TemplateRenderer({
     return (
       <ul className="space-y-4 list-none p-0 m-0">
         {data.map((item, index) => (
-          <li key={index} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <li key={index} className="p-4 bg-slate-50/70 rounded-xl border border-slate-200/80">
             {typeof item === "object" && item !== null ? (
               <TemplateRenderer data={item} level={level + 1} />
             ) : checkIsUrl(String(item)) ? (
-              <a href={getHref(String(item))} target={getHref(String(item)).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+              <a href={getHref(String(item))} target={getHref(String(item)).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-[#c83a2a] hover:underline flex items-center gap-1 font-medium">
                 {sanitizeText(String(item))} <FiExternalLink className="w-3 h-3" />
               </a>
             ) : (
@@ -1009,8 +1010,8 @@ export default function TemplateRenderer({
                 />
               ) : typeof value === "string" && checkIsUrl(value) ? (
                 <ul className="list-none p-0 m-0">
-                  <li className="overflow-x-auto w-full bg-white border border-slate-300 shadow-sm rounded-md">
-                    <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1 p-2.5 whitespace-nowrap">
+                  <li className="overflow-x-auto w-full bg-white border border-slate-200/80 shadow-xs rounded-xl">
+                    <a href={getHref(value)} target={getHref(value).startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="text-[#c83a2a] hover:underline inline-flex items-center gap-1 p-2.5 whitespace-nowrap font-medium">
                       {value} <FiExternalLink className="w-3 h-3 flex-shrink-0" />
                     </a>
                   </li>
@@ -1030,10 +1031,10 @@ export default function TemplateRenderer({
                       });
                     }
                   }}
-                  className={`w-full p-2.5 bg-white rounded-md shadow-sm text-sm text-slate-800 transition-colors ${
+                  className={`w-full p-2.5 bg-white rounded-xl shadow-xs text-sm text-slate-800 transition-all ${
                     isEditing
-                      ? "border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      : "border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      ? "border border-[#ff9b8f] focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25"
+                      : "border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
                   }`}
                 />
               )}

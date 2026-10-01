@@ -27,19 +27,19 @@ export default function DetailHeader({
   return (
     <>
       <div className="flex flex-col sm:space-y-2">
-        <Link href={returnHref} className="hidden sm:inline-flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium w-fit">
+        <Link href={returnHref} className="hidden sm:inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline font-semibold w-fit">
           <FiArrowLeft /> {backText || "Back to YouTube Strategy"}
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex flex-row items-center gap-2">
             {itemType === "long_video" ? (
-              <span className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 bg-purple-100 text-purple-800 border border-purple-200 rounded-lg text-sm font-bold shadow-sm" title="Long Video">
-                <FiYoutube className="w-4 h-4" />
+              <span className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 bg-orange-100 text-orange-900 border border-orange-200/80 rounded-xl text-sm font-bold shadow-2xs" title="Long Video">
+                <FiYoutube className="w-4 h-4 text-[#ff7d6e]" />
                 <span className="hidden sm:inline ml-1.5">Long Video</span>
               </span>
             ) : (
-              <span className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 bg-red-100 text-red-800 border border-red-200 rounded-lg text-sm font-bold shadow-sm" title="Short Video">
-                <FiVideo className="w-4 h-4" />
+              <span className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 bg-orange-50 text-orange-800 border border-orange-200/80 rounded-xl text-sm font-bold shadow-2xs" title="Short Video">
+                <FiVideo className="w-4 h-4 text-[#ff7d6e]" />
                 <span className="hidden sm:inline ml-1.5">Short Video</span>
               </span>
             )}

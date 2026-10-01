@@ -11,7 +11,7 @@ export default function MediaVisualAssetsSection({ extraDataMedia }: MediaVisual
   const renderValue = (val: any, keyPath: string): React.ReactNode => {
     if (typeof val === 'string' && val.match(/^https?:\/\//)) {
       return (
-        <a href={val} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1 cursor-pointer whitespace-nowrap">
+        <a href={val} target="_blank" rel="noopener noreferrer" className="text-[#c83a2a] hover:underline inline-flex items-center gap-1 cursor-pointer whitespace-nowrap font-medium">
           {val} <FiExternalLink className="w-3 h-3 flex-shrink-0" />
         </a>
       );
@@ -19,7 +19,7 @@ export default function MediaVisualAssetsSection({ extraDataMedia }: MediaVisual
     if (val && typeof val === 'object' && !Array.isArray(val) && (val.source_url !== undefined || val.keyword !== undefined)) {
       return (
         <div className="p-3 bg-white border-t border-slate-200 flex-1 flex flex-col justify-between">
-          <a href={val.source_url || '#'} target={val.source_url ? "_blank" : "_self"} rel="noopener noreferrer" className={`text-[11px] ${val.source_url ? 'text-blue-600 hover:underline' : 'text-slate-600 font-medium'} truncate w-full block mb-2`} title={val.source_url || val.keyword}>
+          <a href={val.source_url || '#'} target={val.source_url ? "_blank" : "_self"} rel="noopener noreferrer" className={`text-[11px] ${val.source_url ? 'text-[#c83a2a] hover:underline font-medium' : 'text-slate-600 font-medium'} truncate w-full block mb-2`} title={val.source_url || val.keyword}>
             {val.source_url || `Search: ${val.keyword}` || 'Downloaded Media'}
           </a>
         </div>
@@ -58,7 +58,7 @@ export default function MediaVisualAssetsSection({ extraDataMedia }: MediaVisual
   return (
     <Card>
       <SectionHeader title="Media & Visual Assets" />
-      <div className="bg-slate-50 p-4 sm:p-5 rounded-lg border border-slate-100 max-h-96 overflow-y-auto overflow-x-auto text-sm text-slate-700 w-full">
+      <div className="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200/80 max-h-96 overflow-y-auto overflow-x-auto text-sm text-slate-700 w-full">
         {extraDataMedia.map((data, idx) => (
           <div key={idx} className="mb-4 last:mb-0">
             {renderValue(data, `MediaVisualAssets-${idx}`)}

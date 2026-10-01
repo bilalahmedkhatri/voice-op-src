@@ -191,7 +191,7 @@ export default function JsonPage() {
         )}
 
         {!isGenerated ? (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
             <div className="p-6 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h2 className="text-xl font-semibold">JSON Input</h2>
@@ -287,7 +287,7 @@ export default function JsonPage() {
                 <button
                   onClick={handleSaveToDb}
                   disabled={saveStatus === "saving"}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-60 cursor-pointer ${saveButtonClass()}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-60 cursor-pointer ${saveButtonClass()}`}
                 >
                   {saveButtonContent()}
                 </button>

@@ -408,7 +408,7 @@ const AudioPlayer = memo(function AudioPlayer({
 
       {/* 2. Embedded Voice Parameters & Save Preset Single-Row Bar */}
       {activeVoiceMeta && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2.5 border-t border-gray-700/60 text-xs text-gray-300">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pt-3 border-t border-slate-200/80 text-xs text-slate-600">
           {/* Metadata & Dynamic Parameters Badges */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {/* Format Badge (Short vs Long) */}
@@ -416,26 +416,26 @@ const AudioPlayer = memo(function AudioPlayer({
               <span
                 className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${
                   videoFormat === 'short'
-                    ? 'bg-rose-950/90 text-rose-300 border-rose-800/60'
-                    : 'bg-indigo-950/90 text-indigo-300 border-indigo-800/60'
+                    ? 'bg-rose-50 text-rose-700 border-rose-200/80'
+                    : 'bg-amber-50 text-amber-900 border-amber-200/80'
                 }`}
               >
                 {videoFormat === 'short' ? '⚡ Short Format (9:16)' : '🎬 Long Format (16:9)'}
               </span>
             )}
 
-            <span className="px-2 py-0.5 bg-gray-800 text-gray-200 rounded-lg text-[11px] font-bold border border-gray-700">
+            <span className="px-2.5 py-0.5 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold border border-slate-200 shadow-2xs">
               {activeVoiceMeta.voice_name}
             </span>
 
             {activeVoiceMeta.language && (
-              <span className="px-2 py-0.5 bg-gray-800 text-gray-300 rounded-lg text-[10px] font-semibold border border-gray-700">
+              <span className="px-2 py-0.5 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-semibold border border-slate-200">
                 {activeVoiceMeta.language}
               </span>
             )}
 
             {activeVoiceMeta.gender && (
-              <span className="px-2 py-0.5 bg-gray-800 text-gray-400 rounded-lg text-[10px] font-medium border border-gray-700">
+              <span className="px-2 py-0.5 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-medium border border-slate-200">
                 {activeVoiceMeta.gender}
               </span>
             )}
@@ -452,9 +452,9 @@ const AudioPlayer = memo(function AudioPlayer({
                 return (
                   <span
                     key={key}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-800/90 text-amber-300 rounded-lg text-[10px] font-medium border border-gray-700/80"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50/80 text-orange-950 rounded-lg text-[10px] font-medium border border-orange-200/70"
                   >
-                    <FaSlidersH className="text-[8px] text-amber-400/80" />
+                    <FaSlidersH className="text-[8px] text-[#ff7d6e]" />
                     <span>{label}: <strong>{formattedVal}</strong></span>
                   </span>
                 );
@@ -467,10 +467,10 @@ const AudioPlayer = memo(function AudioPlayer({
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className={`h-7 px-3 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer flex-shrink-0 ${
+              className={`h-7 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer flex-shrink-0 shadow-2xs ${
                 isSaved
                   ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'bg-gray-800 hover:bg-gray-700 text-gray-200 hover:text-white border border-gray-600'
+                  : 'bg-white hover:bg-orange-50/60 text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-[#ff9b8f]/60'
               }`}
             >
               {isSaved ? (
@@ -480,7 +480,7 @@ const AudioPlayer = memo(function AudioPlayer({
                 </>
               ) : (
                 <>
-                  <FaBookmark className="text-[10px] text-[#ff9b8f]" />
+                  <FaBookmark className="text-[10px] text-[#ff7d6e]" />
                   <span>Save Preset</span>
                 </>
               )}

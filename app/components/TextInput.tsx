@@ -25,7 +25,7 @@ const TextInput = memo(function TextInput({
       {/* 1. Header with Title & Compact Actions */}
       <div className="flex justify-between items-center flex-wrap gap-2">
         <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 uppercase tracking-wider">
-          <FaEdit className="text-base text-[#ff9b8f]" />
+          <FaEdit className="text-base text-[#ff7d6e]" />
           Enter Your Text
         </label>
 
@@ -36,10 +36,10 @@ const TextInput = memo(function TextInput({
             onClick={() => onTextChange('')}
             disabled={!text}
             title="Clear text"
-            className={`flex items-center gap-1.5 py-1 px-3 rounded-lg text-xs font-medium transition-all border ${
+            className={`flex items-center gap-1.5 py-1 px-3 rounded-xl text-xs font-semibold transition-all border ${
               text
-                ? 'bg-white text-gray-700 hover:bg-gray-50 hover:text-red-600 border-gray-200 cursor-pointer shadow-2xs'
-                : 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                ? 'bg-white text-slate-700 hover:bg-orange-50/50 hover:text-rose-600 hover:border-[#ff9b8f]/60 border-slate-200 cursor-pointer shadow-2xs'
+                : 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed'
             }`}
           >
             <FaTrash className="text-xs" />
@@ -62,8 +62,8 @@ const TextInput = memo(function TextInput({
           disabled={disabled}
           className={`w-full flex-1 min-h-[360px] sm:min-h-[400px] lg:min-h-[440px] p-4 border rounded-xl text-sm sm:text-base leading-relaxed resize-none overflow-auto transition-all duration-200 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 bg-white ${
             isFocused
-              ? 'border-[#ff9b8f] ring-2 ring-[#ff9b8f]/20 shadow-xs'
-              : 'border-gray-200/90'
+              ? 'border-[#ff9b8f] ring-2 ring-[#ff9b8f]/25 shadow-xs'
+              : 'border-slate-200/90'
           }`}
         />
 

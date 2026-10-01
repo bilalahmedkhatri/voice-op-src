@@ -197,8 +197,8 @@ export default function VoiceDropdown({
               width: 'clamp(64px, 15vw, 96px)',
               height: 'clamp(64px, 15vw, 96px)',
               background: isPlaying 
-                ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
-                : 'linear-gradient(135deg, #fde68a 0%, #fcd34d 100%)',
+                ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                : 'linear-gradient(135deg, #ff9b8f 0%, #ff7d6e 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '50%',
@@ -209,18 +209,18 @@ export default function VoiceDropdown({
               justifyContent: 'center',
               boxShadow: isPlaying 
                 ? '0 4px 14px rgba(245, 158, 11, 0.5)'
-                : '0 4px 14px rgba(251, 191, 36, 0.4)',
+                : '0 4px 14px rgba(255, 125, 110, 0.4)',
               flexShrink: 0,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.6)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 125, 110, 0.5)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
               e.currentTarget.style.boxShadow = isPlaying 
                 ? '0 4px 14px rgba(245, 158, 11, 0.5)'
-                : '0 4px 14px rgba(251, 191, 36, 0.4)';
+                : '0 4px 14px rgba(255, 125, 110, 0.4)';
             }}
             aria-label={isPlaying ? 'Pause' : 'Play'}
           >
@@ -258,9 +258,9 @@ export default function VoiceDropdown({
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#9333ea',
+                  color: '#c83a2a',
                   fontSize: 'clamp(0.75rem, 1.8vw, 0.875rem)',
-                  fontWeight: ds.typography.weights.medium,
+                  fontWeight: ds.typography.weights.semibold,
                   cursor: 'pointer',
                   textDecoration: 'underline',
                   padding: 0,
@@ -268,10 +268,10 @@ export default function VoiceDropdown({
                   fontFamily: ds.typography.fonts.heading,
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#7c3aed';
+                  e.currentTarget.style.color = '#a5281a';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#9333ea';
+                  e.currentTarget.style.color = '#c83a2a';
                 }}
               >
                 Change

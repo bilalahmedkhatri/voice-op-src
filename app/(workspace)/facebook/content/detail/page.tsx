@@ -18,6 +18,7 @@ import {
   FiMessageSquare,
   FiShare,
 } from "react-icons/fi";
+import { Button } from "@/components/ui";
 
 export default function FacebookPostDetailPage() {
   const router = useRouter();
@@ -114,8 +115,8 @@ export default function FacebookPostDetailPage() {
       const formattedTags = Array.isArray(found.tags)
         ? found.tags.map((tg: string) => (tg.startsWith("#") ? tg : `#${tg}`)).join(" ")
         : typeof found.tags === "string"
-        ? found.tags
-        : "";
+          ? found.tags
+          : "";
       setTags(formattedTags);
       setStatus(found.status || "pending");
     } catch (err: any) {
@@ -218,11 +219,11 @@ export default function FacebookPostDetailPage() {
       <div className="space-y-4 px-4 sm:px-0">
         <Link
           href={templateId ? `/facebook/content?id=${templateId}` : "/facebook/templates"}
-          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+          className="inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline font-medium"
         >
           <FiArrowLeft /> Back to Facebook Plan
         </Link>
-        <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
+        <div className="flex items-center gap-2 p-4 bg-rose-50 text-rose-700 rounded-xl border border-rose-200">
           <FiAlertCircle className="w-5 h-5" />
           <p>{error || "Post not found"}</p>
         </div>
@@ -240,15 +241,15 @@ export default function FacebookPostDetailPage() {
         <div>
           <Link
             href={`/facebook/content?id=${templateId}`}
-            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium mb-1.5"
+            className="inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline font-medium mb-1.5"
           >
             <FiArrowLeft /> Back to Facebook Plan
           </Link>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded border border-blue-200 uppercase">
+            <span className="px-2.5 py-0.5 bg-orange-50 text-[#c83a2a] text-xs font-bold rounded-lg border border-orange-200/80 uppercase">
               {pageName}
             </span>
-            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded border border-slate-200">
+            <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200">
               Post #{postNumber}
             </span>
             {post.time && (
@@ -261,30 +262,23 @@ export default function FacebookPostDetailPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
+          <Button
+            size="md"
+            variant="secondary"
             onClick={handleCopyFullPost}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-semibold shadow-2xs transition-colors cursor-pointer"
+            icon={copiedId === "full-post" ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4 text-[#ff7d6e]" />}
           >
-            {copiedId === "full-post" ? (
-              <>
-                <FiCheck className="w-4 h-4 text-green-500" />
-                <span className="text-green-600">Copied Full Post</span>
-              </>
-            ) : (
-              <>
-                <FiCopy className="w-4 h-4 text-blue-600" />
-                <span>Copy Post</span>
-              </>
-            )}
-          </button>
+            {copiedId === "full-post" ? "Copied Full Post" : "Copy Post"}
+          </Button>
 
-          <button
+          <Button
+            size="md"
+            variant="primary"
             onClick={handleSendToIntegration}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-xs transition-colors cursor-pointer"
+            icon={<FiShare2 className="w-4 h-4" />}
           >
-            <FiShare2 className="w-4 h-4" />
-            <span>Publish / Schedule</span>
-          </button>
+            Publish / Schedule
+          </Button>
         </div>
       </div>
 
@@ -293,7 +287,7 @@ export default function FacebookPostDetailPage() {
         {/* Left Column: Editor (7 cols) */}
         <div className="lg:col-span-7 space-y-5">
           {/* Caption Box */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                 <span>Post Caption</span>
@@ -303,12 +297,12 @@ export default function FacebookPostDetailPage() {
               </label>
               <button
                 onClick={() => handleCopy(caption, "caption-only")}
-                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 {copiedId === "caption-only" ? (
                   <>
-                    <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                    <span className="text-green-600">Copied</span>
+                    <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-emerald-600 font-semibold">Copied</span>
                   </>
                 ) : (
                   <>
@@ -323,12 +317,12 @@ export default function FacebookPostDetailPage() {
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Enter Facebook post caption..."
-              className="w-full p-3.5 text-sm text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none leading-relaxed resize-y"
+              className="w-full p-3.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none leading-relaxed resize-y"
             />
           </div>
 
           {/* Hashtags Box */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <FiTag className="w-4 h-4 text-slate-400" />
@@ -336,12 +330,12 @@ export default function FacebookPostDetailPage() {
               </label>
               <button
                 onClick={() => handleCopy(tags, "tags-only")}
-                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 {copiedId === "tags-only" ? (
                   <>
-                    <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                    <span className="text-green-600">Copied</span>
+                    <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-emerald-600 font-semibold">Copied</span>
                   </>
                 ) : (
                   <>
@@ -356,7 +350,7 @@ export default function FacebookPostDetailPage() {
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="#KarachiClothe #AutumnFashion #CambricCollection..."
-              className="w-full px-3.5 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
+              className="w-full px-3.5 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none font-medium"
             />
             {/* Visual Tag Pills */}
             <div className="flex flex-wrap gap-1.5 pt-1">
@@ -366,7 +360,7 @@ export default function FacebookPostDetailPage() {
                 .map((tg, idx) => (
                   <span
                     key={idx}
-                    className="px-2.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-full text-xs font-medium"
+                    className="px-2.5 py-0.5 bg-orange-50 text-orange-900 border border-orange-200/80 rounded-full text-xs font-medium"
                   >
                     {tg.startsWith("#") ? tg : `#${tg}`}
                   </span>
@@ -376,20 +370,20 @@ export default function FacebookPostDetailPage() {
 
           {/* AI Image Generation Prompt Box */}
           {prompt && (
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <FiImage className="w-4 h-4 text-slate-400" />
+                  <FiImage className="w-4 h-4 text-[#ff7d6e]" />
                   <span>AI Image Generation Prompt</span>
                 </label>
                 <button
                   onClick={() => handleCopy(prompt, "prompt-only")}
-                  className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
                 >
                   {copiedId === "prompt-only" ? (
                     <>
-                      <FiCheck className="w-3.5 h-3.5 text-green-500" />
-                      <span className="text-green-600">Copied</span>
+                      <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="text-emerald-600">Copied</span>
                     </>
                   ) : (
                     <>
@@ -404,13 +398,13 @@ export default function FacebookPostDetailPage() {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="AI prompt for generating visuals..."
-                className="w-full p-3 font-mono text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none leading-relaxed"
+                className="w-full p-3 font-mono text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none leading-relaxed transition-all"
               />
             </div>
           )}
 
           {/* Status & Save Action */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Post Status:
@@ -418,15 +412,14 @@ export default function FacebookPostDetailPage() {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className={`text-xs font-semibold rounded-lg px-3 py-1.5 border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  status === "published"
-                    ? "bg-blue-50 text-blue-700 border-blue-200"
-                    : status === "completed"
-                    ? "bg-green-50 text-green-700 border-green-200"
+                className={`text-xs font-semibold rounded-xl px-3 py-1.5 border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] ${status === "published"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : status === "completed"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                     : status === "draft"
-                    ? "bg-slate-100 text-slate-700 border-slate-300"
-                    : "bg-amber-50 text-amber-800 border-amber-300"
-                }`}
+                      ? "bg-slate-100 text-slate-700 border-slate-200"
+                      : "bg-amber-50 text-amber-800 border-amber-300"
+                  }`}
               >
                 <option value="pending">Pending</option>
                 <option value="draft">Draft</option>
@@ -435,29 +428,17 @@ export default function FacebookPostDetailPage() {
               </select>
             </div>
 
-            <button
+            <Button
               onClick={handleSave}
               disabled={isSaving}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-xs cursor-pointer ${
-                saveSuccess
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-70"
-              }`}
+              isLoading={isSaving}
+              size="md"
+              variant="primary"
+              className={saveSuccess ? "!bg-emerald-600 hover:!bg-emerald-700 text-white" : ""}
+              icon={saveSuccess ? <FiCheck className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
             >
-              {isSaving ? (
-                <>
-                  <FiRefreshCw className="w-4 h-4 animate-spin" /> Saving...
-                </>
-              ) : saveSuccess ? (
-                <>
-                  <FiCheck className="w-4 h-4" /> Changes Saved!
-                </>
-              ) : (
-                <>
-                  <FiSave className="w-4 h-4" /> Save Post Changes
-                </>
-              )}
-            </button>
+              {saveSuccess ? "Changes Saved!" : "Save Post Changes"}
+            </Button>
           </div>
         </div>
 
@@ -468,7 +449,7 @@ export default function FacebookPostDetailPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Live Facebook Feed Preview
               </span>
-              <span className="text-[11px] text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              <span className="text-[11px] text-slate-600 font-semibold bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
                 Mockup
               </span>
             </div>
@@ -519,7 +500,7 @@ export default function FacebookPostDetailPage() {
                     <p className="text-xs text-slate-600 font-medium max-w-sm line-clamp-3">
                       {prompt}
                     </p>
-                    <span className="inline-block text-[10px] uppercase font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    <span className="inline-block text-[10px] uppercase font-bold text-orange-900 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/80">
                       Visual Generator Prompt
                     </span>
                   </div>

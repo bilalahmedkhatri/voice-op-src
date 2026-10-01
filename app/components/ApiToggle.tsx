@@ -98,7 +98,7 @@ export default function ApiToggle({ onToggle }: ApiToggleProps) {
           className="sr-only peer"
           aria-label={`Switch to ${useReplicate ? 'Default API' : 'Replicate'}`}
         />
-        <div className="w-10 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-indigo-400 peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all after:shadow-sm"></div>
+        <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-[#ff9b8f] peer-checked:to-[#ff7d6e] peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all after:shadow-sm"></div>
       </label>
       
       {toast && (
