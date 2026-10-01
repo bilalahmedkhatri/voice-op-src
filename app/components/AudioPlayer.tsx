@@ -16,6 +16,8 @@ export interface ActiveVoiceMeta {
 interface AudioPlayerProps {
   audioUrl: string | null;
   audioBlob?: Blob | null;
+  jobId?: string | null;
+  onAudioUrlRenewed?: (newUrl: string) => void;
   isGenerating?: boolean;
   generationTime?: number | null;
   videoFormat?: 'short' | 'long' | string;
@@ -26,9 +28,16 @@ interface AudioPlayerProps {
   onSavePreset?: (presetName?: string) => Promise<boolean>;
 }
 
+const WAVE_BARS = [
+  30, 45, 65, 80, 50, 35, 70, 95, 85, 60, 40, 55, 75, 90, 65, 45,
+  35, 55, 75, 95, 80, 60, 45, 70, 85, 90, 65, 50, 40, 60, 80, 65, 45, 30
+];
+
 const AudioPlayer = memo(function AudioPlayer({
   audioUrl,
   audioBlob,
+  jobId,
+  onAudioUrlRenewed,
   isGenerating = false,
   generationTime,
   videoFormat,
@@ -42,12 +51,24 @@ const AudioPlayer = memo(function AudioPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRenewing, setIsRenewing] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [resolvedAudioUrl, setResolvedAudioUrl] = useState<string | null>(audioUrl);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
+  const isRenewingRef = useRef(false);
+
+  const isProcessing = isLoading || isRenewing;
+
+  // Sync resolvedAudioUrl whenever audioUrl prop changes
+  useEffect(() => {
+    setResolvedAudioUrl(audioUrl);
+    isRenewingRef.current = false;
+  }, [audioUrl]);
 
   // Manage blob URL lifecycle safely
   useEffect(() => {
@@ -62,7 +83,32 @@ const AudioPlayer = memo(function AudioPlayer({
     }
   }, [audioBlob]);
 
-  const activeSrc = blobUrl || audioUrl;
+  const activeSrc = blobUrl || resolvedAudioUrl;
+
+  // Helper to renew expired or invalid URL via the backend status endpoint
+  const renewUrl = async (): Promise<string | null> => {
+    if (!jobId || isRenewingRef.current) return null;
+    isRenewingRef.current = true;
+    setIsRenewing(true);
+    try {
+      setIsLoading(true);
+      const res = await fetch(`/api/templates/audio-job/status?jobId=${jobId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if ((data.status === 'completed' || data.status === 'success') && data.audio_url) {
+          setResolvedAudioUrl(data.audio_url);
+          onAudioUrlRenewed?.(data.audio_url);
+          return data.audio_url;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to renew audio URL via status check:', err);
+    } finally {
+      setIsLoading(false);
+      setIsRenewing(false);
+    }
+    return null;
+  };
 
   // Setup audio element
   useEffect(() => {
@@ -82,6 +128,19 @@ const AudioPlayer = memo(function AudioPlayer({
       setIsLoading(false);
     };
 
+    audio.oncanplay = () => {
+      setIsLoading(false);
+    };
+
+    audio.onwaiting = () => {
+      setIsLoading(true);
+    };
+
+    audio.onplaying = () => {
+      setIsLoading(false);
+      setIsPlaying(true);
+    };
+
     audio.ontimeupdate = () => {
       setCurrentTime(audio.currentTime);
     };
@@ -92,7 +151,12 @@ const AudioPlayer = memo(function AudioPlayer({
       onEnded?.();
     };
 
-    audio.onerror = () => {
+    audio.onerror = async () => {
+      // Auto-renew if audio fails to load (e.g. 403 Forbidden or expired URL)
+      if (jobId && !isRenewingRef.current) {
+        const newUrl = await renewUrl();
+        if (newUrl) return; // audio element will re-mount with fresh activeSrc
+      }
       setIsLoading(false);
       setIsPlaying(false);
     };
@@ -101,7 +165,7 @@ const AudioPlayer = memo(function AudioPlayer({
       audio.pause();
       audioRef.current = null;
     };
-  }, [activeSrc, onEnded]);
+  }, [activeSrc, onEnded, jobId]);
 
   // Stop playback when new generation starts
   useEffect(() => {
@@ -113,7 +177,14 @@ const AudioPlayer = memo(function AudioPlayer({
   }, [isGenerating]);
 
   const handlePlayPause = async () => {
-    if (!audioRef.current || !activeSrc) return;
+    if (!activeSrc) {
+      if (jobId && !isRenewingRef.current) {
+        await renewUrl();
+      }
+      return;
+    }
+
+    if (!audioRef.current) return;
 
     try {
       if (isPlaying) {
@@ -124,6 +195,11 @@ const AudioPlayer = memo(function AudioPlayer({
         setIsPlaying(true);
       }
     } catch {
+      // If play failed due to media error, attempt renewal
+      if (jobId && !isRenewingRef.current) {
+        const newUrl = await renewUrl();
+        if (newUrl) return;
+      }
       setIsPlaying(false);
     }
   };
@@ -138,8 +214,17 @@ const AudioPlayer = memo(function AudioPlayer({
     setCurrentTime(newTime);
   };
 
-  const handleDownload = () => {
-    if (!activeSrc) return;
+  const handleDownload = async () => {
+    let srcToDownload = activeSrc;
+    if (!srcToDownload) {
+      if (jobId && !isRenewingRef.current) {
+        srcToDownload = await renewUrl();
+      }
+      if (!srcToDownload) return;
+    }
+
+    if (isDownloading) return;
+
     const effectiveFilename =
       fileName && fileName !== 'voiceover.wav'
         ? fileName
@@ -150,12 +235,62 @@ const AudioPlayer = memo(function AudioPlayer({
             parameters: activeParameters || undefined,
           });
 
-    const a = document.createElement('a');
-    a.href = activeSrc;
-    a.download = effectiveFilename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    try {
+      setIsDownloading(true);
+
+      // If already a local blob URL or data URI, download directly
+      if (srcToDownload.startsWith('blob:') || srcToDownload.startsWith('data:')) {
+        const a = document.createElement('a');
+        a.href = srcToDownload;
+        a.download = effectiveFilename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+
+      // For remote URLs (e.g. Backblaze S3 presigned URLs), fetch as a blob first
+      // to avoid cross-origin redirect navigation in modern browsers
+      let response = await fetch(srcToDownload);
+      // If 403 (expired presigned URL), attempt renew once
+      if (response.status === 403 && jobId && !isRenewingRef.current) {
+        const renewed = await renewUrl();
+        if (renewed) {
+          srcToDownload = renewed;
+          response = await fetch(renewed);
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to download audio file: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const localBlobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = localBlobUrl;
+      a.download = effectiveFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setTimeout(() => {
+        URL.revokeObjectURL(localBlobUrl);
+      }, 10000);
+    } catch (err) {
+      console.error('Download error:', err);
+      // Fallback: trigger standard download link
+      const a = document.createElement('a');
+      a.href = srcToDownload;
+      a.download = effectiveFilename;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleReplay = () => {
@@ -194,92 +329,81 @@ const AudioPlayer = memo(function AudioPlayer({
   }
 
   return (
-    <div className="flex flex-col gap-3 p-3.5 sm:p-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-2xl shadow-lg border border-gray-700/60 animate-slideUp">
-      {/* 1. Main Player Controls Row */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
-        {/* Left: Play/Pause Circular Button */}
+    <div className="flex flex-col gap-1 p-1 animate-slideUp">
+      {/* 1. Progress Bar Section */}
+      <div className="flex flex-col gap-1 w-full px-1">
+        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-slate-700 font-medium px-1">
+          <span>{formatTime(currentTime)}</span>
+          <div className="flex items-center gap-1.5">
+            {generationTime !== undefined && generationTime !== null && (
+              <span className="inline-flex items-center gap-1 px-1 py-0.5 rounded text-[9px] font-sans font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+                <FaBolt className="text-[8px]" />
+                <span>{generationTime}s</span>
+              </span>
+            )}
+            <span className="text-slate-500">{formatTime(duration)}</span>
+          </div>
+        </div>
+
+        <div
+          ref={progressBarRef}
+          onClick={handleSeek}
+          className="w-full h-1.5 bg-slate-200 hover:bg-slate-300 rounded-full relative cursor-pointer overflow-hidden transition-colors mb-0.5"
+          title="Click or drag to seek"
+        >
+          <div 
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] rounded-full pointer-events-none transition-all duration-100" 
+            style={{ width: `${progressPercent}%` }} 
+          />
+        </div>
+      </div>
+
+      {/* 2. Controls Section */}
+      <div className="flex items-center justify-center gap-4 sm:gap-6 w-full mt-0.5">
+        <button
+          type="button"
+          onClick={handleReplay}
+          title="Replay from start"
+          className="w-5 h-5 text-slate-600 transition-opacity hover:opacity-70 cursor-pointer flex items-center justify-center flex-shrink-0 bg-transparent border-none"
+        >
+          <FaRedoAlt className="text-[11px] sm:text-xs" />
+        </button>
+
         <button
           type="button"
           onClick={handlePlayPause}
-          disabled={isLoading}
-          aria-label={isPlaying ? 'Pause voiceover' : 'Play voiceover'}
-          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer transition-all duration-200 shadow-md ${
-            isPlaying
+          disabled={isProcessing}
+          aria-label={isProcessing ? 'Loading voiceover' : isPlaying ? 'Pause voiceover' : 'Play voiceover'}
+          className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer transition-all duration-200 shadow-sm ${
+            isProcessing
+              ? 'bg-gradient-to-br from-amber-500 to-[#ff7d6e] text-white opacity-90 cursor-wait'
+              : isPlaying
               ? 'bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-amber-500/30 scale-105'
               : 'bg-gradient-to-br from-[#ff9b8f] to-[#ff7d6e] hover:from-[#ff8a7d] hover:to-[#ff6c5b] text-white shadow-[#ff9b8f]/30 hover:scale-105'
           }`}
         >
-          {isPlaying ? (
-            <FaPause className="text-sm" />
+          {isProcessing ? (
+            <FaRedoAlt className="text-[10px] sm:text-[11px] animate-spin" />
+          ) : isPlaying ? (
+            <FaPause className="text-[10px] sm:text-[11px]" />
           ) : (
-            <FaPlay className="text-sm ml-0.5" />
+            <FaPlay className="text-[10px] sm:text-[11px] ml-0.5" />
           )}
         </button>
 
-        {/* Middle: Scrubbable Progress Bar & Waveform Tracker */}
-        <div className="flex-1 w-full flex flex-col gap-1.5 min-w-0">
-          <div className="flex items-center justify-between text-[11px] sm:text-xs font-mono text-gray-300 font-medium">
-            <span className="text-white">{formatTime(currentTime)}</span>
-            
-            <div className="flex items-center gap-2">
-              {generationTime !== undefined && generationTime !== null && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-sans font-medium bg-emerald-950/80 text-emerald-400 border border-emerald-800/40">
-                  <FaBolt className="text-[9px]" />
-                  <span>{generationTime}s</span>
-                </span>
-              )}
-              <span className="text-gray-400">{formatTime(duration)}</span>
-            </div>
-          </div>
-
-          {/* Interactive Scrubbable Bar */}
-          <div
-            ref={progressBarRef}
-            onClick={handleSeek}
-            className="w-full h-2.5 bg-gray-700/80 hover:h-3 rounded-full relative cursor-pointer overflow-hidden transition-all duration-150"
-            title="Click to seek"
-          >
-            {/* Wave Background Lines Effect */}
-            <div className="absolute inset-0 opacity-20 flex items-center justify-between px-1 pointer-events-none">
-              {Array.from({ length: 30 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-0.5 bg-white rounded-full"
-                  style={{ height: `${20 + ((i * 7) % 60)}%` }}
-                />
-              ))}
-            </div>
-
-            {/* Active progress fill */}
-            <div
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#ff9b8f] to-amber-400 rounded-full transition-all duration-75"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Right Actions: Replay & Download */}
-        <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
-          <button
-            type="button"
-            onClick={handleReplay}
-            title="Replay from start"
-            aria-label="Replay from start"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-all cursor-pointer border border-gray-700/80 flex items-center justify-center flex-shrink-0"
-          >
-            <FaRedoAlt className="text-xs sm:text-sm" />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDownload}
-            title="Download audio WAV"
-            className="h-9 sm:h-10 flex items-center justify-center gap-1.5 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold bg-white text-gray-900 hover:bg-gray-100 transition-all shadow-xs cursor-pointer flex-shrink-0"
-          >
-            <FaDownload className="text-xs" />
-            <span>Download</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={isDownloading}
+          title="Download audio WAV"
+          className="w-5 h-5 text-slate-600 transition-opacity hover:opacity-70 cursor-pointer flex items-center justify-center flex-shrink-0 bg-transparent border-none disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isDownloading ? (
+            <FaRedoAlt className="text-[11px] sm:text-xs animate-spin" />
+          ) : (
+            <FaDownload className="text-[11px] sm:text-xs" />
+          )}
+        </button>
       </div>
 
       {/* 2. Embedded Voice Parameters & Save Preset Single-Row Bar */}

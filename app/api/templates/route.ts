@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
 import { isDatabaseEnabled } from '@/app/lib/config';
 
-// GET /api/templates - Fetch all saved JSON templates
+// GET /api/templates - Fetch authenticated user's JSON templates only
 export async function GET(request: NextRequest) {
   if (!isDatabaseEnabled()) {
     return NextResponse.json({ authenticated: false, templates: [] });
@@ -24,23 +24,26 @@ export async function GET(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (id) {
+      // Only return the template if it belongs to this user
       const rows = await sql`
-        SELECT id, json_data, status, confirmed_by_email, view_count, updated_by, created_at, updated_at
+        SELECT id, json_data, status, audio_urls, confirmed_by_email, view_count, user_id, updated_by, created_at, updated_at
         FROM json_templates
-        WHERE id = ${id} AND updated_by = ${user.id}
+        WHERE id = ${id} AND user_id = ${user.id}
       `;
-      if (rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-      
+      if (rows.length === 0) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
       return NextResponse.json({
         authenticated: true,
         template: rows[0],
       });
     }
 
+    // List only this user's templates
     const rows = await sql`
-      SELECT id, json_data, status, confirmed_by_email, view_count, updated_by, created_at, updated_at
+      SELECT id, json_data, status, audio_urls, confirmed_by_email, view_count, user_id, updated_by, created_at, updated_at
       FROM json_templates
-      WHERE updated_by = ${user.id}
+      WHERE user_id = ${user.id}
       ORDER BY created_at DESC
       LIMIT 100
     `;
@@ -58,7 +61,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/templates - Save a new JSON template
+// POST /api/templates - Save a new JSON template (stamped with user_id)
 export async function POST(request: NextRequest) {
   if (!isDatabaseEnabled()) {
     return NextResponse.json({ error: 'Database mode is disabled' }, { status: 400 });
@@ -90,12 +93,13 @@ export async function POST(request: NextRequest) {
 
     await sql`
       INSERT INTO json_templates (
-        id, json_data, status, updated_by, created_at, updated_at
+        id, json_data, status, user_id, updated_by, created_at, updated_at
       )
       VALUES (
         ${templateId},
         ${JSON.stringify(json_data)},
         'pending',
+        ${user.id},
         ${user.id},
         NOW(),
         NOW()
@@ -108,6 +112,7 @@ export async function POST(request: NextRequest) {
         id: templateId,
         json_data,
         status: 'pending',
+        user_id: user.id,
         updated_by: user.id,
         created_at: now,
         updated_at: now,
@@ -122,7 +127,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH /api/templates - Update status or view_count of a template
+// PATCH /api/templates - Update status / json_data (ownership check enforced)
 export async function PATCH(request: NextRequest) {
   if (!isDatabaseEnabled()) {
     return NextResponse.json({ error: 'Database mode is disabled' }, { status: 400 });
@@ -146,6 +151,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
     }
 
+    // Verify ownership before updating
+    const existing = await sql`SELECT id FROM json_templates WHERE id = ${id} AND user_id = ${user.id}`;
+    if (existing.length === 0) {
+      return NextResponse.json({ error: 'Template not found or access denied' }, { status: 404 });
+    }
+
     await sql`
       UPDATE json_templates
       SET
@@ -154,7 +165,7 @@ export async function PATCH(request: NextRequest) {
         json_data = COALESCE(${json_data ? JSON.stringify(json_data) : null}::jsonb, json_data),
         updated_by = ${user.id},
         updated_at = NOW()
-      WHERE id = ${id} AND updated_by = ${user.id}
+      WHERE id = ${id} AND user_id = ${user.id}
     `;
 
     return NextResponse.json({ success: true, message: 'Template updated successfully' });
@@ -167,7 +178,7 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// DELETE /api/templates - Delete a template
+// DELETE /api/templates - Delete a template (ownership check enforced)
 export async function DELETE(request: NextRequest) {
   if (!isDatabaseEnabled()) {
     return NextResponse.json({ error: 'Database mode is disabled' }, { status: 400 });
@@ -191,10 +202,16 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
     }
 
-    await sql`
+    // Only delete if template belongs to authenticated user
+    const result = await sql`
       DELETE FROM json_templates
-      WHERE id = ${id} AND updated_by = ${user.id}
+      WHERE id = ${id} AND user_id = ${user.id}
+      RETURNING id
     `;
+
+    if (result.length === 0) {
+      return NextResponse.json({ error: 'Template not found or access denied' }, { status: 404 });
+    }
 
     return NextResponse.json({ success: true, message: 'Template deleted successfully' });
   } catch (error: any) {

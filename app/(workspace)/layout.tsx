@@ -3,14 +3,65 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiFileText, FiDatabase, FiSettings, FiMenu, FiX, FiLayout, FiMic } from "react-icons/fi";
+import {
+  FiFileText,
+  FiDatabase,
+  FiSettings,
+  FiMenu,
+  FiX,
+  FiLayout,
+  FiMic,
+  FiVideo,
+  FiShare2,
+  FiLink2,
+} from "react-icons/fi";
 import SidebarAuth from "../components/SidebarAuth";
 
-const sidebarLinks = [
-  { name: "Voice Generator", href: "/", icon: FiMic },
-  { name: "JSON Generator", href: "/json-generator", icon: FiFileText },
-  { name: "Saved Templates", href: "/templates", icon: FiDatabase },
-  { name: "Settings", href: "/settings", icon: FiSettings },
+interface NavLink {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+interface NavSection {
+  title: string;
+  badge?: string;
+  badgeColor?: string;
+  links: NavLink[];
+}
+
+const navSections: NavSection[] = [
+  {
+    title: "Studio",
+    links: [
+      { name: "Voice Generator", href: "/", icon: FiMic },
+      { name: "JSON Generator", href: "/json-generator", icon: FiFileText },
+    ],
+  },
+  {
+    title: "YouTube",
+    badge: "YT",
+    badgeColor: "bg-orange-50 text-orange-700 border-orange-200/80",
+    links: [
+      { name: "YouTube Strategy", href: "/youtube/templates", icon: FiVideo },
+    ],
+  },
+  {
+    title: "Facebook",
+    badge: "FB",
+    badgeColor: "bg-orange-50 text-orange-700 border-orange-200/80",
+    links: [
+      { name: "Facebook Content", href: "/facebook/templates", icon: FiShare2 },
+      { name: "Page Integration", href: "/facebook/integration", icon: FiLink2 },
+    ],
+  },
+  {
+    title: "General",
+    links: [
+      { name: "All Templates", href: "/templates", icon: FiDatabase },
+      { name: "Settings", href: "/settings", icon: FiSettings },
+    ],
+  },
 ];
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
@@ -35,7 +86,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold text-slate-800">
-            <FiLayout className="w-6 h-6 text-blue-600" />
+            <FiLayout className="w-6 h-6 text-[#ff7d6e]" />
             <span className="hidden md:block lg:block">Workspace</span>
           </Link>
           <button
@@ -47,31 +98,51 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="p-4 overflow-y-auto h-[calc(100vh-4rem)] flex flex-col justify-between">
-          <ul className="space-y-1">
-            {sidebarLinks.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname === link.href || pathname?.startsWith(`${link.href}/`);
-              const Icon = link.icon;
-              return (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                    }`}
-                  >
-                    <Icon className={`w-5 h-5 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
-                    {link.name}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="space-y-5">
+            {navSections.map((section) => (
+              <div key={section.title} className="space-y-1">
+                <div className="flex items-center justify-between px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <span>{section.title}</span>
+                  {section.badge && (
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[10px] font-extrabold border ${section.badgeColor}`}
+                    >
+                      {section.badge}
+                    </span>
+                  )}
+                </div>
+                <ul className="space-y-0.5">
+                  {section.links.map((link) => {
+                    const isActive =
+                      link.href === "/"
+                        ? pathname === "/"
+                        : pathname === link.href || pathname?.startsWith(`${link.href}/`);
+                    const Icon = link.icon;
+                    return (
+                      <li key={link.name}>
+                        <Link
+                          href={link.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            isActive
+                              ? "bg-gradient-to-r from-orange-50 to-orange-100/60 text-[#c83a2a] font-semibold border-l-2 border-[#ff7d6e]"
+                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                          }`}
+                        >
+                          <Icon
+                            className={`w-4 h-4 shrink-0 ${
+                              isActive ? "text-[#ff7d6e]" : "text-slate-400"
+                            }`}
+                          />
+                          <span>{link.name}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
 
           <SidebarAuth />
         </div>

@@ -1,41 +1,24 @@
 'use client';
 
 import { useState, memo } from 'react';
-import { FaEdit, FaSave, FaTrash, FaFont, FaExclamationTriangle } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaFont, FaExclamationTriangle } from 'react-icons/fa';
 
 interface TextInputProps {
   text: string;
   onTextChange: (text: string) => void;
-  onSave: () => boolean;
   disabled?: boolean;
 }
 
 const TextInput = memo(function TextInput({
   text,
   onTextChange,
-  onSave,
   disabled = false,
 }: TextInputProps) {
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
   const charCount = text.length;
   const wordCount = text.trim() ? text.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
   const isLargeText = charCount > 2500;
-
-  const handleSave = () => {
-    const success = onSave();
-    if (success) {
-      setToastMessage('Prompt saved successfully!');
-    } else if (!text.trim()) {
-      setToastMessage('Please enter some text first');
-    } else {
-      setToastMessage('This prompt is already saved');
-    }
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  };
 
   return (
     <div className="relative flex flex-col h-full justify-between gap-3">
@@ -47,22 +30,6 @@ const TextInput = memo(function TextInput({
         </label>
 
         <div className="flex items-center gap-2">
-          {/* Compact Save Button */}
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!text.trim()}
-            title="Save Prompt"
-            className={`flex items-center gap-1.5 py-1 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              text.trim()
-                ? 'bg-gradient-to-r from-[#ff9b8f] to-[#ffb4a8] hover:from-[#f8887a] hover:to-[#ffa79a] text-white shadow-2xs hover:shadow-xs'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200/60'
-            }`}
-          >
-            <FaSave className="text-xs" />
-            <span>Save</span>
-          </button>
-
           {/* Compact Clear Button */}
           <button
             type="button"
@@ -133,13 +100,6 @@ const TextInput = memo(function TextInput({
           {charCount.toLocaleString()} chars
         </span>
       </div>
-
-      {/* Toast Notification */}
-      {showToast && (
-        <div className="fixed top-6 right-6 bg-gray-900 text-white py-3 px-5 rounded-xl shadow-2xl z-50 flex items-center gap-3 text-sm font-medium animate-slideIn">
-          {toastMessage}
-        </div>
-      )}
     </div>
   );
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FaMicrophone, FaSync, FaGoogle } from 'react-icons/fa';
 import { FiMic } from 'react-icons/fi';
 import { useVoiceGenerator } from '../hooks/useVoiceGenerator';
@@ -10,8 +10,8 @@ import TextInput from '../components/TextInput';
 import VoiceControls from '../components/VoiceControls';
 import AudioPlayer from '../components/AudioPlayer';
 import GenerationStatus from '../components/GenerationStatus';
+import Toast from '../components/Toast';
 import { useIsClient } from '../hooks/useIsClient';
-import LoadingSkeleton from '../components/LoadingSkeleton';
 import {
   VoicePresetItem,
   getLocalPresets,
@@ -20,24 +20,22 @@ import {
 } from '../lib/localPresetStorage';
 import FormatSelectionModal, { VideoFormat } from '../components/FormatSelectionModal';
 
-const SavedPrompts = lazy(() => import('../components/SavedPrompts'));
 
 export default function VoiceGeneratorPage() {
   const {
     params,
     setParams,
-    savedPrompts,
     audioBlob,
     handleGenerate,
-    handleSavePrompt,
     loadPrompt,
-    deletePrompt,
     videoFormat,
     setVideoFormat,
     isGenerating,
     generationTime,
     errorMessage,
     dismissError,
+    toastNotification,
+    clearToast,
     isAuthenticated,
     isOnlineDb,
     remainingGenerations,
@@ -81,7 +79,6 @@ export default function VoiceGeneratorPage() {
   } = useVoiceSamples(selectedModelId);
   const [selectedApiVoice, setSelectedApiVoice] = useState('');
   const [presets, setPresets] = useState<VoicePresetItem[]>([]);
-  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
   const isClient = useIsClient();
 
@@ -198,13 +195,16 @@ export default function VoiceGeneratorPage() {
     }
   };
 
+  const selectedModelObj = apiModels.find((m) => m.name === selectedModelId);
+  const selectedProvider = selectedModelObj?.provider;
+
   const handleGenerateClick = () => {
     if (isOnlineDb && !isAuthenticated) {
       window.location.href = '/api/auth/google';
       return;
     }
     if (!params.text.trim()) {
-      handleGenerate(selectedApiVoice || undefined, selectedModelId);
+      handleGenerate(selectedApiVoice || undefined, selectedModelId, 'short', selectedProvider);
       return;
     }
     // Open sleek format selection popup
@@ -213,8 +213,7 @@ export default function VoiceGeneratorPage() {
 
   const handleConfirmFormat = async (format: VideoFormat) => {
     setIsFormatModalOpen(false);
-    await handleGenerate(selectedApiVoice || undefined, selectedModelId, format);
-    setHistoryRefreshKey((prev) => prev + 1);
+    await handleGenerate(selectedApiVoice || undefined, selectedModelId, format, selectedProvider);
   };
 
   const isAuthRequired = isOnlineDb && !isAuthenticated;
@@ -223,21 +222,21 @@ export default function VoiceGeneratorPage() {
   const selectedVoiceObj = apiVoices.find((v) => v.voice_id === selectedApiVoice);
   const activeVoiceMeta = selectedVoiceObj
     ? {
-        voice_id: selectedVoiceObj.voice_id,
-        voice_name: selectedVoiceObj.voice_name.split('(')[0].trim() || selectedVoiceObj.voice_name,
-        language: selectedVoiceObj.language,
-        gender: selectedVoiceObj.gender,
-        model_id: selectedModelId,
-      }
+      voice_id: selectedVoiceObj.voice_id,
+      voice_name: selectedVoiceObj.voice_name.split('(')[0].trim() || selectedVoiceObj.voice_name,
+      language: selectedVoiceObj.language,
+      gender: selectedVoiceObj.gender,
+      model_id: selectedModelId,
+    }
     : null;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 mx-auto">
       {/* Workspace Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2.5">
-            <FiMic className="w-6 h-6 text-blue-600" />
+            <FiMic className="w-6 h-6 text-[#ff7d6e]" />
             <span>AI Voice Generator</span>
           </h1>
           <p className="text-slate-500 mt-1 text-sm">
@@ -250,16 +249,14 @@ export default function VoiceGeneratorPage() {
           <div>
             {isAuthenticated && remainingGenerations !== null ? (
               <div
-                className={`text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 border ${
-                  isLimitReached
-                    ? 'bg-red-50 border-red-200 text-red-600'
-                    : 'bg-white border-slate-200 text-slate-700 shadow-xs'
-                }`}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 border ${isLimitReached
+                  ? 'bg-red-50 border-red-200 text-red-600'
+                  : 'bg-white border-slate-200 text-slate-700 shadow-xs'
+                  }`}
               >
                 <span
-                  className={`w-2 h-2 rounded-full ${
-                    isLimitReached ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'
-                  }`}
+                  className={`w-2 h-2 rounded-full ${isLimitReached ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'
+                    }`}
                 />
                 <span>
                   <strong>Free Studio Plan</strong> • {remainingGenerations} generation
@@ -280,15 +277,15 @@ export default function VoiceGeneratorPage() {
 
       {/* Script Source Notification */}
       {sourceInfo && (
-        <div className="flex items-center justify-between p-3.5 bg-blue-50/90 border border-blue-200 rounded-xl text-xs text-blue-900 shadow-2xs animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="flex items-center justify-between p-3.5 bg-orange-50/90 border border-orange-200 rounded-xl text-xs text-orange-950 shadow-2xs animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center gap-2.5">
-            <span className="p-1.5 bg-blue-600 text-white rounded-lg shadow-2xs">
+            <span className="p-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white rounded-lg shadow-2xs">
               <FiMic className="w-3.5 h-3.5" />
             </span>
             <span>
-              Script loaded from content strategy: <strong className="text-blue-950 font-semibold">{sourceInfo.title || 'Untitled'}</strong>
+              Script loaded from content strategy: <strong className="text-orange-950 font-semibold">{sourceInfo.title || 'Untitled'}</strong>
               {sourceInfo.type && (
-                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-semibold text-[10px] uppercase border border-blue-200">
+                <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full font-semibold text-[10px] uppercase border border-orange-200">
                   {sourceInfo.type === 'long' ? 'Long Video' : 'Short Video'}
                 </span>
               )}
@@ -296,7 +293,7 @@ export default function VoiceGeneratorPage() {
           </div>
           <button
             onClick={() => setSourceInfo(null)}
-            className="text-blue-600 hover:text-blue-800 text-xs font-semibold cursor-pointer underline ml-3"
+            className="text-orange-700 hover:text-orange-900 text-xs font-semibold cursor-pointer underline ml-3"
           >
             Dismiss
           </button>
@@ -312,10 +309,9 @@ export default function VoiceGeneratorPage() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 items-stretch mb-6">
           {/* Left Column: Text Input */}
           <div className="xl:col-span-7 flex flex-col px-1 sm:px-0">
-            <TextInput
+          <TextInput
               text={params.text}
               onTextChange={(text) => setParams({ ...params, text })}
-              onSave={handleSavePrompt}
               disabled={isLimitReached}
             />
           </div>
@@ -342,7 +338,6 @@ export default function VoiceGeneratorPage() {
                 selectedModelId={selectedModelId}
                 onModelChange={handleModelChange}
                 onLoadPrompt={loadPrompt}
-                refreshHistoryTrigger={historyRefreshKey}
                 presets={presets}
                 onApplyPreset={handleApplyPreset}
                 onDeletePreset={handleDeletePreset}
@@ -352,9 +347,9 @@ export default function VoiceGeneratorPage() {
         </div>
 
         {/* Bottom Actions & Player Area */}
-        <div className="flex flex-col gap-4 pt-4 border-t border-slate-100">
+        <div className="flex flex-col gap-4 pt-4">
           {/* Toolbar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/90 p-3 sm:p-3.5 rounded-xl border border-slate-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-3.5">
             <div className="text-xs text-slate-500 font-medium">
               {selectedVoiceObj ? (
                 <span>
@@ -370,7 +365,7 @@ export default function VoiceGeneratorPage() {
             {isAuthRequired ? (
               <a
                 href="/api/auth/google"
-                className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-xs hover:shadow flex items-center justify-center gap-2"
               >
                 <FaGoogle className="text-xs" />
                 <span>Sign in to Generate</span>
@@ -379,7 +374,7 @@ export default function VoiceGeneratorPage() {
               <button
                 onClick={handleGenerateClick}
                 disabled={!params.text.trim() || isGenerating || isLimitReached}
-                className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-sm hover:shadow disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-xs hover:shadow disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
               >
                 {isGenerating ? (
                   <>
@@ -400,6 +395,16 @@ export default function VoiceGeneratorPage() {
             errorMessage={errorMessage}
             onDismissError={dismissError}
           />
+
+          {toastNotification && (
+            <div className="fixed bottom-4 right-4 z-50">
+              <Toast
+                message={toastNotification.message}
+                type={toastNotification.type}
+                onClose={clearToast}
+              />
+            </div>
+          )}
 
           <AudioPlayer
             audioUrl={null}
@@ -423,24 +428,6 @@ export default function VoiceGeneratorPage() {
         isGenerating={isGenerating}
       />
 
-      {/* Saved Prompts Section */}
-      {isClient && savedPrompts.length > 0 && (
-        <Suspense
-          fallback={
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <LoadingSkeleton variant="savedPrompts" />
-            </div>
-          }
-        >
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <SavedPrompts
-              prompts={savedPrompts}
-              onLoad={loadPrompt}
-              onDelete={deletePrompt}
-            />
-          </div>
-        </Suspense>
-      )}
     </div>
   );
 }

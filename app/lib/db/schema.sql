@@ -73,9 +73,17 @@ CREATE TABLE IF NOT EXISTS json_templates (
     id TEXT PRIMARY KEY,
     json_data JSONB NOT NULL,
     status VARCHAR(50) DEFAULT 'pending',
+    audio_urls JSONB DEFAULT '[]'::jsonb,
     confirmed_by_email TEXT,
     view_count INTEGER DEFAULT 0 NOT NULL,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     updated_by TEXT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
+
+ALTER TABLE json_templates ADD COLUMN IF NOT EXISTS user_id TEXT REFERENCES users(id) ON DELETE CASCADE;
+UPDATE json_templates SET user_id = updated_by WHERE user_id IS NULL AND updated_by IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_templates_user_date ON json_templates(user_id, created_at DESC);
+

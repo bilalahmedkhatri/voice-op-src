@@ -44,8 +44,8 @@ const FormatSelectionModal = memo(function FormatSelectionModal({
     const chars = trimmed.length;
     // Average speaking rate: ~150 words per minute => 2.5 words per second
     const estimatedSec = Math.max(1, Math.round(words / 2.5));
-    // Shorts are typically <= 60 seconds or under ~800 characters
-    const recommended: VideoFormat = estimatedSec <= 60 && chars < 900 ? 'short' : 'long';
+    // Shorts are typically <= 90 seconds or under ~800 characters
+    const recommended: VideoFormat = estimatedSec <= 90 && chars < 900 ? 'short' : 'long';
 
     return {
       wordCount: words,
@@ -167,7 +167,7 @@ const FormatSelectionModal = memo(function FormatSelectionModal({
                 <FaBolt className="text-amber-500 text-xs" />
               </h3>
               <p className="text-[11px] text-gray-500 mt-1 leading-snug">
-                YouTube Shorts, Instagram Reels, TikTok (<strong className="text-gray-700">&lt; 60s</strong>)
+                YouTube Shorts, Instagram Reels, TikTok (<strong className="text-gray-700">&lt; 90s</strong>)
               </p>
             </div>
 

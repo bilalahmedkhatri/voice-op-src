@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FaEdit, FaSave, FaTrash, FaSearch, FaDownload, FaFont } from 'react-icons/fa';
 import { designSystem as ds } from '../lib/designSystem';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface SavedPromptsProps {
   prompts: string[];
@@ -11,6 +12,7 @@ interface SavedPromptsProps {
 export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPromptsProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [promptToDelete, setPromptToDelete] = useState<number | null>(null);
 
   const filteredPrompts = prompts.filter(prompt =>
     prompt.toLowerCase().includes(searchQuery.toLowerCase())
@@ -269,9 +271,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm('Delete this prompt?')) {
-                        onDelete(originalIndex);
-                      }
+                      setPromptToDelete(originalIndex);
                     }}
                     style={{
                       padding: `${ds.spacing.sm} ${ds.spacing.md}`,
@@ -304,6 +304,20 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
           })}
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={promptToDelete !== null} 
+        onClose={() => setPromptToDelete(null)} 
+        onConfirm={() => {
+          if (promptToDelete !== null) {
+            onDelete(promptToDelete);
+            setPromptToDelete(null);
+          }
+        }}
+        title="Delete Saved Prompt"
+        message="Are you sure you want to delete this prompt?"
+      />
+
     </div>
   );
 }

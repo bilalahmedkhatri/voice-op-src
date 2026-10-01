@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
       voice,
       model_id,
       modelId,
+      provider,
       options = {},
       speed,
       pitch,
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
 
     const targetVoiceId = voice_id || voice;
     const targetModelId = model_id || modelId;
+    const targetProvider = provider || (targetModelId?.toLowerCase().includes('kokoro') ? 'kokoro' : 'gemini');
 
     if (!text || typeof text !== 'string' || !text.trim()) {
       return NextResponse.json(
@@ -104,15 +106,31 @@ export async function POST(request: NextRequest) {
       ...(repetition_penalty !== undefined ? { repetition_penalty } : {}),
     };
 
-    // Forward to dynamic API
+    // Collect extra parameters only if adjusted by user
+    const extraParams: Record<string, any> = {};
+    if (mergedOptions.pitch !== undefined && mergedOptions.pitch !== 1.0) extraParams.pitch = mergedOptions.pitch;
+    if (mergedOptions.volume !== undefined && mergedOptions.volume !== 1.0) extraParams.volume = mergedOptions.volume;
+    if (mergedOptions.speed !== undefined && mergedOptions.speed !== 1.0) extraParams.speed = mergedOptions.speed;
+    if (mergedOptions.emotion) extraParams.emotion = mergedOptions.emotion;
+    if (mergedOptions.background_noise !== undefined) extraParams.background_noise = mergedOptions.background_noise;
+    if (body.extra_params && typeof body.extra_params === 'object') {
+      Object.assign(extraParams, body.extra_params);
+    }
+
+    // Forward to dynamic API (6 core fields guaranteed)
     const apiUrl = process.env.VOICEOVER_API_URL || 'http://localhost:8000';
-    const payload = {
-      text,
+    const payload: Record<string, any> = {
+      title: body.title || "Voiceover Script",
+      text: text,
+      provider: targetProvider,
       model: targetModelId,
       voice: targetVoiceId,
-      speed: mergedOptions.speed ?? 1.0,
-      lang: lang
+      lang: lang,
     };
+
+    if (Object.keys(extraParams).length > 0) {
+      payload.extra_params = extraParams;
+    }
 
     let response: Response;
     try {
@@ -140,9 +158,25 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await response.arrayBuffer();
     const contentType = response.headers.get('content-type') || 'audio/wav';
     
-    // Some endpoints may return JSON with a URL, handle that if needed
+    // Some endpoints may return JSON with a URL or job_id
     if (contentType.includes('application/json')) {
       const data = JSON.parse(Buffer.from(arrayBuffer).toString('utf-8'));
+      
+      // Update quota even for async jobs
+      if (user && sql) {
+        try {
+          await sql`
+            UPDATE user_quotas
+            SET generations_used = generations_used + 1,
+                chars_used_today = chars_used_today + ${text.length},
+                updated_at = NOW()
+            WHERE user_id = ${user.id}
+          `;
+        } catch (dbError) {
+          console.error('Failed to update quota in DB:', dbError);
+        }
+      }
+
       return NextResponse.json(data);
     }
 

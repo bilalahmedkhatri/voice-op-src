@@ -14,7 +14,7 @@ export default function TagsSection({ tagsList, copiedId, handleCopy, rawTagsDat
   return (
     <Card>
       <SectionHeader title="Tags">
-        <button onClick={() => handleCopy(rawTagsData, 'tags')} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer p-1" title="Copy Tags">
+        <button onClick={() => handleCopy(tagsList.join(' '), 'tags')} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer p-1" title="Copy Tags">
           {copiedId === 'tags' ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
         </button>
       </SectionHeader>

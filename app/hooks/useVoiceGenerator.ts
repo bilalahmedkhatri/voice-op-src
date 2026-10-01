@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { VoiceParams } from '../types';
-import { promptStorage } from '../lib/promptStorage';
 import { isDatabaseEnabled } from '../lib/config';
 import { saveLocalHistoryItem } from '../lib/localHistoryStorage';
 import { formatErrorMessage } from '../lib/errorUtils';
@@ -38,12 +37,12 @@ export function useVoiceGenerator() {
     pitch: 1,
     volume: 1,
   });
-  const [savedPrompts, setSavedPrompts] = useState<string[]>([]);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState<number | null>(null);
   const [videoFormat, setVideoFormat] = useState<'short' | 'long'>('short');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [toastNotification, setToastNotification] = useState<{ message: string; type: 'info' | 'success' | 'warning' | 'error' } | null>(null);
   const [userQuota, setUserQuota] = useState<UserQuotaState | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const generationControllerRef = useRef<AbortController | null>(null);
@@ -74,16 +73,8 @@ export function useVoiceGenerator() {
   }, []);
 
   useEffect(() => {
-    const prompts = promptStorage.load();
-    setSavedPrompts(prompts);
     refreshQuota();
   }, [refreshQuota]);
-
-  useEffect(() => {
-    if (savedPrompts.length > 0 || promptStorage.count() > 0) {
-      promptStorage.save(savedPrompts);
-    }
-  }, [savedPrompts]);
 
   // Cleanup: abort pending requests on unmount
   useEffect(() => {
@@ -93,7 +84,12 @@ export function useVoiceGenerator() {
     };
   }, []);
 
-  const handleGenerate = async (apiVoiceId?: string, targetModelId?: string, targetFormat: 'short' | 'long' = 'short') => {
+  const handleGenerate = async (
+    apiVoiceId?: string,
+    targetModelId?: string,
+    targetFormat: 'short' | 'long' = 'short',
+    targetProvider?: string
+  ) => {
     if (!params.text.trim()) {
       setErrorMessage('Please enter some text to generate a voiceover.');
       return;
@@ -126,13 +122,17 @@ export function useVoiceGenerator() {
 
       setIsGenerating(true);
 
+      const cachedTitle = typeof window !== 'undefined' ? localStorage.getItem("pending_voice_title") : null;
+
       const response = await fetch('/api/voiceover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          title: cachedTitle || 'Voiceover Script',
           text: params.text,
           voice_id: apiVoiceId,
           model_id: targetModelId,
+          provider: targetProvider,
           options: {
             ...(params.options || {}),
             video_format: targetFormat,
@@ -156,7 +156,86 @@ export function useVoiceGenerator() {
         throw new Error(errorMsg);
       }
 
-      const data = await response.json();
+      let data = await response.json();
+
+      // Handle async processing response (backend acknowledges request)
+      if (data.status === 'processing' || data.message === 'processing' || data.job_id || data.task_id) {
+        
+        const jobId = data.job_id || data.task_id;
+        
+        // Save the job_id if we came from Content Detail page
+        if (typeof window !== 'undefined' && jobId) {
+          const tId = localStorage.getItem('pending_voice_template_id');
+          const iId = localStorage.getItem('pending_voice_item_id');
+          
+          if (tId && iId) {
+            fetch('/api/templates/audio-job', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                templateId: tId,
+                itemId: iId,
+                jobId: jobId,
+                voiceName: data.voice_name || apiVoiceId,
+                voiceId: apiVoiceId,
+                modelId: targetModelId
+              })
+            }).catch(e => console.error('Failed to save audio job_id:', e));
+          }
+        }
+
+        setToastNotification({
+          type: 'info',
+          message: 'Your request is processing. Please wait...'
+        });
+
+        // Polling logic: 5 requests, 10 seconds apart
+        let pollCount = 0;
+        let isCompleted = false;
+        let pollError: string | null = null;
+        
+        while (pollCount < 5 && !isCompleted && !pollError) {
+          await new Promise(resolve => setTimeout(resolve, 10000)); // 10 seconds
+          
+          if (generationControllerRef.current?.signal.aborted) {
+            return;
+          }
+
+          try {
+            const statusRes = await fetch(`/api/templates/audio-job/status?jobId=${jobId}`);
+            if (statusRes.ok) {
+              const statusData = await statusRes.json();
+              if (statusData.status === 'completed' || statusData.status === 'success') {
+                isCompleted = true;
+                data = statusData;
+                break;
+              } else if (statusData.status === 'failed') {
+                pollError = statusData.error || 'Voice generation failed on the server.';
+              }
+              // else: still 'processing', loop continues
+            }
+          } catch (e) {
+            console.warn('Polling check failed (network?), will retry:', e);
+          }
+          pollCount++;
+        }
+
+        // Propagate a server-side failure to the UI
+        if (pollError) {
+          throw new Error(pollError);
+        }
+
+        if (!isCompleted) {
+          // Timed out after 5 attempts — backend still processing
+          setToastNotification({
+            type: 'info',
+            message: 'Audio is still being processed. Check Content Detail page later for the result.'
+          });
+          setIsGenerating(false);
+          generationControllerRef.current = null;
+          return;
+        }
+      }
 
       let downloadedBlob: Blob;
       if (typeof data.audio_url === 'string' && data.audio_url.startsWith('data:')) {
@@ -204,6 +283,29 @@ export function useVoiceGenerator() {
       // Refresh DB quota after successful generation
       await refreshQuota();
 
+      // If we finished successfully from polling and came from Content Detail page, update the DB with URL
+      if (data.audio_url && typeof window !== 'undefined') {
+        const tId = localStorage.getItem('pending_voice_template_id');
+        const iId = localStorage.getItem('pending_voice_item_id');
+        const jobId = data.job_id || data.task_id;
+        
+        if (tId && iId && jobId) {
+          fetch('/api/templates/audio-job', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              templateId: tId,
+              itemId: iId,
+              jobId: jobId,
+              audioUrl: data.audio_url,
+              voiceName: data.voice_name || apiVoiceId,
+              voiceId: apiVoiceId,
+              modelId: targetModelId
+            })
+          }).catch(e => console.error('Failed to save audio_url to db:', e));
+        }
+      }
+
       setErrorMessage(null);
       generationControllerRef.current = null;
       setIsGenerating(false);
@@ -231,23 +333,12 @@ export function useVoiceGenerator() {
     }
   };
 
-  const handleSavePrompt = () => {
-    if (params.text.trim() && !savedPrompts.includes(params.text)) {
-      setSavedPrompts([...savedPrompts, params.text]);
-      return true;
-    }
-    return false;
-  };
-
   const loadPrompt = (prompt: string) => {
     setParams(prev => ({ ...prev, text: prompt }));
   };
 
-  const deletePrompt = (index: number) => {
-    setSavedPrompts(savedPrompts.filter((_, i) => i !== index));
-  };
-
   const dismissError = () => setErrorMessage(null);
+  const clearToast = () => setToastNotification(null);
 
   // Compute remaining attempts from real DB quota if logged in
   const remainingGenerations = userQuota
@@ -257,16 +348,15 @@ export function useVoiceGenerator() {
   return {
     params,
     setParams,
-    savedPrompts,
     audioBlob,
     handleGenerate,
     isGenerating,
     generationTime,
     errorMessage,
     dismissError,
-    handleSavePrompt,
+    toastNotification,
+    clearToast,
     loadPrompt,
-    deletePrompt,
     videoFormat,
     setVideoFormat,
     userQuota,

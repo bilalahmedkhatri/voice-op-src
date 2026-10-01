@@ -1,159 +1,176 @@
 "use client";
 
-import React, { useState } from "react";
-import { FiSave, FiSettings, FiKey, FiGlobe, FiBell } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { FiSettings, FiRefreshCw, FiAlertCircle } from "react-icons/fi";
+import { FaGoogle } from "react-icons/fa";
+
+import SettingsHeader from "./components/SettingsHeader";
+import SettingsStats from "./components/SettingsStats";
+import ProfileCard from "./components/ProfileCard";
+import UsageCard from "./components/UsageCard";
+
+interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+  google_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface UserQuota {
+  generations_used: number;
+  max_daily_generations: number;
+  max_chars_per_request: number;
+  chars_used_today: number;
+  max_daily_chars: number;
+  reset_at: string;
+}
 
 export default function SettingsPage() {
-  const [isSaving, setIsSaving] = useState(false);
-  const [showSavedMsg, setShowSavedMsg] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [quota, setQuota] = useState<UserQuota | null>(null);
+  const [totalTemplates, setTotalTemplates] = useState<number>(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSave = () => {
-    setIsSaving(true);
-    // Simulate save
-    setTimeout(() => {
-      setIsSaving(false);
-      setShowSavedMsg(true);
-      setTimeout(() => setShowSavedMsg(false), 3000);
-    }, 800);
+  // Edit display name state
+  const [displayName, setDisplayName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [saveMessage, setSaveMessage] = useState("");
+
+  const fetchSettings = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/settings");
+      const data = await res.json();
+      if (data.authenticated && data.user) {
+        setIsAuthenticated(true);
+        setUser(data.user);
+        setQuota(data.quota ?? null);
+        setTotalTemplates(data.total_templates ?? 0);
+        setDisplayName(data.user.name || "");
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+        setQuota(null);
+        setTotalTemplates(0);
+      }
+    } catch (err: any) {
+      setError("Failed to load settings. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <FiSettings className="w-6 h-6 text-blue-600" /> Platform Settings
-          </h1>
-          <p className="text-slate-500 mt-1">Configure your voice generator and platform preferences.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          {showSavedMsg && <span className="text-sm font-medium text-green-600">Settings saved!</span>}
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-70"
-          >
-            <FiSave className="w-4 h-4" />
-            {isSaving ? "Saving..." : "Save Settings"}
-          </button>
-        </div>
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const handleSaveName = async () => {
+    if (!displayName.trim()) return;
+    setIsSaving(true);
+    setSaveStatus("idle");
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: displayName }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update");
+      setUser((prev) => (prev ? { ...prev, name: data.user.name } : prev));
+      setSaveStatus("success");
+      setSaveMessage("Display name updated successfully!");
+    } catch (err: any) {
+      setSaveStatus("error");
+      setSaveMessage(err.message || "Failed to update profile.");
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-80 space-y-3">
+        <FiRefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+        <p className="text-sm font-medium text-slate-500">Loading account settings...</p>
       </div>
+    );
+  }
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+  if (error) {
+    return (
+      <div className="w-full flex items-center justify-between p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 shadow-sm">
+        <div className="flex items-center gap-3">
+          <FiAlertCircle className="w-5 h-5 flex-shrink-0 text-red-500" />
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+        <button
+          onClick={fetchSettings}
+          className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-xs font-semibold transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
-        {/* API Configuration */}
-        <div className="md:col-span-3 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-            <FiKey className="w-5 h-5 text-slate-600" />
-            <h2 className="text-lg font-semibold text-slate-800">API Configuration</h2>
-          </div>
-          <div className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">Replicate API Token</label>
-                <input
-                  type="password"
-                  placeholder="r8_..."
-                  defaultValue="r8_placeholder_key_xxxx"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-                <p className="text-xs text-slate-500">Used for generating AI voiceovers via Replicate models.</p>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">OpenAI API Key (Optional)</label>
-                <input
-                  type="password"
-                  placeholder="sk-..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-                <p className="text-xs text-slate-500">Used for GPT-based script generation integrations.</p>
-              </div>
-            </div>
-          </div>
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="w-full max-w-xl mx-auto mt-16 p-8 bg-white border border-slate-200 rounded-2xl shadow-sm text-center space-y-5">
+        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto text-blue-600">
+          <FiSettings className="w-8 h-8" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Sign in Required</h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Please connect your Google account to view profile settings, usage quotas, and manage your templates.
+          </p>
+        </div>
+        <a
+          href="/api/auth/google"
+          className="inline-flex items-center gap-2.5 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-sm hover:shadow"
+        >
+          <FaGoogle className="text-sm" />
+          Sign in with Google
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full space-y-6 animate-in fade-in duration-300">
+      {/* 1. Header */}
+      <SettingsHeader onRefresh={fetchSettings} isLoading={isLoading} />
+
+      {/* 2. Top 4 Overview Stat Cards */}
+      <SettingsStats quota={quota} totalTemplates={totalTemplates} />
+
+      {/* 3. Main Split Content Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column: Profile Card (2 cols) */}
+        <div className="lg:col-span-2">
+          <ProfileCard
+            user={user}
+            displayName={displayName}
+            onDisplayNameChange={setDisplayName}
+            onSaveName={handleSaveName}
+            isSaving={isSaving}
+            saveStatus={saveStatus}
+            saveMessage={saveMessage}
+          />
         </div>
 
-        {/* Voiceover Defaults */}
-        <div className="md:col-span-2 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-            <FiGlobe className="w-5 h-5 text-slate-600" />
-            <h2 className="text-lg font-semibold text-slate-800">Voiceover Defaults</h2>
-          </div>
-          <div className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">Default Voice Model</label>
-                <select className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                  <option>suno-ai/bark</option>
-                  <option>elevenlabs/speech</option>
-                  <option>coqui/xtts</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">Default Language</label>
-                <select className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                  <option>English (US)</option>
-                  <option>English (UK)</option>
-                  <option>Spanish</option>
-                  <option>French</option>
-                  <option>German</option>
-                  <option>Hindi</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-700">Default Voice Style / Profile</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input type="radio" name="voice_style" defaultChecked className="text-blue-600 focus:ring-blue-500" />
-                  Neutral / Professional
-                </label>
-                <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input type="radio" name="voice_style" className="text-blue-600 focus:ring-blue-500" />
-                  Energetic / YouTube
-                </label>
-                <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input type="radio" name="voice_style" className="text-blue-600 focus:ring-blue-500" />
-                  Calm / Narrative
-                </label>
-              </div>
-            </div>
-          </div>
+        {/* Right Column: Usage Breakdown (1 col) */}
+        <div className="lg:col-span-1">
+          <UsageCard quota={quota} />
         </div>
-
-        {/* Notifications & System */}
-        <div className="md:col-span-1 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-            <FiBell className="w-5 h-5 text-slate-600" />
-            <h2 className="text-lg font-semibold text-slate-800">Preferences</h2>
-          </div>
-          <div className="p-6 space-y-5">
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium text-slate-700">Email Notifications</span>
-              <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                <input type="checkbox" defaultChecked className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" style={{ right: 0, borderColor: '#2563eb' }} />
-                <div className="toggle-label block overflow-hidden h-5 rounded-full bg-blue-600 cursor-pointer"></div>
-              </div>
-            </label>
-
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium text-slate-700">Auto-save JSON Templates</span>
-              <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                <input type="checkbox" className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" style={{ left: 0, borderColor: '#cbd5e1' }} />
-                <div className="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></div>
-              </div>
-            </label>
-
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium text-slate-700">Dark Mode (Beta)</span>
-              <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                <input type="checkbox" className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" style={{ left: 0, borderColor: '#cbd5e1' }} />
-                <div className="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></div>
-              </div>
-            </label>
-          </div>
-        </div>
-
       </div>
     </div>
   );

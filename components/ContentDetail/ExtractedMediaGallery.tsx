@@ -1,5 +1,6 @@
-import React from 'react';
-import { FiImage, FiRefreshCw, FiDownloadCloud, FiTrash2, FiVideo } from 'react-icons/fi';
+import React, { useState } from 'react';
+import { FiImage, FiRefreshCw, FiDownloadCloud, FiTrash2, FiVideo, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface ExtractedMediaGalleryProps {
   signedMediaUrls: string[];
@@ -26,6 +27,8 @@ export default function ExtractedMediaGallery({
   downloadProgress,
   setDownloadProgress
 }: ExtractedMediaGalleryProps) {
+  
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
 
   const handleDownloadSelected = async () => {
     if (selectedMediaUrls.length === 0) return;
@@ -92,12 +95,12 @@ export default function ExtractedMediaGallery({
     
     if (savedCount > 0) {
       if (dirHandle) {
-        setTimeout(() => alert(`Successfully saved ${savedCount} items to your folder!`), 300);
+        setTimeout(() => setAlertConfig({ isOpen: true, title: "Download Complete", message: `Successfully saved ${savedCount} items to your folder!`, isError: false }), 300);
       } else {
-        setTimeout(() => alert(`${savedCount} items downloaded to default Downloads.`), 300);
+        setTimeout(() => setAlertConfig({ isOpen: true, title: "Download Complete", message: `${savedCount} items downloaded to default Downloads.`, isError: false }), 300);
       }
     } else {
-      setTimeout(() => alert(`Failed to download items. Please check the console for details.`), 300);
+      setTimeout(() => setAlertConfig({ isOpen: true, title: "Download Failed", message: `Failed to download items. Please check the console for details.`, isError: true }), 300);
     }
   };
 
@@ -206,6 +209,15 @@ export default function ExtractedMediaGallery({
           );
         })}
       </div>
+
+      <ConfirmModal
+        isOpen={alertConfig.isOpen}
+        onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        isAlert={true}
+        icon={alertConfig.isError ? <FiAlertTriangle className="w-5 h-5" /> : <FiCheckCircle className="w-5 h-5" />}
+      />
     </div>
   );
 }

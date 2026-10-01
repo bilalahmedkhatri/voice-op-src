@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = await request.json();
-    const { item_id, keywords, urls, filters, quantity } = payload;
+    const { item_id, template_id, keywords, urls, filters, quantity } = payload;
 
     if (!item_id) {
       return NextResponse.json({ error: 'Missing item_id' }, { status: 400 });
@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
     
     const backendPayload: any = {
       user_id: user.id, // e.g., google-oauth2|123456789
+      template_id: template_id || null,
       item_id,
       filters: filters || {}
     };

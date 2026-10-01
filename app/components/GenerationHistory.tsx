@@ -19,6 +19,7 @@ import {
   LocalHistoryItem,
 } from '../lib/localHistoryStorage';
 import { generateVoiceoverFilename } from '../lib/filenameUtils';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface UnifiedHistoryItem {
   id: string;
@@ -53,6 +54,7 @@ const GenerationHistory = memo(function GenerationHistory({
   const [isOfflineMode, setIsOfflineMode] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const blobUrlsRef = useRef<Record<string, string>>({});
 
@@ -187,7 +189,7 @@ const GenerationHistory = memo(function GenerationHistory({
   };
 
   const handleClearAll = async () => {
-    if (!confirm('Are you sure you want to clear all generation history?')) return;
+    setShowClearAllModal(false);
     try {
       if (isOfflineMode || !authenticated) {
         await clearAllLocalHistory();
@@ -282,7 +284,7 @@ const GenerationHistory = memo(function GenerationHistory({
         </div>
         <button
           type="button"
-          onClick={handleClearAll}
+          onClick={() => setShowClearAllModal(true)}
           className="text-[11px] font-semibold text-red-500 hover:text-red-700 hover:underline cursor-pointer"
         >
           Clear All
@@ -435,6 +437,14 @@ const GenerationHistory = memo(function GenerationHistory({
           );
         })}
       </div>
+      
+      <ConfirmModal 
+        isOpen={showClearAllModal} 
+        onClose={() => setShowClearAllModal(false)} 
+        onConfirm={handleClearAll}
+        title="Clear All History"
+        message="Are you sure you want to clear all generation history? This action cannot be undone."
+      />
     </div>
   );
 });

@@ -50,6 +50,12 @@ Whenever the user requests changing any parameter, limit, feature, or function:
 3. **Dual-Mode Compatibility**:
    - Always verify that new features work in **both Online Mode** (Neon DB + Google OAuth) and **Offline Local Mode** (IndexedDB + Guest Session).
 
+4. **Strict Component-Based Architecture (MANDATORY)**:
+   - **Never dump all code, sections, or UI chunks into a single monolithic page file.**
+   - All code MUST be written component-wise: decompose pages into small, focused, modular, and reusable sub-components in dedicated directories (e.g., `app/(workspace)/<feature>/components/` or `components/<feature>/`).
+   - Keep page files (`page.tsx`) lean and clean as high-level orchestrators that pass typed props to modular child components.
+   - Maintain a clear architectural separation of concerns (presentation, data hooks, state).
+
 ---
 
 ## 4. How to Add a New AI Voice Model (Agent Guide)

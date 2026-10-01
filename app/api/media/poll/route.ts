@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get('itemId');
+    const templateId = searchParams.get('templateId');
 
     if (!itemId) {
       return NextResponse.json({ error: 'Missing itemId' }, { status: 400 });
@@ -17,8 +18,11 @@ export async function GET(request: NextRequest) {
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     
-    // Call the Python backend passing the secure user_id
-    const res = await fetch(`${apiUrl}/api/v1/media/${itemId}?user_id=${encodeURIComponent(user.id)}`, {
+    // Build query with user_id and optional template_id for scoped results
+    const query = new URLSearchParams({ user_id: user.id });
+    if (templateId) query.set('template_id', templateId);
+
+    const res = await fetch(`${apiUrl}/api/v1/media/${itemId}?${query.toString()}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
