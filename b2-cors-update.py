@@ -16,7 +16,7 @@ cors_configuration = {
     'CORSRules': [{
         'AllowedHeaders': ['*'],
         'AllowedMethods': ['GET', 'HEAD'],
-        'AllowedOrigins': ['*'], # You can restrict this to ['https://yourdomain.com', 'http://localhost:3000'] for better security later
+        'AllowedOrigins': ['*'], # You can restrict this to ['https://genzee.video', 'http://localhost:3000'] for better security later
         'MaxAgeSeconds': 3600
     }]
 }

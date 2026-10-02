@@ -362,7 +362,7 @@ const VoiceControls = memo(function VoiceControls({
               <FaMicrophone className="text-[#ff9b8f]" />
               Select Voice
             </label>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-orange-50 text-[#c83a2a] border border-orange-200/80">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-orange-50 text-[#c83a2a]">
               {apiVoices.length} {apiVoices.length === 1 ? 'voice' : 'voices'} loaded
             </span>
           </div>
@@ -398,7 +398,7 @@ const VoiceControls = memo(function VoiceControls({
           </div>
         ) : (
           <div
-            className="max-h-[300px] sm:max-h-[320px] overflow-y-auto space-y-2 pr-1.5 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent rounded-2xl border border-gray-100 p-1 bg-gray-50/50 transition-all duration-300 ease-in-out"
+            className="max-h-[300px] sm:max-h-[320px] overflow-y-auto space-y-1.5 pr-1.5 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent rounded-xl transition-all duration-200"
             tabIndex={0}
             aria-label="Scrollable voices list"
           >
@@ -415,9 +415,9 @@ const VoiceControls = memo(function VoiceControls({
                 <div
                   key={voice.voice_id}
                   onClick={() => onApiVoiceChange && onApiVoiceChange(voice.voice_id)}
-                  className={`group relative flex items-center justify-between p-1.5 sm:p-3 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200 border ${isSelected
-                    ? 'bg-white border-[#ff9b8f] ring-1 sm:ring-2 ring-[#ff9b8f]/20 shadow-xs'
-                    : 'bg-white/90 border-gray-100/90 hover:bg-white hover:border-gray-200 hover:shadow-2xs'
+                  className={`group relative flex items-center justify-between p-2 sm:p-2.5 rounded-xl cursor-pointer transition-all duration-150 ${isSelected
+                    ? 'bg-white border border-[#ff9b8f] ring-2 ring-[#ff9b8f]/20 shadow-xs'
+                    : 'bg-white hover:bg-slate-50/80 shadow-2xs'
                     }`}
                 >
                   {/* Left: Avatar & Info */}
@@ -441,10 +441,10 @@ const VoiceControls = memo(function VoiceControls({
                         <span className="font-bold text-[11px] sm:text-sm text-gray-900 truncate max-w-[120px] sm:max-w-[200px]">
                           {meta.cleanName}
                         </span>
-                        <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 flex-shrink-0">
+                        <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold bg-slate-100 text-slate-600 flex-shrink-0">
                           {meta.langMeta.code}
                         </span>
-                        <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-medium bg-orange-50 text-orange-800 border border-orange-200/80 flex-shrink-0 truncate">
+                        <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-medium bg-orange-50 text-orange-800 flex-shrink-0 truncate">
                           {meta.tone}
                         </span>
                       </div>

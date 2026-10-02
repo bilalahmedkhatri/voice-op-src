@@ -86,7 +86,7 @@ const TextInput = memo(function TextInput({
           )}
           {isLargeText && (
             <span
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70"
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md"
               title="Large text input"
             >
               <FaExclamationTriangle className="text-[10px] text-amber-500" />
@@ -95,7 +95,7 @@ const TextInput = memo(function TextInput({
           )}
         </div>
 
-        <span className="font-mono text-xs font-semibold flex items-center gap-1 px-2 py-0.5 rounded-md text-gray-600 bg-gray-50 border border-gray-200/70">
+        <span className="font-mono text-xs font-semibold flex items-center gap-1 px-2 py-0.5 rounded-md text-slate-600 bg-slate-100">
           <FaFont className="text-[10px]" />
           {charCount.toLocaleString()} chars
         </span>

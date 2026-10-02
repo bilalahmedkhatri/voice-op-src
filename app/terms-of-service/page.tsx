@@ -8,7 +8,7 @@ export default function TermsOfServiceContent() {
       </h1>
       <div className="space-y-6 text-base text-slate-600 leading-relaxed">
         <p>
-          Welcome to our Free AI Voice Generator. By using our services, you agree
+          Welcome to GenZee Video (genzee.video). By using our website and services, you agree
           to these terms. Please read them carefully.
         </p>
 

@@ -149,6 +149,7 @@ export default function ExtractedMediaGallery({
                 size="sm"
                 variant="soft"
                 icon={<FiDownloadCloud className="w-3.5 h-3.5" />}
+                hideTextOnMobile={true}
               >
                 {isDownloadingBulk ? `Downloading ${downloadProgress}/${selectedMediaUrls.length}...` : `Download Selected (${selectedMediaUrls.length})`}
               </Button>
@@ -159,6 +160,7 @@ export default function ExtractedMediaGallery({
                 size="sm"
                 variant="dangerSoft"
                 icon={<FiTrash2 className="w-3.5 h-3.5" />}
+                hideTextOnMobile={true}
               >
                 {isDeleting ? 'Deleting...' : `Delete Selected (${selectedMediaUrls.length})`}
               </Button>

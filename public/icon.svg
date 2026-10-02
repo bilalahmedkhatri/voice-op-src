@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gzGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9b8f" />
+      <stop offset="50%" stop-color="#ff7d6e" />
+      <stop offset="100%" stop-color="#e04836" />
+    </linearGradient>
+    <linearGradient id="gzDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#090d16" />
+    </linearGradient>
+  </defs>
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#gzDark)" />
+  <!-- Subtle border highlight -->
+  <rect width="504" height="504" x="4" y="4" rx="124" fill="none" stroke="url(#gzGrad)" stroke-width="4" stroke-opacity="0.35" />
+  
+  <!-- GenZee Geometric GZ Emblem -->
+  <!-- Modern G curve -->
+  <path d="M 280 140 C 220 140 160 180 160 256 C 160 332 220 372 280 372 C 340 372 370 330 370 286 L 270 286 L 270 246 L 416 246 C 418 260 420 274 420 292 C 420 366 360 420 280 420 C 180 420 110 350 110 256 C 110 162 180 92 280 92 C 342 92 392 124 416 168 L 372 196 C 354 164 322 140 280 140 Z" fill="url(#gzGrad)" />
+  
+  <!-- Soundwave / Video bars on right -->
+  <rect x="250" y="170" width="18" height="60" rx="9" fill="#ffffff" opacity="0.95" />
+  <rect x="282" y="145" width="18" height="110" rx="9" fill="#ffffff" opacity="0.95" />
+  <rect x="314" y="180" width="18" height="40" rx="9" fill="#ffffff" opacity="0.85" />
+</svg>

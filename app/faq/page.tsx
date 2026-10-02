@@ -2,24 +2,28 @@ import React from 'react';
 
 const faqs = [
   {
-    q: 'What is the Free AI Voice Generator?',
-    a: 'Our Free AI Voice Generator is a cutting-edge text-to-speech (TTS) tool that uses artificial intelligence to convert your text into realistic, natural-sounding audio. You can use it for a variety of projects, from videos and presentations to social media reels and personal projects.',
+    q: 'What is GenZee Video (genzee.video)?',
+    a: 'GenZee Video is an all-in-one AI content studio for creators, agencies, and marketers. It combines multi-model AI voiceover synthesis (ElevenLabs, Fish Audio & Gemini) with automated Facebook and Instagram publishing, YouTube content strategy generation, and structured JSON campaign orchestration.',
   },
   {
-    q: 'Is the voice generator completely free?',
-    a: 'Yes, our basic text-to-speech service is free to use. We offer a selection of high-quality AI voices and a generous character limit for your daily workflow.',
+    q: 'How does Facebook and Instagram automation work in GenZee?',
+    a: 'You can securely connect your Facebook Pages and linked Instagram Business accounts. GenZee lets you draft posts and Reels, preview them in realistic desktop and mobile feeds, and publish or schedule them directly to your channels with 1-click publishing.',
   },
   {
-    q: 'Can I use the generated audio for commercial purposes?',
-    a: 'Audio generated with our free plan can typically be used for personal projects. For commercial use rights, please refer to our Terms of Service or check the details of our licensing options.',
+    q: 'What is the JSON Strategy Generator?',
+    a: 'You can prompt any AI (like ChatGPT, Claude, or DeepSeek) to generate a multi-week content plan, paste the JSON into GenZee, and instantly view interactive daily schedules, scripts, and video hooks with 1-click voice synthesis.',
+  },
+  {
+    q: 'Is GenZee free to use?',
+    a: 'Yes! GenZee offers a Free Studio Plan with daily voice generations, local browser IndexedDB storage, and social scheduling tools.',
   },
   {
     q: 'What audio formats can I download?',
-    a: 'You can download the generated audio directly in WAV format, which ensures crystal-clear, uncompressed studio-grade audio fidelity for editing in Premiere Pro, CapCut, DaVinci Resolve, or YouTube.',
+    a: 'You can download the generated voiceovers in uncompressed, studio-grade WAV format, ready for editing in Premiere Pro, CapCut, DaVinci Resolve, or Final Cut Pro.',
   },
   {
-    q: 'How does the AI voice synthesis work?',
-    a: 'Our tool uses advanced deep learning models (including Kokoro TTS and Google Gemini) to analyze your text and generate human-like speech with proper inflection, pacing, and tone.',
+    q: 'Can I use the generated voiceovers for YouTube and commercial monetization?',
+    a: 'Yes, audio synthesized with ElevenLabs, Fish Audio & Google Gemini models is fully compatible with YouTube monetization, podcasts, and commercial video production.',
   },
 ];
 
@@ -31,7 +35,7 @@ export default function FaqContent() {
           Frequently Asked Questions
         </h1>
         <p className="text-sm sm:text-base text-slate-500">
-          Everything you need to know about our free AI voiceover synthesis.
+          Everything you need to know about GenZee Video and our content automation studio.
         </p>
       </div>
 

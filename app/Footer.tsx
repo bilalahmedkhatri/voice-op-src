@@ -45,7 +45,7 @@ export default function Footer() {
               AzeemLAB API
             </a>
           </p>
-          <p>&copy; {new Date().getFullYear()} AI Voiceover Generator. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} GenZee Video (<a href="https://genzee.video" className="hover:text-slate-600 transition-colors">genzee.video</a>). All rights reserved.</p>
         </div>
       </div>
     </footer>

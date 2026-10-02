@@ -55,7 +55,7 @@ export default function YouTubeContentPage() {
         localStorage.setItem("pending_voice_title", title);
       }
     }
-    router.push("/?from=content");
+    router.push("/admin?from=content");
   };
 
   const formatTags = (tags: any) => {
@@ -333,6 +333,7 @@ export default function YouTubeContentPage() {
           variant="primary"
           className={saveSuccess ? "!bg-emerald-600 hover:!bg-emerald-700 text-white" : ""}
           icon={saveSuccess ? <FiCheck className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
+          hideTextOnMobile={true}
         >
           {saveSuccess ? "Changes Saved!" : "Save Status Changes"}
         </Button>
@@ -403,12 +404,12 @@ export default function YouTubeContentPage() {
                     {/* Description */}
                     <td className="px-4 py-4 align-top group relative">
                       <div className="relative">
-                        <span
-                          className="text-slate-600 text-xs line-clamp-6 pr-6 leading-relaxed block"
+                        <p
+                          className="text-slate-600 text-xs line-clamp-3 pr-6 leading-relaxed break-words"
                           title={item.description}
                         >
                           {item.description}
-                        </span>
+                        </p>
                         <IconButton
                           icon={copiedId === `${item.id}-desc` ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />}
                           title="Copy Description"
@@ -423,12 +424,12 @@ export default function YouTubeContentPage() {
                     {/* Script */}
                     <td className="px-4 py-4 align-top group relative">
                       <div className="relative">
-                        <span
-                          className="text-slate-600 text-xs line-clamp-6 pr-6 leading-relaxed block font-mono"
+                        <p
+                          className="text-slate-600 text-xs line-clamp-3 pr-6 leading-relaxed break-words font-mono"
                           title={item.script}
                         >
                           {item.script}
-                        </span>
+                        </p>
                         <IconButton
                           icon={copiedId === `${item.id}-script` ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />}
                           title="Copy Script"

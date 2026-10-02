@@ -34,7 +34,7 @@ const navSections: NavSection[] = [
   {
     title: "Studio",
     links: [
-      { name: "Voice Generator", href: "/", icon: FiMic },
+      { name: "Voice Generator", href: "/admin", icon: FiMic },
       { name: "JSON Generator", href: "/json-generator", icon: FiFileText },
     ],
   },
@@ -80,14 +80,18 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0 ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-slate-800">
-            <FiLayout className="w-6 h-6 text-[#ff7d6e]" />
-            <span className="hidden md:block lg:block">Workspace</span>
+          <Link href="/admin" className="flex items-center gap-2.5 text-xl font-bold text-slate-900 group">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#e04836] via-[#ff7d6e] to-[#ff9b8f] flex items-center justify-center text-white font-black text-sm shadow-xs">
+              GZ
+            </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold tracking-tight leading-none text-slate-900">GenZee</span>
+              <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase mt-0.5">Studio</span>
+            </div>
           </Link>
           <button
             className="md:hidden text-slate-500 hover:text-slate-800"
@@ -114,25 +118,25 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
                 <ul className="space-y-0.5">
                   {section.links.map((link) => {
                     const isActive =
-                      link.href === "/"
-                        ? pathname === "/"
-                        : pathname === link.href || pathname?.startsWith(`${link.href}/`);
+                      link.href === "/admin"
+                        ? pathname === "/admin"
+                        : link.href === "/"
+                          ? pathname === "/"
+                          : pathname === link.href || pathname?.startsWith(`${link.href}/`);
                     const Icon = link.icon;
                     return (
                       <li key={link.name}>
                         <Link
                           href={link.href}
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                            isActive
+                          className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isActive
                               ? "bg-orange-50/80 text-[#c83a2a] font-semibold border-l-2 border-[#ff7d6e]"
                               : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                          }`}
+                            }`}
                         >
                           <Icon
-                            className={`w-4 h-4 shrink-0 ${
-                              isActive ? "text-[#ff7d6e]" : "text-slate-400"
-                            }`}
+                            className={`w-4 h-4 shrink-0 ${isActive ? "text-[#ff7d6e]" : "text-slate-400"
+                              }`}
                           />
                           <span>{link.name}</span>
                         </Link>
@@ -159,7 +163,12 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
             >
               <FiMenu className="w-6 h-6" />
             </button>
-            <span className="font-semibold text-slate-800">Workspace</span>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-[#e04836] to-[#ff7d6e] flex items-center justify-center text-white font-black text-xs">
+                GZ
+              </div>
+              <span className="font-bold text-slate-900 text-sm">GenZee</span>
+            </div>
           </div>
         </header>
 

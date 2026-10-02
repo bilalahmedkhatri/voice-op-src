@@ -13,10 +13,6 @@ import {
   FiTag,
   FiShare2,
   FiImage,
-  FiSmile,
-  FiThumbsUp,
-  FiMessageSquare,
-  FiShare,
 } from "react-icons/fi";
 import { Button } from "@/components/ui";
 
@@ -267,6 +263,7 @@ export default function FacebookPostDetailPage() {
             variant="secondary"
             onClick={handleCopyFullPost}
             icon={copiedId === "full-post" ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4 text-[#ff7d6e]" />}
+            hideTextOnMobile={true}
           >
             {copiedId === "full-post" ? "Copied Full Post" : "Copy Post"}
           </Button>
@@ -276,277 +273,168 @@ export default function FacebookPostDetailPage() {
             variant="primary"
             onClick={handleSendToIntegration}
             icon={<FiShare2 className="w-4 h-4" />}
+            hideTextOnMobile={true}
           >
             Publish / Schedule
           </Button>
         </div>
       </div>
 
-      {/* 2-Column Grid: Left Edit Form, Right Live Facebook Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Editor (7 cols) */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Caption Box */}
+      {/* Post Editor Container */}
+      <div className="mx-auto space-y-5">
+        {/* Caption Box */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <span>Post Caption</span>
+              <span className="text-xs font-normal text-slate-400">
+                ({caption.length} characters • {caption.split(/\s+/).filter(Boolean).length} words)
+              </span>
+            </label>
+            <button
+              onClick={() => handleCopy(caption, "caption-only")}
+              className="inline-flex items-center justify-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              {copiedId === "caption-only" ? (
+                <>
+                  <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-600 font-semibold">Copied</span>
+                </>
+              ) : (
+                <>
+                  <FiCopy className="w-3.5 h-3.5" />
+                  <span>Copy Caption</span>
+                </>
+              )}
+            </button>
+          </div>
+          <textarea
+            rows={6}
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="Enter Facebook post caption..."
+            className="w-full p-3.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none leading-relaxed resize-y"
+          />
+        </div>
+
+        {/* Hashtags Box */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <FiTag className="w-4 h-4 text-slate-400" />
+              <span>Hashtags</span>
+            </label>
+            <button
+              onClick={() => handleCopy(tags, "tags-only")}
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              {copiedId === "tags-only" ? (
+                <>
+                  <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-600 font-semibold">Copied</span>
+                </>
+              ) : (
+                <>
+                  <FiCopy className="w-3.5 h-3.5" />
+                  <span>Copy Tags</span>
+                </>
+              )}
+            </button>
+          </div>
+          <input
+            type="text"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="#KarachiClothe #AutumnFashion #CambricCollection..."
+            className="w-full px-3.5 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none font-medium"
+          />
+          {/* Visual Tag Pills */}
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {tags
+              .split(/[\s,]+/)
+              .filter(Boolean)
+              .map((tg, idx) => (
+                <span
+                  key={idx}
+                  className="px-2.5 py-0.5 bg-orange-50 text-orange-900 border border-orange-200/80 rounded-full text-xs font-medium"
+                >
+                  {tg.startsWith("#") ? tg : `#${tg}`}
+                </span>
+              ))}
+          </div>
+        </div>
+
+        {/* AI Image Generation Prompt Box */}
+        {prompt && (
           <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <span>Post Caption</span>
-                <span className="text-xs font-normal text-slate-400">
-                  ({caption.length} characters • {caption.split(/\s+/).filter(Boolean).length} words)
-                </span>
+              <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <FiImage className="w-4 h-4 text-[#ff7d6e]" />
+                <span>AI Image Generation Prompt</span>
               </label>
               <button
-                onClick={() => handleCopy(caption, "caption-only")}
-                className="inline-flex items-center justify-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                onClick={() => handleCopy(prompt, "prompt-only")}
+                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
               >
-                {copiedId === "caption-only" ? (
+                {copiedId === "prompt-only" ? (
                   <>
                     <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-emerald-600 font-semibold">Copied</span>
+                    <span className="text-emerald-600">Copied</span>
                   </>
                 ) : (
                   <>
                     <FiCopy className="w-3.5 h-3.5" />
-                    <span>Copy Caption</span>
+                    <span>Copy Prompt</span>
                   </>
                 )}
               </button>
             </div>
             <textarea
-              rows={6}
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="Enter Facebook post caption..."
-              className="w-full p-3.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none leading-relaxed resize-y"
+              rows={3}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="AI prompt for generating visuals..."
+              className="w-full p-3 font-mono text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none leading-relaxed transition-all"
             />
           </div>
+        )}
 
-          {/* Hashtags Box */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <FiTag className="w-4 h-4 text-slate-400" />
-                <span>Hashtags</span>
-              </label>
-              <button
-                onClick={() => handleCopy(tags, "tags-only")}
-                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                {copiedId === "tags-only" ? (
-                  <>
-                    <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-emerald-600 font-semibold">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <FiCopy className="w-3.5 h-3.5" />
-                    <span>Copy Tags</span>
-                  </>
-                )}
-              </button>
-            </div>
-            <input
-              type="text"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="#KarachiClothe #AutumnFashion #CambricCollection..."
-              className="w-full px-3.5 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none font-medium"
-            />
-            {/* Visual Tag Pills */}
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {tags
-                .split(/[\s,]+/)
-                .filter(Boolean)
-                .map((tg, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2.5 py-0.5 bg-orange-50 text-orange-900 border border-orange-200/80 rounded-full text-xs font-medium"
-                  >
-                    {tg.startsWith("#") ? tg : `#${tg}`}
-                  </span>
-                ))}
-            </div>
-          </div>
-
-          {/* AI Image Generation Prompt Box */}
-          {prompt && (
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <FiImage className="w-4 h-4 text-[#ff7d6e]" />
-                  <span>AI Image Generation Prompt</span>
-                </label>
-                <button
-                  onClick={() => handleCopy(prompt, "prompt-only")}
-                  className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
-                >
-                  {copiedId === "prompt-only" ? (
-                    <>
-                      <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
-                      <span className="text-emerald-600">Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <FiCopy className="w-3.5 h-3.5" />
-                      <span>Copy Prompt</span>
-                    </>
-                  )}
-                </button>
-              </div>
-              <textarea
-                rows={3}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="AI prompt for generating visuals..."
-                className="w-full p-3 font-mono text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] focus:outline-none leading-relaxed transition-all"
-              />
-            </div>
-          )}
-
-          {/* Status & Save Action */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Post Status:
-              </span>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className={`text-xs font-semibold rounded-xl px-3 py-1.5 border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] ${status === "published"
+        {/* Status & Save Action */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Post Status:
+            </span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className={`text-xs font-semibold rounded-xl px-3 py-1.5 border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] ${status === "published"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : status === "completed"
                   ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : status === "completed"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : status === "draft"
-                      ? "bg-slate-100 text-slate-700 border-slate-200"
-                      : "bg-amber-50 text-amber-800 border-amber-300"
-                  }`}
-              >
-                <option value="pending">Pending</option>
-                <option value="draft">Draft</option>
-                <option value="completed">Completed</option>
-                <option value="published">Published</option>
-              </select>
-            </div>
-
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              isLoading={isSaving}
-              size="md"
-              variant="primary"
-              className={saveSuccess ? "!bg-emerald-600 hover:!bg-emerald-700 text-white" : ""}
-              icon={saveSuccess ? <FiCheck className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
+                  : status === "draft"
+                    ? "bg-slate-100 text-slate-700 border-slate-200"
+                    : "bg-amber-50 text-amber-800 border-amber-300"
+                }`}
             >
-              {saveSuccess ? "Changes Saved!" : "Save Post Changes"}
-            </Button>
+              <option value="pending">Pending</option>
+              <option value="draft">Draft</option>
+              <option value="completed">Completed</option>
+              <option value="published">Published</option>
+            </select>
           </div>
-        </div>
 
-        {/* Right Column: Facebook Feed Mockup Preview (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="sticky top-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Live Facebook Feed Preview
-              </span>
-              <span className="text-[11px] text-slate-600 font-semibold bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
-                Mockup
-              </span>
-            </div>
-
-            {/* Facebook Card Mockup */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden">
-              {/* Header */}
-              <div className="p-4 flex items-center justify-between border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-base shadow-xs">
-                    {pageName.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-bold text-sm text-slate-900">{pageName}</span>
-                      <span className="w-3.5 h-3.5 rounded-full bg-blue-600 text-white text-[9px] flex items-center justify-center font-bold">
-                        ✓
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                      <span>{post.time || "Just now"}</span>
-                      <span>•</span>
-                      <span>🌎 Public</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-slate-400 text-lg cursor-pointer">•••</div>
-              </div>
-
-              {/* Caption Text */}
-              <div className="p-4 space-y-2">
-                <p className="text-sm text-slate-900 leading-relaxed whitespace-pre-wrap">
-                  {caption || "Your post caption will appear here..."}
-                </p>
-                {tags && (
-                  <p className="text-sm text-blue-600 font-medium leading-relaxed">
-                    {tags}
-                  </p>
-                )}
-              </div>
-
-              {/* Image Visual Area */}
-              <div className="bg-slate-100 border-y border-slate-200 aspect-video flex flex-col items-center justify-center p-6 text-center text-slate-400">
-                {prompt ? (
-                  <div className="space-y-2">
-                    <FiImage className="w-8 h-8 mx-auto text-slate-400" />
-                    <p className="text-xs text-slate-600 font-medium max-w-sm line-clamp-3">
-                      {prompt}
-                    </p>
-                    <span className="inline-block text-[10px] uppercase font-bold text-orange-900 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/80">
-                      Visual Generator Prompt
-                    </span>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    <FiImage className="w-8 h-8 mx-auto" />
-                    <p className="text-xs font-medium">Post Visual / Image</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Engagement Stats Mockup */}
-              <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">
-                    👍
-                  </span>
-                  <span className="w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px]">
-                    ❤️
-                  </span>
-                  <span>142</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>18 Comments</span>
-                  <span>•</span>
-                  <span>9 Shares</span>
-                </div>
-              </div>
-
-              {/* Action Buttons Mockup */}
-              <div className="px-4 py-2 flex items-center justify-around text-slate-600 text-xs font-semibold">
-                <button className="flex items-center gap-1.5 py-1 px-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-                  <FiThumbsUp className="w-4 h-4" />
-                  <span>Like</span>
-                </button>
-                <button className="flex items-center gap-1.5 py-1 px-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-                  <FiMessageSquare className="w-4 h-4" />
-                  <span>Comment</span>
-                </button>
-                <button className="flex items-center gap-1.5 py-1 px-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
-                  <FiShare className="w-4 h-4" />
-                  <span>Share</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            isLoading={isSaving}
+            size="md"
+            variant="primary"
+            className={saveSuccess ? "!bg-emerald-600 hover:!bg-emerald-700 text-white" : ""}
+            icon={saveSuccess ? <FiCheck className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
+          >
+            {saveSuccess ? "Changes Saved!" : "Save Post Changes"}
+          </Button>
         </div>
       </div>
     </div>

@@ -230,10 +230,9 @@ export default function TemplatesDashboard() {
           <p className="text-slate-500 text-sm mt-1">Manage and track YouTube strategies and Facebook content plans saved in your database.</p>
         </div>
         <IconButton
-          icon={<FiRefreshCw className="w-4 h-4" />}
           title="Refresh"
-          variant="secondary"
-          size="md"
+          variant="ghost"
+          size="lg"
           isLoading={isLoading}
           onClick={fetchTemplates}
           className="self-start sm:self-auto"

@@ -522,7 +522,7 @@ export default function FacebookContentPage() {
             variant="secondary"
             size="md"
             icon={<FiShare2 className="w-4 h-4 text-[#ff7d6e]" />}
-            className="hidden sm:inline-flex"
+            hideTextOnMobile={true}
           >
             Page Integration
           </Button>
@@ -531,18 +531,18 @@ export default function FacebookContentPage() {
           <div className="relative">
             <button
               onClick={() => setIsCopyMenuOpen((prev) => !prev)}
-              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-xl text-sm font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 transition-colors shadow-2xs cursor-pointer"
+              className="inline-flex items-center justify-center h-9 px-0 sm:px-3.5 w-9 sm:w-auto rounded-xl text-sm font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 transition-colors shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9b8f]/40"
               title="Open Copy Options"
             >
-              <FiCopy className="w-4 h-4 text-[#ff7d6e]" />
-              <span>Copy Content</span>
+              <FiCopy className="w-4 h-4 text-[#ff7d6e] shrink-0" />
+              <span className="hidden sm:inline ml-2">Copy Content</span>
               {selectedItemIds.size > 0 && (
-                <span className="px-1.5 py-0.2 bg-[#ff7d6e] text-white text-[11px] font-bold rounded-full">
+                <span className="hidden sm:inline-flex ml-2 px-1.5 py-0.2 bg-[#ff7d6e] text-white text-[11px] font-bold rounded-full">
                   {selectedItemIds.size}
                 </span>
               )}
               <FiChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-200 ${isCopyMenuOpen ? "rotate-180" : ""
+                className={`hidden sm:inline ml-1 w-3.5 h-3.5 transition-transform duration-200 ${isCopyMenuOpen ? "rotate-180" : ""
                   }`}
               />
             </button>
@@ -756,6 +756,7 @@ export default function FacebookContentPage() {
             variant="primary"
             className={saveSuccess ? "!bg-emerald-600 hover:!bg-emerald-700 text-white" : ""}
             icon={saveSuccess ? <FiCheck className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
+            hideTextOnMobile={true}
           >
             {saveSuccess ? "Changes Saved!" : "Save Status Changes"}
           </Button>

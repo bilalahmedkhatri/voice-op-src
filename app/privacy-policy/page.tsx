@@ -9,8 +9,7 @@ export default function PrivacyPolicyContent() {
       <div className="space-y-6 text-base text-slate-600 leading-relaxed">
         <p>
           Your privacy is important to us. This Privacy Policy explains how we
-          collect, use, and protect your information when you use our Free AI Voice
-          Generator.
+          collect, use, and protect your information when you use GenZee Video (genzee.video).
         </p>
 
         <div className="space-y-2">

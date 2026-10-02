@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { FaPaperPlane, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { Button } from '@/components/ui';
 
 interface FacebookPostFormProps {
   pageId: string;
@@ -129,20 +130,17 @@ export default function FacebookPostForm({ pageId, pageName, onDisconnect }: Fac
         </div>
 
         <div className="pt-2">
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="lg"
             disabled={!message.trim() || isSubmitting}
-            className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-xs hover:shadow-md disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+            isLoading={isSubmitting}
+            className="w-full sm:w-auto shadow-xs hover:shadow-md"
+            icon={<FaPaperPlane className="w-3.5 h-3.5" />}
           >
-            <FaPaperPlane className="text-xs" />
-            <span>
-              {isSubmitting
-                ? 'Processing...'
-                : scheduleTime
-                ? 'Schedule Post'
-                : 'Publish Now'}
-            </span>
-          </button>
+            {isSubmitting ? 'Processing...' : scheduleTime ? 'Schedule Post' : 'Publish Now'}
+          </Button>
         </div>
       </form>
     </div>

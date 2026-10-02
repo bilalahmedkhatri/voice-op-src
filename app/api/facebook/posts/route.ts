@@ -2,16 +2,13 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
 
-async function resolveUserId(): Promise<string> {
+async function resolveUserId(): Promise<string | null> {
   const user = await getCurrentUser();
   if (user?.id) return user.id;
 
   const sql = getDb();
   if (sql) {
-    const existing = await sql`SELECT id FROM users ORDER BY created_at ASC LIMIT 1`;
-    if (existing.length > 0) {
-      return existing[0].id;
-    }
+    return null; // Require login when database is enabled
   }
   return 'local_user';
 }
@@ -25,6 +22,12 @@ export async function GET() {
     }
 
     const userId = await resolveUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Please log in to view scheduled posts', posts: [] },
+        { status: 401 }
+      );
+    }
 
     const posts = await sql`
       SELECT 

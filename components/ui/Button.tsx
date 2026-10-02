@@ -14,6 +14,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   href?: string;
   target?: string;
   rel?: string;
+  hideTextOnMobile?: boolean;
   children?: React.ReactNode;
 }
 
@@ -39,6 +40,13 @@ const sizeStyles: Record<ButtonSize, string> = {
   lg: 'h-10 px-5 text-sm font-bold rounded-xl gap-2',
 };
 
+const mobileIconBoxStyles: Record<ButtonSize, string> = {
+  xs: 'max-sm:px-0 max-sm:w-7 max-sm:h-7',
+  sm: 'max-sm:px-0 max-sm:w-8 max-sm:h-8',
+  md: 'max-sm:px-0 max-sm:w-9 max-sm:h-9',
+  lg: 'max-sm:px-0 max-sm:w-10 max-sm:h-10',
+};
+
 const iconSizes: Record<ButtonSize, string> = {
   xs: 'w-3 h-3',
   sm: 'w-3.5 h-3.5',
@@ -56,6 +64,7 @@ export default function Button({
   href,
   target,
   rel,
+  hideTextOnMobile = false,
   className = '',
   children,
   type = 'button',
@@ -64,7 +73,9 @@ export default function Button({
 }: ButtonProps) {
   const baseClasses =
     'inline-flex items-center justify-center transition-all cursor-pointer select-none flex-shrink-0 disabled:cursor-not-allowed disabled:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9b8f]/40';
-  const combinedClasses = `${baseClasses} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`.trim();
+  
+  const responsiveClasses = hideTextOnMobile ? mobileIconBoxStyles[size] : '';
+  const combinedClasses = `${baseClasses} ${variantStyles[variant]} ${sizeStyles[size]} ${responsiveClasses} ${className}`.trim();
 
   const renderedIcon = isLoading ? (
     <FiRefreshCw className={`${iconSizes[size]} animate-spin shrink-0`} />
@@ -75,7 +86,7 @@ export default function Button({
   const content = (
     <>
       {iconPosition === 'left' && renderedIcon}
-      {children && <span className="truncate">{children}</span>}
+      {children && <span className={`truncate ${hideTextOnMobile ? 'hidden sm:inline' : ''}`}>{children}</span>}
       {iconPosition === 'right' && renderedIcon}
     </>
   );

@@ -3,25 +3,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FaMicrophone, FaSync, FaGoogle } from 'react-icons/fa';
 import { FiMic } from 'react-icons/fi';
-import { useVoiceGenerator } from '../hooks/useVoiceGenerator';
-import { useVoiceSamples } from '../hooks/useVoiceSamples';
-import { useModels } from '../hooks/useModels';
-import TextInput from '../components/TextInput';
-import VoiceControls from '../components/VoiceControls';
-import AudioPlayer from '../components/AudioPlayer';
-import GenerationStatus from '../components/GenerationStatus';
-import Toast from '../components/Toast';
-import { useIsClient } from '../hooks/useIsClient';
+import { useVoiceGenerator } from '../../hooks/useVoiceGenerator';
+import { useVoiceSamples } from '../../hooks/useVoiceSamples';
+import { useModels } from '../../hooks/useModels';
+import TextInput from '../../components/TextInput';
+import VoiceControls from '../../components/VoiceControls';
+import AudioPlayer from '../../components/AudioPlayer';
+import GenerationStatus from '../../components/GenerationStatus';
+import Toast from '../../components/Toast';
+import { useIsClient } from '../../hooks/useIsClient';
 import {
   VoicePresetItem,
   getLocalPresets,
   saveLocalPreset,
   deleteLocalPreset,
-} from '../lib/localPresetStorage';
-import FormatSelectionModal, { VideoFormat } from '../components/FormatSelectionModal';
+} from '../../lib/localPresetStorage';
+import FormatSelectionModal, { VideoFormat } from '../../components/FormatSelectionModal';
+import { Button } from '@/components/ui';
 
-
-export default function VoiceGeneratorPage() {
+export default function AdminVoiceStudioPage() {
   const {
     params,
     setParams,
@@ -57,6 +57,8 @@ export default function VoiceGeneratorPage() {
         }
         if (pendingTitle) {
           setSourceInfo({ title: pendingTitle, type: pendingFormat || undefined });
+        } else {
+          setSourceInfo({ title: 'Imported Campaign Script', type: pendingFormat || 'Short Video' });
         }
         localStorage.removeItem('pending_voice_script');
         localStorage.removeItem('pending_voice_format');
@@ -237,11 +239,10 @@ export default function VoiceGeneratorPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2.5">
             <FiMic className="w-6 h-6 text-[#ff7d6e]" />
-            <span>AI Voice Generator</span>
+            <span>GenZee Voice Studio</span>
           </h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Transform text into natural-sounding speech with Kokoro and multi-model voice synthesis.
-          </p>
+            Generate natural multi-model voiceovers for YouTube, Reels, and TikTok with ElevenLabs, Fish Audio &amp; Gemini.          </p>
         </div>
 
         {/* Plan / Quota Status Badge */}
@@ -317,7 +318,7 @@ export default function VoiceGeneratorPage() {
           </div>
 
           {/* Right Column: Scrollable Playable Voices & Parameters */}
-          <div className="xl:col-span-5 flex flex-col bg-slate-50/70 rounded-2xl p-3.5 sm:p-5 border border-slate-200/80 shadow-2xs">
+          <div className="xl:col-span-5 flex flex-col bg-slate-50/70 rounded-2xl p-3.5 sm:p-5">
             <section aria-label="Voice parameters">
               <h3 className="sr-only">Adjust Voice Parameters</h3>
               <VoiceControls
@@ -363,31 +364,27 @@ export default function VoiceGeneratorPage() {
 
             {/* Compact Generate Button / Sign In */}
             {isAuthRequired ? (
-              <a
+              <Button
                 href="/api/auth/google"
-                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-xs hover:shadow flex items-center justify-center gap-2"
+                variant="primary"
+                size="lg"
+                className="w-full sm:w-auto shadow-xs hover:shadow"
+                icon={<FaGoogle className="w-3.5 h-3.5" />}
               >
-                <FaGoogle className="text-xs" />
-                <span>Sign in to Generate</span>
-              </a>
+                Sign in to Generate
+              </Button>
             ) : (
-              <button
+              <Button
                 onClick={handleGenerateClick}
                 disabled={!params.text.trim() || isGenerating || isLimitReached}
-                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-xs hover:shadow disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+                isLoading={isGenerating}
+                variant="primary"
+                size="lg"
+                className="w-full sm:w-auto shadow-xs hover:shadow"
+                icon={<FaMicrophone className="w-3.5 h-3.5" />}
               >
-                {isGenerating ? (
-                  <>
-                    <FaSync className="animate-spin text-xs" />
-                    <span>Generating...</span>
-                  </>
-                ) : (
-                  <>
-                    <FaMicrophone className="text-xs" />
-                    <span>Generate Voiceover</span>
-                  </>
-                )}
-              </button>
+                {isGenerating ? "Generating..." : "Generate Voiceover"}
+              </Button>
             )}
           </div>
 

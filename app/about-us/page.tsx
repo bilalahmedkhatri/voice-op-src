@@ -10,17 +10,16 @@ export default function AboutUsContent() {
       </h1>
       <div className="space-y-4 text-base sm:text-lg text-slate-600 leading-relaxed">
         <p>
-          Welcome to the home of the most advanced Free AI Voice Generator. Our
-          mission is to make high-quality voice synthesis accessible to everyone.
-          Whether you&apos;re a content creator, a student, a developer, or just someone
-          looking to bring text to life, our tool is designed for you.
+          Welcome to <strong className="text-slate-900">GenZee Video</strong> (genzee.video). Our mission is to empower
+          creators, agencies, and modern marketers with an all-in-one content automation studio. We bridge the gap between
+          raw creative ideas and published multimedia by combining multi-model voice synthesis with direct Facebook,
+          Instagram, and YouTube video automation.
         </p>
         <p>
-          We believe in the power of voice. That&apos;s why we&apos;ve invested in
-          state-of-the-art artificial intelligence to create a text-to-speech (TTS)
-          engine that produces incredibly realistic and natural-sounding voices. Our
-          platform is intuitive, easy to use, and, best of all, free for your basic
-          needs.
+          Whether you are a solo YouTuber scripting long-form documentaries, an Instagram/TikTok creator looking for daily
+          viral hooks, or a digital marketing brand automating Facebook Reels, GenZee provides the studio infrastructure
+          you need: ultra-natural AI voices (ElevenLabs, Fish Audio, Google Gemini), structured JSON campaign importing, and scheduled
+          multi-channel publishing.
         </p>
       </div>
     </div>

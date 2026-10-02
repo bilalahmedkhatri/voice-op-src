@@ -1,55 +1,65 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://freevoiceover.vercel.app"),
-  title: "AI Voiceover Generator - Free Text to Speech Tool",
+  metadataBase: new URL("https://genzee.video"),
+  title: {
+    default: "GenZee — AI Voice & Content Automation Studio",
+    template: "%s | GenZee Video",
+  },
   description:
-    "Create professional voiceovers with customizable voice, speed, pitch, and volume.",
+    "GenZee (genzee.video) is the all-in-one AI content studio for creators, agencies, and marketers. Transform text into lifelike voiceovers, automate Facebook & Instagram posts, brainstorm YouTube strategies, and orchestrate campaigns with multi-model AI.",
   keywords: [
-    "voiceover generator",
+    "GenZee",
+    "genzee.video",
+    "AI voice generator",
     "text to speech",
-    "TTS",
-    "AI voice",
-    "speech synthesis",
-    "voice generator",
-    "audio generator",
-    "free voiceover tool",
+    "social media automation",
+    "Facebook reels scheduler",
+    "Instagram content automation",
+    "YouTube script strategy",
+    "TTS studio",
+    "ElevenLabs",
+    "Gemini Voice",
+    "Fish Audio",
+    "creator OS",
+    "content marketing automation",
+    "TikTok script generator",
   ],
-  authors: [{ name: "Voice Generator Free" }],
-  creator: "Voice Generator Free",
-  publisher: "Voice Generator Free",
+  authors: [{ name: "GenZee Video", url: "https://genzee.video" }],
+  creator: "GenZee Video",
+  publisher: "GenZee Video",
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
     type: "website",
-    url: "https://freevoiceover.vercel.app",
-    title: "AI Voiceover Generator",
+    url: "https://genzee.video",
+    title: "GenZee — AI Voice & Content Automation Studio",
     description:
-      "Create professional voiceovers with customizable parameters.",
-    siteName: "AI Voiceover Generator",
+      "Transform text into lifelike voiceovers, automate Facebook & Instagram posts, and generate multi-platform video content in seconds.",
+    siteName: "GenZee Video",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "AI Voiceover Generator",
+        alt: "GenZee AI Voice & Content Automation Studio",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/twitter-image.png"],
+    title: "GenZee — AI Voice & Content Automation Studio",
+    description:
+      "Transform text into lifelike voiceovers, automate Facebook & Instagram posts, and generate multi-platform video content in seconds.",
+    images: ["/og-image.png"],
   },
   alternates: {
-    canonical: "/",
+    canonical: "https://genzee.video",
   },
 };
 
@@ -66,32 +76,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
+    <html lang="en" className="font-sans">
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="preconnect" href="http://localhost:8000" />
-        <link rel="dns-prefetch" href="http://localhost:8000" />
-        {/* <script src="https://quge5.com/88/tag.min.js" data-zone="203992" async data-cfasync="false"></script> */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
-              name: 'AI Voiceover Generator',
-              url: 'https://freevoiceover.vercel.app',
-              description: 'Free online text-to-speech voiceover generator with customizable voice parameters',
+              name: 'GenZee Video Studio',
+              url: 'https://genzee.video',
+              description:
+                'All-in-one AI voice synthesis and multi-platform content automation studio for YouTube, Facebook, Instagram, and TikTok creators.',
               applicationCategory: 'MultimediaApplication',
               operatingSystem: 'Any',
               offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
               featureList: [
-                'Text to speech conversion',
-                'Multiple voice options',
-                'Adjustable speech rate',
-                'Customizable pitch',
-                'Volume control',
-                'Save and manage prompts',
+                'Multi-model text to speech conversion (ElevenLabs, Fish Audio and Google Gemini)',
+                'Automated Facebook & Instagram Reels publishing and scheduling',
+                'YouTube long-form and Shorts content strategy orchestration',
+                'Prompt-to-JSON campaign management and live template editor',
+                'Dual-mode online cloud database and 100% offline IndexedDB storage',
               ],
             }),
           }}

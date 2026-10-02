@@ -14,13 +14,17 @@ import {
   FiRefreshCw,
   FiInstagram,
 } from "react-icons/fi";
-import { FaFacebook, FaInstagram } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaGoogle } from "react-icons/fa";
 import FacebookConnect from "@/app/components/FacebookConnect";
 import FacebookPostEditor from "@/app/components/FacebookPostEditor";
+import IconButton from "@/components/ui/IconButton";
+import Button from "@/components/ui/Button";
 
 export default function WorkspaceFacebookIntegrationPage() {
   const [connectedPages, setConnectedPages] = useState<any[]>([]);
   const [isLoadingPages, setIsLoadingPages] = useState(true);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [isUnauthenticated, setIsUnauthenticated] = useState(false);
 
   // Scheduled & Published Posts
   const [posts, setPosts] = useState<any[]>([]);
@@ -35,9 +39,15 @@ export default function WorkspaceFacebookIntegrationPage() {
     setIsLoadingPages(true);
     try {
       const res = await fetch("/api/facebook/pages");
+      if (res.status === 401) {
+        setIsUnauthenticated(true);
+        setConnectedPages([]);
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setConnectedPages(data.pages || []);
+        setIsUnauthenticated(false);
       }
     } catch (err) {
       console.error("Failed to load connected pages:", err);
@@ -51,6 +61,11 @@ export default function WorkspaceFacebookIntegrationPage() {
     setIsLoadingPosts(true);
     try {
       const res = await fetch("/api/facebook/posts");
+      if (res.status === 401) {
+        setIsUnauthenticated(true);
+        setPosts([]);
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setPosts(data.posts || []);
@@ -121,7 +136,7 @@ export default function WorkspaceFacebookIntegrationPage() {
   return (
     <div className="space-y-6 pb-16">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <Link
@@ -152,39 +167,6 @@ export default function WorkspaceFacebookIntegrationPage() {
         </div>
       </div>
 
-      {/* Feature Highlights Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 bg-orange-50/70 border border-orange-200/80 rounded-2xl flex items-center gap-3 text-orange-950">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white flex items-center justify-center shrink-0 shadow-xs">
-            <FiSend className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold">Reels & Direct Publishing</div>
-            <div className="text-[11px] text-orange-800">9:16 vertical video & feed updates</div>
-          </div>
-        </div>
-
-        <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex items-center gap-3 text-slate-900">
-          <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <FiCalendar className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold">Meta Native Scheduling</div>
-            <div className="text-[11px] text-slate-600">Schedule between 10m and 75 days</div>
-          </div>
-        </div>
-
-        <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex items-center gap-3 text-slate-900">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <FiInstagram className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold">Instagram Crossposting</div>
-            <div className="text-[11px] text-slate-600">Publish to linked Instagram accounts</div>
-          </div>
-        </div>
-      </div>
-
       {/* Prefill Notification Banner */}
       {prefilledData && (
         <div className="p-4 bg-orange-50/80 border border-orange-200/80 rounded-2xl flex items-center justify-between text-xs text-orange-950 shadow-xs">
@@ -205,34 +187,62 @@ export default function WorkspaceFacebookIntegrationPage() {
       )}
 
       {/* Main Composer Section */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-6 shadow-xs">
-        {isLoadingPages ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-2">
+      <div>
+        {isUnauthenticated ? (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-8 sm:p-10 text-center max-w-lg mx-auto shadow-xs space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-orange-50 text-[#ff7d6e] flex items-center justify-center mx-auto text-xl">
+              <FaFacebook />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">Sign In to Connect Facebook & Instagram</h2>
+            <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
+              Sign in with Google to securely store page access tokens, schedule posts up to 75 days ahead, and manage published Reels.
+            </p>
+            <div className="pt-2 flex justify-center">
+              <Button
+                href="/api/auth/google?returnTo=/facebook/integration"
+                variant="primary"
+                size="lg"
+                className="shadow-xs hover:shadow"
+                icon={<FaGoogle className="w-3.5 h-3.5" />}
+              >
+                Sign in with Google
+              </Button>
+            </div>
+          </div>
+        ) : isLoadingPages ? (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-12 flex flex-col items-center justify-center text-slate-400 gap-2 shadow-xs">
             <FiRefreshCw className="animate-spin text-2xl text-[#ff7d6e]" />
             <span className="text-xs font-medium">Checking connected accounts...</span>
           </div>
-        ) : connectedPages.length === 0 ? (
-          <div className="max-w-xl mx-auto py-6">
-            <div className="text-center mb-6">
-              <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-orange-50 text-[#ff7d6e] flex items-center justify-center text-2xl font-black">
-                f
+        ) : connectedPages.length === 0 || isReconnecting ? (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs max-w-xl mx-auto">
+            {connectedPages.length > 0 && (
+              <div className="flex items-center justify-between mb-4 px-2">
+                <span className="text-xs font-bold text-slate-700">Sync & Re-Select Pages</span>
+                <button
+                  type="button"
+                  onClick={() => setIsReconnecting(false)}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-semibold cursor-pointer"
+                >
+                  ← Back to Post Studio
+                </button>
               </div>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">Connect Facebook & Instagram</h2>
-              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                Log in with Facebook to grant permissions to publish and schedule updates directly to your pages and linked Instagram profiles.
-              </p>
-            </div>
-            <FacebookConnect onPagesFetched={handlePagesFetched} />
-          </div>
-        ) : (
-          <div>
-            <FacebookPostEditor
-              pages={connectedPages}
-              onDisconnect={handleDisconnect}
-              onPostCreated={fetchPosts}
-              initialData={prefilledData}
+            )}
+            <FacebookConnect
+              onPagesFetched={(pages) => {
+                handlePagesFetched(pages);
+                setIsReconnecting(false);
+              }}
             />
           </div>
+        ) : (
+          <FacebookPostEditor
+            pages={connectedPages}
+            onDisconnect={handleDisconnect}
+            onResyncPages={() => setIsReconnecting(true)}
+            onPostCreated={fetchPosts}
+            initialData={prefilledData}
+          />
         )}
       </div>
 
@@ -261,14 +271,14 @@ export default function WorkspaceFacebookIntegrationPage() {
                 {filter}
               </button>
             ))}
-            <button
-              onClick={fetchPosts}
-              disabled={isLoadingPosts}
-              className="w-7 h-7 inline-flex items-center justify-center rounded-lg text-slate-500 hover:text-[#c83a2a] hover:bg-slate-100 transition-colors ml-1 cursor-pointer flex-shrink-0 disabled:opacity-50"
+            <IconButton
               title="Refresh Queue"
-            >
-              <FiRefreshCw className={`w-3.5 h-3.5 ${isLoadingPosts ? "animate-spin" : ""}`} />
-            </button>
+              size="xs"
+              variant="ghost"
+              isLoading={isLoadingPosts}
+              onClick={fetchPosts}
+              className="ml-1"
+            />
           </div>
         </div>
 

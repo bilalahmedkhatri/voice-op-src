@@ -5,9 +5,22 @@ import { DbUser } from '../db/types';
 const SESSION_COOKIE_NAME = 'vg_session_token';
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
+export function getOAuthRedirectUri(): string {
+  if (process.env.GOOGLE_REDIRECT_URI) {
+    return process.env.GOOGLE_REDIRECT_URI;
+  }
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google`;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://genzee.video/api/auth/callback/google';
+  }
+  return 'http://localhost:3000/api/auth/callback/google';
+}
+
 export function getGoogleOAuthURL(state?: string): string {
   const clientId = process.env.GOOGLE_CLIENT_ID || '';
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/google';
+  const redirectUri = getOAuthRedirectUri();
 
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
   const options = {
@@ -21,7 +34,7 @@ export function getGoogleOAuthURL(state?: string): string {
       'https://www.googleapis.com/auth/userinfo.email',
       'openid',
     ].join(' '),
-    state: state || '/',
+    state: state || '/admin',
   };
 
   const qs = new URLSearchParams(options);
@@ -34,7 +47,7 @@ export async function exchangeGoogleCodeForTokens(code: string): Promise<{
 } | null> {
   const clientId = process.env.GOOGLE_CLIENT_ID || '';
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/google';
+  const redirectUri = getOAuthRedirectUri();
 
   const url = 'https://oauth2.googleapis.com/token';
   const values = {

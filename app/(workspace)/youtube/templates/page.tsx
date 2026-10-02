@@ -160,10 +160,9 @@ export default function YouTubeTemplatesPage() {
 
         <div className="flex items-center gap-2.5">
           <IconButton
-            icon={<FiRefreshCw className="w-4 h-4" />}
             title="Refresh"
-            variant="secondary"
-            size="md"
+            variant="ghost"
+            size="lg"
             isLoading={isLoading}
             onClick={fetchTemplates}
           />
@@ -172,6 +171,7 @@ export default function YouTubeTemplatesPage() {
             variant="primary"
             size="md"
             icon={<FiPlus className="w-4 h-4" />}
+            hideTextOnMobile={true}
           >
             New Video Strategy
           </Button>

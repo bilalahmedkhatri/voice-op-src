@@ -4,7 +4,13 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
   images: {
-    domains: [new URL('https://picsum.photos').hostname, 'images.unsplash.com', 'cdn.pixabay.com'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'cdn.pixabay.com' },
+      { protocol: 'https', hostname: '*.fbcdn.net' },
+      { protocol: 'https', hostname: '*.cdninstagram.com' },
+    ],
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -17,12 +23,22 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/dashboard',
-        destination: '/',
+        destination: '/admin',
         permanent: true,
       },
       {
         source: '/dashboard/:path*',
-        destination: '/:path*',
+        destination: '/admin/:path*',
+        permanent: true,
+      },
+      {
+        source: '/landing',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/showcase',
+        destination: '/',
         permanent: true,
       },
     ];

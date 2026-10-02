@@ -116,3 +116,32 @@ const providers: Record<string, TTSProvider> = {
   'new-model-id': new NewModelProvider(),
 };
 ```
+
+---
+
+## 5. Marketing, Landing Page & UI Presentation Rules (STRICT AGENT RULES)
+
+1. **Zero Technical API Mentions on Public Landing Pages**:
+   - **MANDATORY**: *No API endpoints, API versions (e.g. `Meta Graph v21.0`), or technical backend protocol details should ever be shown on the public landing page or marketing UI.*
+   - Always replace technical backend jargon with customer-centric, benefits-driven copy:
+     - Use `"1-Click Social Publishing"` instead of `"Meta Graph v21.0 API integration"`.
+     - Use `"Multi-Platform Publishing"` instead of `"Meta Graph API Integration"`.
+     - Use `"Direct Social Publishing & Scheduling"` instead of `"Direct Meta Graph API publishing"`.
+   - Never expose internal API routes, webhook structures, or database table names in marketing cards, badges, or hero sections.
+
+2. **Model Naming & Tier Integrity**:
+   - Never show small or budget-tier model names like "Kokoro 82M" in user-facing marketing copy, badges, or headlines.
+   - Always highlight premium, studio-grade models: **ElevenLabs**, **Fish Audio**, and **Google Gemini Voice**.
+
+3. **Authentic Social Feeds & Realistic Media Previews**:
+   - Social feed and Reel simulators (Facebook Feed, Facebook Reel, Instagram Reel) must look authentic to real user interfaces:
+     - Clean YouTube video & shorts embedding without synthetic AI status overlays.
+     - Clean creator audio tags (e.g., `Original Audio • Creator Sounds`) instead of artificial synthetic labels.
+     - Follow buttons styled as clean, subtle pill chips (`rounded-full bg-white/20`).
+     - Balanced 50/50 responsive layout (`lg:col-span-6` / `lg:col-span-6`) to prevent excessive dead whitespace.
+     - Hashtag suggestions rendered as clean rounded pill chips without `+` prefixes.
+
+4. **Card Hierarchy & Brand Palette**:
+   - Adhere to single-level card containers without nested borders.
+   - Maintain the warm Coral palette (`#ff7d6e` / `#c83a2a` / `#ff9b8f`) across all components.
+

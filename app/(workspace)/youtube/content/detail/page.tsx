@@ -16,6 +16,7 @@ import ExtractedMediaGallery from "@/components/ContentDetail/ExtractedMediaGall
 import PreviewModal from "@/components/ContentDetail/PreviewModal";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import AudioPlayer from "@/app/components/AudioPlayer";
+import { Button } from "@/components/ui";
 
 export default function YouTubeContentDetailPage() {
   const router = useRouter();
@@ -160,7 +161,7 @@ export default function YouTubeContentDetailPage() {
         localStorage.setItem("pending_voice_item_id", item.id);
       }
     }
-    router.push("/?from=youtube");
+    router.push("/admin?from=youtube");
   };
 
   const handleCopy = (text: string, id: string) => {
@@ -509,22 +510,22 @@ export default function YouTubeContentDetailPage() {
                     const isSelected = selectedAudioIndex === idx;
                     const label = aud.voice_name || aud.voice_id || `Voice ${idx + 1}`;
                     return (
-                      <button
+                      <Button
                         key={aud.job_id || idx}
-                        type="button"
                         onClick={() => setSelectedAudioIndex(idx)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 flex-shrink-0 border ${isSelected
-                          ? 'bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white border-[#ff7d6e] shadow-xs'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-orange-50/50 hover:border-orange-200'
-                          }`}
+                        variant={isSelected ? "primary" : "secondary"}
+                        size="sm"
+                        className="flex-shrink-0"
                       >
-                        <span>🔊 {label}</span>
-                        {aud.created_at && (
-                          <span className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
-                            {new Date(aud.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        )}
-                      </button>
+                        <span className="flex items-center gap-1.5">
+                          <span>🔊 {label}</span>
+                          {aud.created_at && (
+                            <span className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
+                              {new Date(aud.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                        </span>
+                      </Button>
                     );
                   })}
                 </div>

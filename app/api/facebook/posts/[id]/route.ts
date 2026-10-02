@@ -2,16 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
 
-async function resolveUserId(): Promise<string> {
+async function resolveUserId(): Promise<string | null> {
   const user = await getCurrentUser();
   if (user?.id) return user.id;
 
   const sql = getDb();
   if (sql) {
-    const existing = await sql`SELECT id FROM users ORDER BY created_at ASC LIMIT 1`;
-    if (existing.length > 0) {
-      return existing[0].id;
-    }
+    return null; // Require login when database is enabled
   }
   return 'local_user';
 }
@@ -24,6 +21,9 @@ export async function DELETE(
   try {
     const { id } = await params;
     const userId = await resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized: Please log in first' }, { status: 401 });
+    }
     const sql = getDb();
 
     if (!sql) {
@@ -72,6 +72,9 @@ export async function PATCH(
   try {
     const { id } = await params;
     const userId = await resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized: Please log in first' }, { status: 401 });
+    }
     const body = await request.json();
     const { scheduled_publish_time, message } = body;
     const sql = getDb();

@@ -3,48 +3,48 @@
 
   <!-- Main Landing Page -->
   <url>
-    <loc>https://voicegenerator.app/</loc>
-    <lastmod>2026-01-19</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://genzee.video/</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Blog Page -->
   <url>
-    <loc>https://voicegenerator.app/blog</loc>
-    <lastmod>2026-01-20</lastmod>
+    <loc>https://genzee.video/blog</loc>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Static Pages -->
   <url>
-    <loc>https://voicegenerator.app/about-us</loc>
-    <lastmod>2026-01-19</lastmod>
+    <loc>https://genzee.video/about-us</loc>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://voicegenerator.app/contact-us</loc>
-    <lastmod>2026-01-19</lastmod>
-    <changefreq>yearly</changefreq>
+    <loc>https://genzee.video/contact-us</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://voicegenerator.app/faq</loc>
-    <lastmod>2026-01-19</lastmod>
+    <loc>https://genzee.video/faq</loc>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://voicegenerator.app/privacy-policy</loc>
-    <lastmod>2026-01-19</lastmod>
+    <loc>https://genzee.video/privacy-policy</loc>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://voicegenerator.app/terms-of-service</loc>
-    <lastmod>2026-01-19</lastmod>
+    <loc>https://genzee.video/terms-of-service</loc>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

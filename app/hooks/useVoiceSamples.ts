@@ -3,7 +3,7 @@ import { getVoiceSamples, VoiceSample } from '../lib/voiceoverApi';
 
 export function useVoiceSamples(modelId?: string) {
   const [voices, setVoices] = useState<VoiceSample[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(modelId));
   const [loadingMore, setLoadingMore] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,11 +32,6 @@ export function useVoiceSamples(modelId?: string) {
         setLoadingMore(true);
       }
       setError(null);
-
-      if (reset) {
-        // Reduced artificial delay slightly for better UX on search
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
 
       let url = `/api/voiceover/voices?model=${encodeURIComponent(modelId)}&limit=10&offset=${offset}`;
       if (query) {
@@ -98,7 +93,10 @@ export function useVoiceSamples(modelId?: string) {
   }, [modelId]);
 
   useEffect(() => {
-    if (!modelId) return;
+    if (!modelId) {
+      setLoading(false);
+      return;
+    }
 
     // If model changed, fetch immediately
     if (lastModelId.current !== modelId) {

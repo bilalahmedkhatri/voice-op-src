@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { FiUpload, FiFileText, FiAlertCircle, FiSave, FiCheck, FiLoader, FiEdit2 } from "react-icons/fi";
 import TemplateRenderer from "../../components/TemplateRenderer";
+import { Button } from "@/components/ui";
 
 export default function JsonPage() {
   const [jsonInput, setJsonInput] = useState("");
@@ -146,23 +147,7 @@ export default function JsonPage() {
     }
   };
 
-  const saveButtonContent = () => {
-    if (saveStatus === "saving") return <><FiLoader className="w-4 h-4 animate-spin" /> Saving...</>;
-    if (saveStatus === "saved") return <><FiCheck className="w-4 h-4" /> Saved!</>;
-    if (saveStatus === "error") return <><FiAlertCircle className="w-4 h-4" /> Failed</>;
-    return (
-      <>
-        <FiSave className="w-4 h-4" />
-        <span>{savedId ? "Save Changes" : "Save to Database"}</span>
-      </>
-    );
-  };
 
-  const saveButtonClass = () => {
-    if (saveStatus === "saved") return "bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-xs";
-    if (saveStatus === "error") return "bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-xs";
-    return "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl shadow-xs";
-  };
 
   if (isLoadingTemplate) {
     return (
@@ -203,13 +188,15 @@ export default function JsonPage() {
                     ref={fileInputRef}
                     onChange={handleFileUpload}
                   />
-                  <button
+                  <Button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 text-slate-700 font-semibold transition-all rounded-xl text-sm shadow-2xs cursor-pointer"
+                    variant="secondary"
+                    size="md"
+                    icon={<FiUpload className="w-4 h-4 text-[#ff7d6e]" />}
+                    hideTextOnMobile={true}
                   >
-                    <FiUpload className="w-4 h-4 text-[#ff7d6e]" />
                     Upload JSON File
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -231,19 +218,21 @@ export default function JsonPage() {
               )}
 
               <div className="flex items-center gap-3">
-                <button
+                <Button
                   onClick={handleParse}
-                  className="px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
+                  variant="primary"
+                  size="lg"
                 >
                   Generate Template
-                </button>
+                </Button>
                 {parsedData && (
-                  <button
+                  <Button
                     onClick={handleClear}
-                    className="px-6 py-2.5 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 text-slate-700 font-semibold rounded-xl shadow-2xs transition-all cursor-pointer"
+                    variant="secondary"
+                    size="lg"
                   >
                     Clear
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -261,36 +250,30 @@ export default function JsonPage() {
               </div>
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 {/* Edit Toggle Button */}
-                <button
+                <Button
                   onClick={() => setIsEditing(!isEditing)}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all border shadow-2xs cursor-pointer ${
-                    isEditing
-                      ? "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white border-transparent"
-                      : "bg-white hover:bg-orange-50/50 text-slate-700 border-slate-200 hover:border-[#ff9b8f]/60"
-                  }`}
+                  variant={isEditing ? "primary" : "secondary"}
+                  size="md"
+                  icon={isEditing ? <FiCheck className="w-4 h-4" /> : <FiEdit2 className="w-4 h-4 text-[#ff7d6e]" />}
                   title={isEditing ? "Finish Editing" : "Edit Template Fields"}
+                  hideTextOnMobile={true}
                 >
-                  {isEditing ? (
-                    <>
-                      <FiCheck className="w-4 h-4 text-white" />
-                      <span>Done Editing</span>
-                    </>
-                  ) : (
-                    <>
-                      <FiEdit2 className="w-4 h-4 text-slate-500" />
-                      <span>Edit Template</span>
-                    </>
-                  )}
-                </button>
+                  {isEditing ? "Done Editing" : "Edit Template"}
+                </Button>
 
                 {/* Save to Database / Save Changes Button */}
-                <button
+                <Button
                   onClick={handleSaveToDb}
                   disabled={saveStatus === "saving"}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-60 cursor-pointer ${saveButtonClass()}`}
+                  isLoading={saveStatus === "saving"}
+                  variant="primary"
+                  size="md"
+                  className={saveStatus === "saved" ? "!bg-emerald-600 hover:!bg-emerald-700 text-white" : saveStatus === "error" ? "!bg-red-500 hover:!bg-red-600" : ""}
+                  icon={saveStatus === "saved" ? <FiCheck className="w-4 h-4" /> : saveStatus === "error" ? <FiAlertCircle className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
+                  hideTextOnMobile={true}
                 >
-                  {saveButtonContent()}
-                </button>
+                  {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved!" : saveStatus === "error" ? "Failed" : savedId ? "Save Changes" : "Save to Database"}
+                </Button>
               </div>
             </div>
             <TemplateRenderer

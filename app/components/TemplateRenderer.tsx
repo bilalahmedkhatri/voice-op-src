@@ -12,7 +12,8 @@ import {
   FiVideo,
   FiTag,
   FiLayers,
-  FiCalendar
+  FiCalendar,
+  FiMic
 } from "react-icons/fi";
 import CaptionsTemplateView from "./CaptionsTemplateView";
 
@@ -56,9 +57,24 @@ const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
     }
   };
 
+  const handleSendToVoiceStudio = () => {
+    if (!value.trim()) return;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("pending_voice_script", value);
+      window.location.href = "/admin?from=json";
+    }
+  };
+
   return (
     <div className="relative group">
       <div className="absolute top-2 right-2 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={handleSendToVoiceStudio}
+          className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 hover:text-[#c83a2a] shadow-2xs flex items-center justify-center transition-all cursor-pointer"
+          title="Send to Voice Studio"
+        >
+          <FiMic className="w-4 h-4 text-[#ff7d6e]" />
+        </button>
         {isEditing ? (
           <button
             onClick={() => setIsEditing(false)}

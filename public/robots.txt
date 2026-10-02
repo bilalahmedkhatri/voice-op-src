@@ -9,4 +9,4 @@ Disallow: /private/
 Disallow: /components/
 
 # Sitemap location
-Sitemap: https://voicegenerator.app/sitemap.xml
+Sitemap: https://genzee.video/sitemap.xml
