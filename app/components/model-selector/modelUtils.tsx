@@ -14,14 +14,17 @@ export const getFormattedModelName = (name: string, provider: string) => {
   if (provider === 'elevenlabs' || name.toLowerCase().includes('elevenlabs')) {
     return 'ElevenLabs Neural Engine';
   }
+  if (name.toLowerCase().includes('lite')) {
+    return 'Gemini TTS Lite';
+  }
   if (provider === 'gemini' || name.toLowerCase().includes('gemini')) {
-    return 'Google Gemini Voice Pro';
+    return 'Gemini TTS';
   }
   if (provider === 'fish-audio' || name.toLowerCase().includes('fish')) {
     return 'Fish Audio V2.0 Pro';
   }
   if (provider === 'kokoro' || name.toLowerCase().includes('kokoro')) {
-    return 'Kokoro TTS (Open Source)';
+    return 'Open Source TTS Engine';
   }
   return name;
 };
@@ -30,7 +33,7 @@ export const getModelDescription = (provider: string) => {
   if (provider === 'elevenlabs') return 'Powered by ElevenLabs';
   if (provider === 'gemini') return 'Powered by Google Gemini';
   if (provider === 'fish-audio') return 'Powered by Fish Audio';
-  if (provider === 'kokoro') return 'Powered by Kokoro Open-Source Engine';
+  if (provider === 'kokoro') return 'Free & Open Source TTS Engine';
   return `Powered by ${provider.toUpperCase()}`;
 };
 
