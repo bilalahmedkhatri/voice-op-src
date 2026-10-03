@@ -1,4 +1,14 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Frequently Asked Questions | GenZee Video',
+  description:
+    'Find answers to common questions about GenZee Video, AI voice synthesis (ElevenLabs, Gemini, Fish Audio), Facebook/Instagram social scheduling, and monetization licensing.',
+  alternates: {
+    canonical: 'https://genzee.video/faq',
+  },
+};
 
 const faqs = [
   {
@@ -28,8 +38,25 @@ const faqs = [
 ];
 
 export default function FaqContent() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.a,
+      },
+    })),
+  };
+
   return (
     <div className="space-y-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="text-center space-y-2">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
           Frequently Asked Questions

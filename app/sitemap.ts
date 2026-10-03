@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next';
+import { getAllBlogPosts } from '@/app/lib/blogMockData';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://genzee.video';
   const now = new Date();
 
-  return [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/`,
       lastModified: now,
@@ -48,4 +49,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
   ];
+
+  const blogRoutes: MetadataRoute.Sitemap = getAllBlogPosts().map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...blogRoutes];
 }
+

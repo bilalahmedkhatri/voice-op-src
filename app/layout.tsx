@@ -78,6 +78,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="font-sans">
       <head>
+        <meta name="ahrefs-site-verification" content="30231419b3e40319f15735ba0552cc64ddcf537c2825370f4e87d6f57828ddec"></meta>
         {/*  Google tag (gtag.js)  */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-YHG27Q1JE4" />
         <script
@@ -98,20 +99,24 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'WebApplication',
-              name: 'GenZee Video Studio',
-              url: 'https://genzee.video',
-              description:
-                'All-in-one AI voice synthesis and multi-platform content automation studio for YouTube, Facebook, Instagram, and TikTok creators.',
-              applicationCategory: 'MultimediaApplication',
-              operatingSystem: 'Any',
-              offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-              featureList: [
-                'Multi-model text to speech conversion (ElevenLabs, Fish Audio and Google Gemini)',
-                'Automated Facebook & Instagram Reels publishing and scheduling',
-                'YouTube long-form and Shorts content strategy orchestration',
-                'Prompt-to-JSON campaign management and live template editor',
-                'Dual-mode online cloud database and 100% offline IndexedDB storage',
+              '@graph': [
+                {
+                  '@type': 'Organization',
+                  '@id': 'https://genzee.video/#organization',
+                  name: 'GenZee Video Studio',
+                  url: 'https://genzee.video',
+                  logo: 'https://genzee.video/icon-512.png',
+                  sameAs: ['https://genzee.video'],
+                },
+                {
+                  '@type': 'WebSite',
+                  '@id': 'https://genzee.video/#website',
+                  url: 'https://genzee.video',
+                  name: 'GenZee Video',
+                  description:
+                    'All-in-one AI voice synthesis and multi-platform content automation studio for YouTube, Facebook, Instagram, and TikTok creators.',
+                  publisher: { '@id': 'https://genzee.video/#organization' },
+                },
               ],
             }),
           }}

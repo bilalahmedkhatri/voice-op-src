@@ -20,9 +20,38 @@ export const metadata: Metadata = {
   },
 };
 
+const softwareSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'GenZee Video Studio',
+  url: 'https://genzee.video',
+  image: 'https://genzee.video/og-image.png',
+  description:
+    'Turn scripts into natural voiceovers, automate Facebook & Instagram Reels, brainstorm YouTube strategies, and orchestrate campaigns with multi-model AI.',
+  applicationCategory: 'DesignApplication',
+  operatingSystem: 'All',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+  featureList: [
+    'Multi-model text to speech conversion (ElevenLabs, Fish Audio and Google Gemini)',
+    'Automated Facebook & Instagram Reels publishing and scheduling',
+    'YouTube long-form and Shorts content strategy orchestration',
+    'Prompt-to-JSON campaign management and live template editor',
+  ],
+};
+
 export default function MasterLandingPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#ff7d6e]/20 selection:text-[#c83a2a]">
+      {/* SoftwareApplication Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+      />
+
       {/* 1. Sticky Navigation */}
       <LandingNavbar />
 
