@@ -79,14 +79,18 @@ export default function RootLayout({
     <html lang="en" className="font-sans">
       <head>
         {/*  Google tag (gtag.js)  */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YHG27Q1JE4"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', 'G-YHG27Q1JE4');
-        </script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YHG27Q1JE4" />
+        <script
+          id="google-tag-manager"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-YHG27Q1JE4');
+            `,
+          }}
+        />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <script
