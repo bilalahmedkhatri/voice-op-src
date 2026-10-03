@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     'Find answers to common questions about GenZee Video, AI voice synthesis (ElevenLabs, Gemini, Fish Audio), Facebook/Instagram social scheduling, and monetization licensing.',
   alternates: {
-    canonical: 'https://genzee.video/faq',
+    canonical: 'https://www.genzee.video/faq',
   },
 };
 

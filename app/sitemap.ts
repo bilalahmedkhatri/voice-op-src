@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { getAllBlogPosts } from '@/app/lib/blogMockData';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://genzee.video';
+  const baseUrl = 'https://www.genzee.video';
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [

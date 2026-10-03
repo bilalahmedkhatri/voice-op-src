@@ -3,7 +3,7 @@
 > All-in-one AI voice synthesis and multi-platform content automation studio for YouTube, Facebook, Instagram, and TikTok creators.
 
 ## Overview
-GenZee Video (https://genzee.video) unites multi-model AI voice synthesis, prompt-to-JSON campaign orchestration, and 1-click social media publishing for creators, agencies, and digital marketers.
+GenZee Video (https://www.genzee.video) unites multi-model AI voice synthesis, prompt-to-JSON campaign orchestration, and 1-click social media publishing for creators, agencies, and digital marketers.
 
 ## Features & Core Capabilities
 - Multi-Model AI Voice Synthesis: ElevenLabs, Google Gemini Voice, and Fish Audio broadcast-grade narration.
@@ -13,10 +13,10 @@ GenZee Video (https://genzee.video) unites multi-model AI voice synthesis, promp
 - Dual-Mode Storage: Cloud database syncing with 100% offline local IndexedDB operation.
 
 ## Key Links & Documentation
-- [Homepage & Studio](https://genzee.video/): Main landing page and live interactive speech synthesis studio.
-- [Blog & Guides](https://genzee.video/blog): Tutorials, audio AI updates, and creator growth workflows.
-- [About Us](https://genzee.video/about-us): Mission, creator OS architecture, and team background.
-- [Frequently Asked Questions](https://genzee.video/faq): Common questions regarding voice models, quotas, and licensing.
-- [Contact Support](https://genzee.video/contact-us): Creator and agency support channels.
-- [Privacy Policy](https://genzee.video/privacy-policy): User data protection, session privacy, and compliance.
-- [Terms of Service](https://genzee.video/terms-of-service): Terms of use and platform licensing guidelines.
+- [Homepage & Studio](https://www.genzee.video/): Main landing page and live interactive speech synthesis studio.
+- [Blog & Guides](https://www.genzee.video/blog): Tutorials, audio AI updates, and creator growth workflows.
+- [About Us](https://www.genzee.video/about-us): Mission, creator OS architecture, and team background.
+- [Frequently Asked Questions](https://www.genzee.video/faq): Common questions regarding voice models, quotas, and licensing.
+- [Contact Support](https://www.genzee.video/contact-us): Creator and agency support channels.
+- [Privacy Policy](https://www.genzee.video/privacy-policy): User data protection, session privacy, and compliance.
+- [Terms of Service](https://www.genzee.video/terms-of-service): Terms of use and platform licensing guidelines.

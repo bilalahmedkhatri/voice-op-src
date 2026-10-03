@@ -27,10 +27,10 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     };
   }
 
-  const canonicalUrl = `https://genzee.video/blog/${post.slug}`;
+  const canonicalUrl = `https://www.genzee.video/blog/${post.slug}`;
 
   return {
-    title: `${post.title} | GenZee Creator Blog`,
+    title: post.title,
     description: post.description,
     alternates: {
       canonical: canonicalUrl,
@@ -83,19 +83,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     author: {
       '@type': 'Organization',
       name: 'GenZee Editorial Team',
-      url: 'https://genzee.video',
+      url: 'https://www.genzee.video',
     },
     publisher: {
       '@type': 'Organization',
       name: 'GenZee Video Studio',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://genzee.video/icon-512.png',
+        url: 'https://www.genzee.video/icon-512.png',
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://genzee.video/blog/${post.slug}`,
+      '@id': `https://www.genzee.video/blog/${post.slug}`,
     },
   };
 

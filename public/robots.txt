@@ -9,4 +9,4 @@ Disallow: /private/
 Disallow: /components/
 
 # Sitemap location
-Sitemap: https://genzee.video/sitemap.xml
+Sitemap: https://www.genzee.video/sitemap.xml

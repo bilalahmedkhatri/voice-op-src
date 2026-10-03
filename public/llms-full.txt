@@ -4,7 +4,7 @@
 
 ## Platform Identity
 - Name: GenZee Video Studio
-- Domain: https://genzee.video
+- Domain: https://www.genzee.video
 - Category: Multimedia Creative Studio / Creator OS
 - Description: All-in-one AI voice synthesis and multi-platform content automation studio for YouTube, Facebook, Instagram, and TikTok creators.
 

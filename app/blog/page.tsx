@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     'Explore articles, tutorials, and workflows on AI voice synthesis, multi-platform social media automation, and creator growth from GenZee (genzee.video).',
   alternates: {
-    canonical: 'https://genzee.video/blog',
+    canonical: 'https://www.genzee.video/blog',
   },
 };
 

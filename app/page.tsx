@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description:
     'Turn scripts into natural voiceovers, automate Facebook & Instagram Reels, brainstorm YouTube strategies, and orchestrate campaigns with multi-model AI.',
   alternates: {
-    canonical: 'https://genzee.video',
+    canonical: 'https://www.genzee.video',
   },
 };
 
@@ -24,8 +24,8 @@ const softwareSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: 'GenZee Video Studio',
-  url: 'https://genzee.video',
-  image: 'https://genzee.video/og-image.png',
+  url: 'https://www.genzee.video',
+  image: 'https://www.genzee.video/og-image.png',
   description:
     'Turn scripts into natural voiceovers, automate Facebook & Instagram Reels, brainstorm YouTube strategies, and orchestrate campaigns with multi-model AI.',
   applicationCategory: 'DesignApplication',

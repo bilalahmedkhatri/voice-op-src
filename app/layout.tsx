@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://genzee.video"),
+  metadataBase: new URL("https://www.genzee.video"),
   title: {
     default: "GenZee — AI Voice & Content Automation Studio",
     template: "%s | GenZee Video",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     "content marketing automation",
     "TikTok script generator",
   ],
-  authors: [{ name: "GenZee Video", url: "https://genzee.video" }],
+  authors: [{ name: "GenZee Video", url: "https://www.genzee.video" }],
   creator: "GenZee Video",
   publisher: "GenZee Video",
   robots: {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: "https://genzee.video",
+    url: "https://www.genzee.video",
     title: "GenZee — AI Voice & Content Automation Studio",
     description:
       "Transform text into lifelike voiceovers, automate Facebook & Instagram posts, and generate multi-platform video content in seconds.",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   alternates: {
-    canonical: "https://genzee.video",
+    canonical: "https://www.genzee.video",
   },
 };
 
@@ -102,20 +102,20 @@ export default function RootLayout({
               '@graph': [
                 {
                   '@type': 'Organization',
-                  '@id': 'https://genzee.video/#organization',
+                  '@id': 'https://www.genzee.video/#organization',
                   name: 'GenZee Video Studio',
-                  url: 'https://genzee.video',
-                  logo: 'https://genzee.video/icon-512.png',
-                  sameAs: ['https://genzee.video'],
+                  url: 'https://www.genzee.video',
+                  logo: 'https://www.genzee.video/icon-512.png',
+                  sameAs: ['https://www.genzee.video'],
                 },
                 {
                   '@type': 'WebSite',
-                  '@id': 'https://genzee.video/#website',
-                  url: 'https://genzee.video',
+                  '@id': 'https://www.genzee.video/#website',
+                  url: 'https://www.genzee.video',
                   name: 'GenZee Video',
                   description:
                     'All-in-one AI voice synthesis and multi-platform content automation studio for YouTube, Facebook, Instagram, and TikTok creators.',
-                  publisher: { '@id': 'https://genzee.video/#organization' },
+                  publisher: { '@id': 'https://www.genzee.video/#organization' },
                 },
               ],
             }),
