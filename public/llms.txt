@@ -20,3 +20,6 @@ GenZee Video (https://www.genzee.video) unites multi-model AI voice synthesis, p
 - [Contact Support](https://www.genzee.video/contact-us): Creator and agency support channels.
 - [Privacy Policy](https://www.genzee.video/privacy-policy): User data protection, session privacy, and compliance.
 - [Terms of Service](https://www.genzee.video/terms-of-service): Terms of use and platform licensing guidelines.
+
+## Optional
+- [Full LLM Context & Platform Specification](https://www.genzee.video/llms-full.txt): In-depth guide detailing voice engines, social simulation workflows, prompt ingestion, and platform architecture.
