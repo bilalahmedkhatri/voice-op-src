@@ -33,7 +33,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Facebook & Instagram Reels', href: '#social-mockup' },
       { label: 'YouTube Shorts Automation', href: '/youtube/templates' },
       { label: 'Studio WAV Master Exports', href: '/admin' },
-      { label: 'Content Architecture Showcase', href: '/showcase' },
+      { label: 'Content Architecture Showcase', href: '/#features' },
     ],
   },
   {

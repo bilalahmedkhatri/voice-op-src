@@ -219,6 +219,9 @@ export default function FacebookPostDetailPage() {
         >
           <FiArrowLeft /> Back to Facebook Plan
         </Link>
+        <h1 className="text-xl font-bold text-slate-900">
+          Facebook Content Post Detail
+        </h1>
         <div className="flex items-center gap-2 p-4 bg-rose-50 text-rose-700 rounded-xl border border-rose-200">
           <FiAlertCircle className="w-5 h-5" />
           <p>{error || "Post not found"}</p>

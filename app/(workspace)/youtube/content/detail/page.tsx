@@ -391,6 +391,9 @@ export default function YouTubeContentDetailPage() {
         <Link href={`/youtube/content?id=${templateId}`} className="inline-flex items-center gap-2 text-sm text-red-600 hover:underline">
           <FiArrowLeft /> Back to YouTube Strategy
         </Link>
+        <h1 className="text-xl font-bold text-slate-900">
+          YouTube Content Strategy Detail
+        </h1>
         <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
           <FiAlertCircle className="w-5 h-5" />
           <p>{error || "Item not found"}</p>

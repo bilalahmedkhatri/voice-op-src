@@ -1,0 +1,22 @@
+# GenZee Video Studio
+
+> All-in-one AI voice synthesis and multi-platform content automation studio for YouTube, Facebook, Instagram, and TikTok creators.
+
+## Overview
+GenZee Video (https://genzee.video) unites multi-model AI voice synthesis, prompt-to-JSON campaign orchestration, and 1-click social media publishing for creators, agencies, and digital marketers.
+
+## Features & Core Capabilities
+- Multi-Model AI Voice Synthesis: ElevenLabs, Google Gemini Voice, and Fish Audio broadcast-grade narration.
+- Social Media Automation: Preview, schedule, and publish Facebook Feed posts and Instagram Reels.
+- YouTube Strategy Engine: Long-form scripts and Shorts generation from structured campaign prompts.
+- Prompt-to-JSON Pipeline: Ingest prompts from Claude, ChatGPT, Gemini, and DeepSeek into structured calendars.
+- Dual-Mode Storage: Cloud database syncing with 100% offline local IndexedDB operation.
+
+## Key Links & Documentation
+- [Homepage & Studio](https://genzee.video/): Main landing page and live interactive speech synthesis studio.
+- [Blog & Guides](https://genzee.video/blog): Tutorials, audio AI updates, and creator growth workflows.
+- [About Us](https://genzee.video/about-us): Mission, creator OS architecture, and team background.
+- [Frequently Asked Questions](https://genzee.video/faq): Common questions regarding voice models, quotas, and licensing.
+- [Contact Support](https://genzee.video/contact-us): Creator and agency support channels.
+- [Privacy Policy](https://genzee.video/privacy-policy): User data protection, session privacy, and compliance.
+- [Terms of Service](https://genzee.video/terms-of-service): Terms of use and platform licensing guidelines.
