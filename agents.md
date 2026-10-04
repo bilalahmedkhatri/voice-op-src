@@ -145,3 +145,30 @@ const providers: Record<string, TTSProvider> = {
    - Adhere to single-level card containers without nested borders.
    - Maintain the warm Coral palette (`#ff7d6e` / `#c83a2a` / `#ff9b8f`) across all components.
 
+---
+
+## 6. Monetization & Credit Wallet Architecture (STRICT AGENT RULES)
+
+GenZee uses a strict **Pay-As-You-Go Credit System** (1 Credit = $0.015 USD). There are no monthly recurring subscriptions.
+
+1. **Credit Ledger & Atomic Deductions**:
+   - All credit modifications MUST go through the `credit_history` ledger table for complete auditability.
+   - Credit deductions (`deductCredits`) MUST use atomic SQL queries to prevent race conditions: `UPDATE users SET available_credits = available_credits - $1 WHERE id = $2 AND available_credits >= $1`.
+   - Never update credits blindly from the frontend or bypass the ledger.
+
+2. **Deduction Costs (Reference)**:
+   - **AI Caption & Hashtags**: 1 Credit
+   - **Social Scheduling (Facebook/IG)**: 1 Credit
+   - **Standard Voice Synthesis (Gemini/Fish)**: 2 Credits
+   - **Premium Voice Synthesis (ElevenLabs)**: 4 Credits
+   - **Full 1-Click Automation (Caption + Audio + Schedule)**: 5 Credits
+
+3. **Frontend Interceptors & Top-Up Flow**:
+   - Any API returning an `INSUFFICIENT_CREDITS` error must be caught by the frontend components.
+   - The frontend must then dispatch the `open-topup-modal` event to trigger the `TopUpModal` component, blocking the user action until they refill.
+   - The private wallet dashboard is located at `/billing` (shows transaction ledger and balance).
+   - The public pricing packages are located at `/pricing` (uses Landing Page layouts).
+
+4. **Payment Gateway (PayFast / Swich)**:
+   - The top-up flow connects to the regional PayFast/Swich gateway (JazzCash, Easypaisa, Cards).
+   - **Webhook Idempotency (CRITICAL)**: The `/api/billing/webhook` IPN listener must always verify that a specific transaction `reference_id` hasn't already been processed in the `credit_history` table to prevent double-crediting if the gateway sends duplicate POST requests.

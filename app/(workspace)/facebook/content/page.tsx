@@ -606,7 +606,7 @@ export default function FacebookContentPage() {
                   <div>
                     <button
                       onClick={() => handleCopyBatch(items, `All ${items.length} posts`)}
-                      className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                      className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
                     >
                       <FiCopy className="w-3.5 h-3.5" />
                       Copy All ({items.length} Posts)
@@ -810,7 +810,7 @@ export default function FacebookContentPage() {
               setCurrentPage(1);
             }}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${statusFilter === "published"
-              ? "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white shadow-xs"
+              ? "bg-[#ff7d6e] text-white shadow-xs"
               : "bg-orange-50 text-[#c83a2a] hover:bg-orange-100 border border-orange-200"
               }`}
           >
@@ -847,7 +847,7 @@ export default function FacebookContentPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopySelected}
-              className="px-3 py-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              className="px-3 py-1.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
             >
               <FiCopy className="w-3.5 h-3.5" />
               Copy Selected

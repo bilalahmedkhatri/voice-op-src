@@ -12,7 +12,7 @@ import LandingCreatorFaq from './landing/components/LandingCreatorFaq';
 import LandingFooter from './landing/components/LandingFooter';
 
 export const metadata: Metadata = {
-  title: 'GenZee — AI Voice & Content Automation Studio',
+  title: 'GenZee | AI Voice & Content Automation Studio',
   description:
     'Turn scripts into natural voiceovers, automate Facebook & Instagram Reels, brainstorm YouTube strategies, and orchestrate campaigns with multi-model AI.',
   alternates: {

@@ -49,7 +49,7 @@ export default function ContentRedirectDispatcher() {
         <div className="flex items-center gap-3 pt-2">
           <Link
             href="/youtube/templates"
-            className="flex-1 text-center py-2.5 px-4 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+            className="flex-1 text-center py-2.5 px-4 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
           >
             Go to YouTube Strategies
           </Link>

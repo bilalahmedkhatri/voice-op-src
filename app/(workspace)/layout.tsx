@@ -14,6 +14,7 @@ import {
   FiVideo,
   FiShare2,
   FiLink2,
+  FiCreditCard,
 } from "react-icons/fi";
 import SidebarAuth from "../components/SidebarAuth";
 
@@ -58,6 +59,7 @@ const navSections: NavSection[] = [
   {
     title: "General",
     links: [
+      { name: "Pricing & Billing", href: "/billing", icon: FiCreditCard },
       { name: "All Templates", href: "/templates", icon: FiDatabase },
       { name: "Settings", href: "/settings", icon: FiSettings },
     ],

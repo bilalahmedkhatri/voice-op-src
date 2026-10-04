@@ -24,8 +24,32 @@ const faqs = [
     a: 'You can prompt any AI (like ChatGPT, Claude, or DeepSeek) to generate a multi-week content plan, paste the JSON into GenZee, and instantly view interactive daily schedules, scripts, and video hooks with 1-click voice synthesis.',
   },
   {
-    q: 'Is GenZee free to use?',
-    a: 'Yes! GenZee offers a Free Studio Plan with daily voice generations, local browser IndexedDB storage, and social scheduling tools.',
+    q: 'How does GenZee pricing work?',
+    a: 'GenZee uses a simple Pay-As-You-Go credit wallet with no forced subscription. You top up credits and spend them only when you generate voiceovers or use paid features. Credit cost depends on the voice model and the length of your script.',
+  },
+  {
+    q: 'Which AI voice models does GenZee support?',
+    a: 'GenZee offers premium studio-grade text-to-speech voices powered by ElevenLabs, Fish Audio and Google Gemini, covering many languages, accents and speaking styles for narration, ads, podcasts and short-form video.',
+  },
+  {
+    q: 'Can I schedule Facebook Reels and Instagram Reels with GenZee?',
+    a: 'Yes. Connect your Facebook Page and linked Instagram Business account, preview your Reel in a realistic feed layout, and publish immediately or schedule it for later with 1-Click Social Publishing.',
+  },
+  {
+    q: 'Do credits expire, and can I get a refund?',
+    a: 'Credits stay in your wallet for use at any time. If a generation fails because of a technical error on our side, the credits are returned automatically. Credits used by a completed generation are non-refundable.',
+  },
+  {
+    q: 'Is my data private and secure?',
+    a: 'Yes. We never sell your data, connections use encrypted HTTPS, and you can delete your content or disconnect social accounts at any time. Read our Privacy Policy for full details.',
+  },
+  {
+    q: 'Can agencies and teams use GenZee for multiple clients?',
+    a: 'Absolutely. Agencies use GenZee to batch-generate voiceovers, organize multi-week content plans and schedule posts across several channels from one dashboard. Contact us for custom business needs.',
+  },
+  {
+    q: 'Who can I contact for support?',
+    a: 'Email info@azeemlab.com or use our Contact page. We typically reply within 1 to 2 business days.',
   },
   {
     q: 'What audio formats can I download?',

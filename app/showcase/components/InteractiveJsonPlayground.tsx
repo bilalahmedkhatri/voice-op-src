@@ -53,7 +53,7 @@ const PRESETS: CampaignPreset[] = [
           theme: 'Pattern Interrupt Visuals',
           hook: 'The 4-second scroll reset trick you must steal.',
           caption: 'How to eliminate retention drop-off in your Reels with effortless visual pattern interrupts #ContentStrategy #VideoEditing #ReelsAlgorithm',
-          script: 'Every 4 seconds, change zoom level, insert a b-roll pop, or flash a kinetic caption. The human brain craves novelty—give it a reason to keep watching.',
+          script: 'Every 4 seconds, change zoom level, insert a b-roll pop, or flash a kinetic caption. The human brain craves novelty, so give it a reason to keep watching.',
           tags: ['#PatternInterrupt', '#VideoEditing', '#ReelsAlgorithm', '#CapCut'],
           status: 'ready',
         },
@@ -69,7 +69,7 @@ const PRESETS: CampaignPreset[] = [
         {
           day: 5,
           theme: 'Contrarian Industry Takes',
-          hook: 'Stop posting every single day—it is killing your reach.',
+          hook: 'Stop posting every single day because it is killing your reach.',
           caption: 'Quality vs Quantity in 2026. Why strategic batching beats daily creator burnout #SocialMediaTips #AlgorithmSecrets #Strategy',
           script: 'The algorithm doesnt reward endless mediocre spam. Three high-retention, hyper-polished Reels per week will consistently outperform daily low-effort posts.',
           tags: ['#ContentMarketing', '#SocialMediaTips', '#AlgorithmSecrets', '#ViralGrowth'],

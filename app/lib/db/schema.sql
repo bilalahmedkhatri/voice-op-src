@@ -1,16 +1,23 @@
 -- Neon Serverless PostgreSQL Database Schema for AI Voiceover Generator
 -- 4 Lightweight Tables with strict foreign keys & JSONB metadata
 
--- 1. Users Table (Google OAuth)
+-- 1. Users Table (Google OAuth with Wallet Balance & Tier)
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     name TEXT,
     image TEXT,
     google_id TEXT UNIQUE NOT NULL,
+    available_credits INTEGER DEFAULT 50 NOT NULL,
+    tier VARCHAR(20) DEFAULT 'free' NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS available_credits INTEGER DEFAULT 50 NOT NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS tier VARCHAR(20) DEFAULT 'free' NOT NULL;
+UPDATE users SET available_credits = 50 WHERE available_credits IS NULL;
+UPDATE users SET tier = 'free' WHERE tier IS NULL;
 
 -- 2. Sessions Table (Google OAuth Session Management)
 CREATE TABLE IF NOT EXISTS sessions (
@@ -130,4 +137,20 @@ CREATE TABLE IF NOT EXISTS scheduled_posts (
 
 CREATE INDEX IF NOT EXISTS idx_scheduled_posts_user ON scheduled_posts(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_scheduled_posts_status ON scheduled_posts(status, scheduled_publish_time);
+
+-- 9. Credit History Ledger Table (Pay-As-You-Go Wallet Deductions & Top-Ups)
+CREATE TABLE IF NOT EXISTS credit_history (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount INTEGER NOT NULL,
+    balance_after INTEGER NOT NULL,
+    action_type VARCHAR(50) NOT NULL,
+    description TEXT NOT NULL,
+    reference_id TEXT,
+    metadata JSONB DEFAULT '{}'::jsonb NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_credit_history_user ON credit_history(user_id, created_at DESC);
+
 

@@ -299,7 +299,7 @@ export default function JsonPage() {
               <div className="pt-4 flex flex-col gap-3">
                 <a
                   href="/api/auth/google"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl font-semibold transition-all shadow-xs"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl font-semibold transition-all shadow-xs"
                 >
                   Continue with Google
                 </a>

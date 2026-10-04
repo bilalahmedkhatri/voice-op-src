@@ -4,8 +4,31 @@ export interface DbUser {
   name: string | null;
   image: string | null;
   google_id: string;
+  available_credits: number;
+  tier: 'free' | 'starter' | 'pro';
   created_at: string;
   updated_at: string;
+}
+
+export interface DbCreditHistory {
+  id: string;
+  user_id: string;
+  amount: number;
+  balance_after: number;
+  action_type:
+    | 'welcome_bonus'
+    | 'caption_generation'
+    | 'standard_voiceover'
+    | 'premium_voiceover'
+    | 'social_schedule'
+    | 'full_automation'
+    | 'topup_starter'
+    | 'topup_pro'
+    | 'admin_adjustment';
+  description: string;
+  reference_id: string | null;
+  metadata: Record<string, any>;
+  created_at: string;
 }
 
 export interface DbSession {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
+import { verifyCreditBalance, deductCredits, ActionType } from '@/app/lib/credits';
 
 async function resolveUserId(): Promise<string | null> {
   const user = await getCurrentUser();
@@ -41,6 +42,26 @@ export async function POST(request: NextRequest) {
     }
     if (!message && (!mediaFile || mediaFile.size === 0)) {
       return NextResponse.json({ error: 'Post message or media is required' }, { status: 400 });
+    }
+
+    const isFullAutomation =
+      incomingFormData.get('is_full_automation') === 'true' ||
+      incomingFormData.get('workflow') === 'full_automation';
+    const creditAction: ActionType = isFullAutomation ? 'full_automation' : 'social_schedule';
+
+    // Strict balance check before calling FastAPI or Meta
+    const creditCheck = await verifyCreditBalance(userId, creditAction);
+    if (!creditCheck.ok) {
+      return NextResponse.json(
+        {
+          error: creditCheck.error,
+          code: creditCheck.code || 'INSUFFICIENT_CREDITS',
+          requiredCredits: creditCheck.requiredCredits,
+          availableCredits: creditCheck.availableCredits,
+          tier: creditCheck.tier,
+        },
+        { status: 402 }
+      );
     }
 
     // Validate Meta schedule bounds (10 minutes to 75 days)
@@ -126,10 +147,26 @@ export async function POST(request: NextRequest) {
       `;
     }
 
+    // Deduct credits atomically upon successful post/schedule
+    let remainingCredits: number | null = null;
+    try {
+      const deductRes = await deductCredits(userId, creditAction, {
+        description: isFullAutomation
+          ? `Full 1-Click Automated Reel (${destination})`
+          : `Meta ${postType} schedule (${destination})`,
+        referenceId: responseData.post_id || null,
+        metadata: { pageId, destination, postType, scheduled: Boolean(scheduledTimestamp) },
+      });
+      remainingCredits = deductRes.balanceAfter;
+    } catch (err) {
+      console.error('Failed to deduct credits for Meta schedule:', err);
+    }
+
     return NextResponse.json({
       status: 'success',
       post_id: responseData.post_id,
       scheduled: Boolean(scheduledTimestamp),
+      remaining_credits: remainingCredits,
       message: scheduledTimestamp
         ? 'Post scheduled successfully on Facebook & registered in database.'
         : 'Post published successfully on Facebook.',

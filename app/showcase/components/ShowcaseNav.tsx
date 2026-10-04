@@ -36,7 +36,7 @@ export default function ShowcaseNav() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer"
           >
             <span>Open Studio</span>
             <FiArrowRight className="text-sm" />

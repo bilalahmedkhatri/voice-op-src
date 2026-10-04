@@ -23,35 +23,25 @@ export default function LandingNavbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
-          <a href="#how-it-works" className="hover:text-slate-900 transition-colors">
-            How It Works
-          </a>
-          <a href="#live-studio" className="hover:text-slate-900 transition-colors flex items-center gap-1.5">
-            <FiPlay className="text-xs text-[#ff7d6e]" />
-            <span>Voice Studio</span>
-          </a>
-          <a href="#json-engine" className="hover:text-slate-900 transition-colors">
-            JSON Engine
-          </a>
-          <a href="#social-mockup" className="hover:text-slate-900 transition-colors">
-            Feed Simulator
-          </a>
-          <a href="#features" className="hover:text-slate-900 transition-colors">
-            Pillars
-          </a>
-          <a href="#specs" className="hover:text-slate-900 transition-colors">
-            Specs
-          </a>
-          <a href="#faq" className="hover:text-slate-900 transition-colors">
-            FAQ
-          </a>
+          <Link href="/about-us" className="hover:text-slate-900 transition-colors">
+            About Us
+          </Link>
+          <Link href="/blog" className="hover:text-slate-900 transition-colors">
+            Blog
+          </Link>
+          <Link href="/contact-us" className="hover:text-slate-900 transition-colors">
+            Contact Us
+          </Link>
+          <Link href="/pricing" className="hover:text-[#ff7d6e] transition-colors font-bold text-slate-800">
+            Pricing
+          </Link>
         </nav>
 
         {/* CTA Actions */}
         <div className="hidden sm:flex items-center gap-3">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer"
           >
             <span>Launch Studio</span>
             <FiArrowRight className="text-sm" />
@@ -80,55 +70,34 @@ export default function LandingNavbar() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150">
           <nav className="flex flex-col space-y-2 text-sm font-medium text-slate-700">
-            <a
-              href="#how-it-works"
+            <Link
+              href="/about-us"
               onClick={() => setMobileMenuOpen(false)}
               className="py-1.5 hover:text-[#c83a2a]"
             >
-              How It Works
-            </a>
-            <a
-              href="#live-studio"
+              About Us
+            </Link>
+            <Link
+              href="/blog"
               onClick={() => setMobileMenuOpen(false)}
               className="py-1.5 hover:text-[#c83a2a]"
             >
-              Voice Synthesis Demo
-            </a>
-            <a
-              href="#json-engine"
+              Blog
+            </Link>
+            <Link
+              href="/contact-us"
               onClick={() => setMobileMenuOpen(false)}
               className="py-1.5 hover:text-[#c83a2a]"
             >
-              JSON Campaign Engine
-            </a>
-            <a
-              href="#social-mockup"
+              Contact Us
+            </Link>
+            <Link
+              href="/pricing"
               onClick={() => setMobileMenuOpen(false)}
-              className="py-1.5 hover:text-[#c83a2a]"
+              className="py-1.5 text-slate-800 font-bold hover:text-[#c83a2a]"
             >
-              Social Feed Simulator
-            </a>
-            <a
-              href="#features"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1.5 hover:text-[#c83a2a]"
-            >
-              Core Capabilities
-            </a>
-            <a
-              href="#specs"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1.5 hover:text-[#c83a2a]"
-            >
-              Architecture &amp; Specs
-            </a>
-            <a
-              href="#faq"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1.5 hover:text-[#c83a2a]"
-            >
-              FAQ
-            </a>
+              Pricing
+            </Link>
           </nav>
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
             <Link

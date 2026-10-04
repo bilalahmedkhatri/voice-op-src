@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
 import { formatErrorMessage } from '@/app/lib/errorUtils';
 import { isDatabaseEnabled } from '@/app/lib/config';
+import { verifyCreditBalance, deductCredits, ActionType } from '@/app/lib/credits';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -55,6 +56,27 @@ export async function POST(request: NextRequest) {
         { error: 'Please sign in with Google to generate voiceovers.' },
         { status: 401 }
       );
+    }
+
+    // Determine credit action type: ElevenLabs = premium (4 credits), Gemini/Fish = standard (2 credits)
+    const isElevenLabs = targetModelId.toLowerCase().includes('elevenlabs');
+    const creditAction: ActionType = isElevenLabs ? 'premium_voiceover' : 'standard_voiceover';
+
+    // Strict balance check before any API call is triggered
+    if (user && isDatabaseEnabled()) {
+      const creditCheck = await verifyCreditBalance(user.id, creditAction);
+      if (!creditCheck.ok) {
+        return NextResponse.json(
+          {
+            error: creditCheck.error,
+            code: creditCheck.code || 'INSUFFICIENT_CREDITS',
+            requiredCredits: creditCheck.requiredCredits,
+            availableCredits: creditCheck.availableCredits,
+            tier: creditCheck.tier,
+          },
+          { status: 402 }
+        );
+      }
     }
 
     if (user && sql) {
@@ -162,9 +184,16 @@ export async function POST(request: NextRequest) {
     if (contentType.includes('application/json')) {
       const data = JSON.parse(Buffer.from(arrayBuffer).toString('utf-8'));
       
-      // Update quota even for async jobs
+      // Update quota and deduct credits even for async jobs
+      let asyncRemainingCredits: number | null = null;
       if (user && sql) {
         try {
+          const deductRes = await deductCredits(user.id, creditAction, {
+            description: `${targetModelId} Voiceover (${targetVoiceId})`,
+            metadata: { textLength: text.length, voice: targetVoiceId, model: targetModelId },
+          });
+          asyncRemainingCredits = deductRes.balanceAfter;
+
           await sql`
             UPDATE user_quotas
             SET generations_used = generations_used + 1,
@@ -173,11 +202,14 @@ export async function POST(request: NextRequest) {
             WHERE user_id = ${user.id}
           `;
         } catch (dbError) {
-          console.error('Failed to update quota in DB:', dbError);
+          console.error('Failed to update quota/credits in DB:', dbError);
         }
       }
 
-      return NextResponse.json(data);
+      return NextResponse.json({
+        ...data,
+        remaining_credits: asyncRemainingCredits,
+      });
     }
 
     const base64Audio = Buffer.from(arrayBuffer).toString('base64');
@@ -185,6 +217,7 @@ export async function POST(request: NextRequest) {
 
     const id = `vo_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const elapsedSeconds = Math.round(((Date.now() - startTime) / 1000) * 10) / 10;
+    let remainingCredits: number | null = null;
 
     // Save record to DB for authenticated user
     if (user && sql) {
@@ -217,8 +250,15 @@ export async function POST(request: NextRequest) {
               updated_at = NOW()
           WHERE user_id = ${user.id}
         `;
+
+        const deductRes = await deductCredits(user.id, creditAction, {
+          description: `${targetModelId} Voiceover (${targetVoiceId})`,
+          referenceId: historyId,
+          metadata: { textLength: text.length, voice: targetVoiceId, model: targetModelId },
+        });
+        remainingCredits = deductRes.balanceAfter;
       } catch (dbError) {
-        console.error('Failed to log generation history in DB:', dbError);
+        console.error('Failed to log generation history or deduct credits in DB:', dbError);
       }
     }
 
@@ -231,6 +271,7 @@ export async function POST(request: NextRequest) {
       file_size: arrayBuffer.byteLength,
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       remaining_uses: 999,
+      remaining_credits: remainingCredits,
       reset_at: null,
       model_id: targetModelId,
     });

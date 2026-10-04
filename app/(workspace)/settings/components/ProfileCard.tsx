@@ -106,7 +106,7 @@ export default function ProfileCard({
             <button
               onClick={onSaveName}
               disabled={isSaving || !displayName.trim() || displayName.trim() === user.name}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#ff7d6e] hover:bg-[#e04836] disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-all shadow-xs cursor-pointer"
             >
               {isSaving ? (
                 <FiRefreshCw className="w-4 h-4 animate-spin" />

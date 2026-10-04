@@ -68,7 +68,7 @@ export default function UsageCard({ quota }: UsageCardProps) {
                   ? "bg-rose-500"
                   : generationsPercent >= 70
                   ? "bg-amber-500"
-                  : "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e]"
+                  : "bg-[#ff7d6e]"
               }`}
               style={{ width: `${generationsPercent}%` }}
             />

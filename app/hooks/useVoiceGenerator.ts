@@ -44,6 +44,8 @@ export function useVoiceGenerator() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [toastNotification, setToastNotification] = useState<{ message: string; type: 'info' | 'success' | 'warning' | 'error' } | null>(null);
   const [userQuota, setUserQuota] = useState<UserQuotaState | null>(null);
+  const [availableCredits, setAvailableCredits] = useState<number | null>(null);
+  const [userTier, setUserTier] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const generationControllerRef = useRef<AbortController | null>(null);
 
@@ -60,12 +62,20 @@ export function useVoiceGenerator() {
 
       const res = await fetch('/api/auth/session');
       const data = await res.json();
-      if (data.authenticated && data.quota) {
+      if (data.authenticated) {
         setIsAuthenticated(true);
-        setUserQuota(data.quota);
+        if (data.quota) setUserQuota(data.quota);
+        if (data.user?.available_credits !== undefined) {
+          setAvailableCredits(data.user.available_credits);
+        }
+        if (data.user?.tier) {
+          setUserTier(data.user.tier);
+        }
       } else {
         setIsAuthenticated(false);
         setUserQuota(null);
+        setAvailableCredits(null);
+        setUserTier(null);
       }
     } catch {
       setUserQuota(null);
@@ -74,6 +84,22 @@ export function useVoiceGenerator() {
 
   useEffect(() => {
     refreshQuota();
+  }, [refreshQuota]);
+
+  // Synchronize credits when updated across tabs or components
+  useEffect(() => {
+    const handleCreditsUpdated = (e: any) => {
+      if (e.detail?.credits !== undefined) {
+        setAvailableCredits(e.detail.credits);
+      }
+      if (e.detail?.tier) {
+        setUserTier(e.detail.tier);
+      }
+      refreshQuota();
+    };
+
+    window.addEventListener('credits-updated', handleCreditsUpdated);
+    return () => window.removeEventListener('credits-updated', handleCreditsUpdated);
   }, [refreshQuota]);
 
   // Cleanup: abort pending requests on unmount
@@ -150,6 +176,11 @@ export function useVoiceGenerator() {
         try {
           const errData = await response.json();
           errorMsg = formatErrorMessage(errData);
+          if (response.status === 402 || errData.error === 'INSUFFICIENT_CREDITS' || errData.code === 'INSUFFICIENT_CREDITS') {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('open-topup-modal', { detail: errData }));
+            }
+          }
         } catch {
           errorMsg = `Server error: ${response.status} ${response.statusText}`;
         }
@@ -157,6 +188,14 @@ export function useVoiceGenerator() {
       }
 
       let data = await response.json();
+
+      // Update available credits balance if returned by API
+      if (data.remaining_credits !== undefined) {
+        setAvailableCredits(data.remaining_credits);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('credits-updated', { detail: { credits: data.remaining_credits } }));
+        }
+      }
 
       // Handle async processing response (backend acknowledges request)
       if (data.status === 'processing' || data.message === 'processing' || data.job_id || data.task_id) {
@@ -360,6 +399,8 @@ export function useVoiceGenerator() {
     videoFormat,
     setVideoFormat,
     userQuota,
+    availableCredits,
+    userTier,
     isAuthenticated,
     isOnlineDb: isDatabaseEnabled(),
     remainingGenerations,

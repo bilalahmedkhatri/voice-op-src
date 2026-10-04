@@ -264,7 +264,7 @@ export default function WorkspaceFacebookIntegrationPage() {
                 key={filter}
                 onClick={() => setPostFilter(filter)}
                 className={`px-3 py-1 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${postFilter === filter
-                  ? "bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white shadow-xs"
+                  ? "bg-[#ff7d6e] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
                   }`}
               >

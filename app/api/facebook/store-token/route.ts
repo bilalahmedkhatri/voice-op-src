@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
+import { checkMetaAccountLimit } from '@/app/lib/credits';
 
 async function resolveUserId(): Promise<string | null> {
   const user = await getCurrentUser();
@@ -31,6 +32,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized: Please log in to connect Facebook pages' },
         { status: 401 }
+      );
+    }
+
+    // Enforce tier-based Meta account limits (Free: 1, Starter: 3, Pro: 10)
+    const limitCheck = await checkMetaAccountLimit(userId, page_id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: limitCheck.error,
+          code: 'TIER_LIMIT_REACHED',
+          currentCount: limitCheck.currentCount,
+          maxAllowed: limitCheck.maxAllowed,
+          tier: limitCheck.tier,
+        },
+        { status: 403 }
       );
     }
 

@@ -113,14 +113,37 @@ export async function createOrUpdateUserAndSession(googleUser: {
 
     // 1. Upsert User by google_id
     const userResult = await sql`
-      INSERT INTO users (id, email, name, image, google_id, created_at, updated_at)
-      VALUES (${userId}, ${googleUser.email}, ${googleUser.name}, ${googleUser.picture}, ${googleUser.sub}, NOW(), NOW())
+      INSERT INTO users (id, email, name, image, google_id, available_credits, tier, created_at, updated_at)
+      VALUES (${userId}, ${googleUser.email}, ${googleUser.name}, ${googleUser.picture}, ${googleUser.sub}, 50, 'free', NOW(), NOW())
       ON CONFLICT (google_id) DO UPDATE 
       SET email = ${googleUser.email}, name = ${googleUser.name}, image = ${googleUser.picture}, updated_at = NOW()
-      RETURNING id, email, name, image, google_id
+      RETURNING id, email, name, image, google_id, available_credits, tier, (xmax = 0) AS is_new_user
     `;
 
     const activeUserId = userResult[0].id;
+    const isNewUser = Boolean(userResult[0]?.is_new_user);
+
+    // Record welcome bonus in credit_history for new registrations
+    if (isNewUser) {
+      try {
+        const crdId = `crd_${crypto.randomUUID().replace(/-/g, '')}`;
+        await sql`
+          INSERT INTO credit_history (id, user_id, amount, balance_after, action_type, description, metadata, created_at)
+          VALUES (
+            ${crdId},
+            ${activeUserId},
+            50,
+            50,
+            'welcome_bonus',
+            'Welcome Bonus (50 Free Credits)',
+            ${JSON.stringify({ reason: 'registration' })}::jsonb,
+            NOW()
+          )
+        `;
+      } catch (ledgerErr) {
+        console.error('Failed to log welcome bonus ledger:', ledgerErr);
+      }
+    }
 
     // 2. Initialize user quota if not exists
     const resetDate = new Date();
@@ -156,7 +179,7 @@ export async function getCurrentUser(): Promise<DbUser | null> {
 
   try {
     const result = await sql`
-      SELECT u.id, u.email, u.name, u.image, u.google_id, u.created_at, u.updated_at
+      SELECT u.id, u.email, u.name, u.image, u.google_id, u.available_credits, u.tier, u.created_at, u.updated_at
       FROM sessions s
       JOIN users u ON s.user_id = u.id
       WHERE s.session_token = ${sessionToken}

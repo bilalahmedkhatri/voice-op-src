@@ -146,7 +146,7 @@ const FormatSelectionModal = memo(function FormatSelectionModal({
             }`}
           >
             {analysis.recommended === 'short' && (
-              <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white text-[9px] font-black uppercase tracking-wider shadow-xs flex items-center gap-1">
+              <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-[#ff7d6e] text-white text-[9px] font-black uppercase tracking-wider shadow-xs flex items-center gap-1">
                 <FaCheckCircle className="text-[8px]" />
                 Recommended
               </span>
@@ -189,7 +189,7 @@ const FormatSelectionModal = memo(function FormatSelectionModal({
             }`}
           >
             {analysis.recommended === 'long' && (
-              <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white text-[9px] font-black uppercase tracking-wider shadow-xs flex items-center gap-1">
+              <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-[#ff7d6e] text-white text-[9px] font-black uppercase tracking-wider shadow-xs flex items-center gap-1">
                 <FaCheckCircle className="text-[8px]" />
                 Recommended
               </span>

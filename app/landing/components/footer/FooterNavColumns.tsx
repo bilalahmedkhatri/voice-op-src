@@ -16,33 +16,27 @@ interface NavSection {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    title: 'Studio Tools',
+    title: 'Platform',
     links: [
       { label: 'Multi-Model Voice Studio', href: '/admin' },
-      { label: 'Live Voiceover Demo', href: '#live-studio' },
-      { label: 'Social Feed Simulator', href: '#social-mockup' },
-      { label: 'Prompt-to-JSON Calendar', href: '#json-engine' },
-      { label: 'YouTube Video Strategy', href: '/youtube/templates' },
       { label: 'JSON Campaign Engine', href: '/json-generator' },
+      { label: 'Social Publishing', href: '/facebook/integration', badge: 'Direct' },
+      { label: 'YouTube Automation', href: '/youtube/templates' },
     ],
   },
   {
-    title: 'Workflows & Publishing',
+    title: 'Resources',
     links: [
-      { label: '1-Click Social Publishing', href: '/facebook/integration', badge: 'Direct' },
-      { label: 'Facebook & Instagram Reels', href: '#social-mockup' },
-      { label: 'YouTube Shorts Automation', href: '/youtube/templates' },
-      { label: 'Studio WAV Master Exports', href: '/admin' },
-      { label: 'Content Architecture Showcase', href: '/#features' },
+      { label: 'Pricing & Packages', href: '/pricing' },
+      { label: 'Creator Guides & Blog', href: '/blog' },
+      { label: 'Frequently Asked Questions', href: '/faq' },
+      { label: 'Contact & Support', href: '/contact-us' },
     ],
   },
   {
-    title: 'Company & Resources',
+    title: 'Company',
     links: [
       { label: 'About GenZee Video', href: '/about-us' },
-      { label: 'Frequently Asked Questions', href: '/faq' },
-      { label: 'Creator Guides & Blog', href: '/blog' },
-      { label: 'Contact & Creator Support', href: '/contact-us' },
       { label: 'Privacy Policy', href: '/privacy-policy' },
       { label: 'Terms of Service', href: '/terms-of-service' },
     ],

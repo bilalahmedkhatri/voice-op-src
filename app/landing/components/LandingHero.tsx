@@ -23,7 +23,7 @@ export default function LandingHero() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
           <Link
             href="/admin"
-            className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-sm sm:text-base font-semibold shadow-xs hover:shadow transition-all cursor-pointer flex items-center justify-center gap-2.5"
+            className="w-full sm:w-auto px-8 py-3.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-sm sm:text-base font-semibold shadow-xs hover:shadow transition-all cursor-pointer flex items-center justify-center gap-2.5"
           >
             <span>Launch Studio Free</span>
             <FiArrowRight className="text-base" />

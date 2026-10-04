@@ -401,7 +401,7 @@ const GenerationHistory = memo(function GenerationHistory({
                   className={`h-9 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs ${
                     isPlaying
                       ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                      : 'bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white'
+                      : 'bg-[#ff7d6e] hover:bg-[#e04836] text-white'
                   }`}
                 >
                   {isPlaying ? (

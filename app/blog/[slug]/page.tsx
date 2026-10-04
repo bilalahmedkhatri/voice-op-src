@@ -32,6 +32,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   return {
     title: post.title,
     description: post.description,
+    keywords: post.keywords,
     alternates: {
       canonical: canonicalUrl,
     },
@@ -78,6 +79,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     headline: post.title,
     description: post.description,
     image: post.imageUrl,
+    keywords: post.keywords.join(', '),
+    wordCount: post.content.split(/\s+/).length,
     datePublished: post.date,
     dateModified: post.date,
     author: {
@@ -99,18 +102,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     },
   };
 
-  // Parse markdown-style sections
-  const rawSections = post.content.split('### ').filter(Boolean);
-  const sections = rawSections.map((sec) => {
-    const [heading, ...paragraphs] = sec.split('\n\n');
-    return {
-      heading: heading.trim(),
-      body: paragraphs.join('\n\n').trim(),
-    };
-  });
+  const sections = post.sections;
+  const slugify = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
 
   return (
-    <article className="space-y-10 max-w-4xl mx-auto">
+    <article className="space-y-12 max-w-3xl mx-auto px-4 sm:px-0 pt-4 pb-20">
       {/* Schema.org BlogPosting Script */}
       <script
         type="application/ld+json"
@@ -118,14 +118,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       />
 
       {/* Top Navigation & Breadcrumbs */}
-      <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
-        <Link
-          href="/blog"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#c83a2a] hover:underline transition-colors"
-        >
-          <FiArrowLeft className="w-4 h-4" />
-          Back to all creator guides
-        </Link>
+      <div className="flex items-center justify-between">
         <span className="text-xs text-slate-400 font-medium">
           GenZee Video Studio / Creator Resources
         </span>
@@ -148,7 +141,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </span>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.18]">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.1]">
           {post.title}
         </h1>
 
@@ -168,7 +161,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       </header>
 
       {/* Featured Cover Image */}
-      <div className="relative w-full aspect-video sm:aspect-21/9 rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs bg-slate-100">
+      <div className="relative w-full aspect-video sm:aspect-21/9 rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-slate-100 mt-6 mb-10">
         <Image
           src={post.imageUrl}
           alt={post.title}
@@ -179,17 +172,97 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         />
       </div>
 
+      {/* Key Takeaways */}
+      <aside className="rounded-2xl border border-orange-200/80 bg-orange-50/60 p-5 sm:p-6 space-y-3">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-[#c83a2a]">Key Takeaways</h2>
+        <ul className="space-y-2 text-sm sm:text-base text-slate-700">
+          {post.takeaways.map((t) => (
+            <li key={t} className="flex items-start gap-2.5">
+              <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#ff7d6e] shrink-0" />
+              <span>{t}</span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      {/* Table of Contents */}
+      <nav aria-label="Table of contents" className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 space-y-3">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">In This Article</h2>
+        <ol className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm text-slate-600 list-decimal pl-5">
+          {sections.map((s) => (
+            <li key={s.heading}>
+              <a href={`#${slugify(s.heading)}`} className="hover:text-[#c83a2a] hover:underline">
+                {s.heading}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
       {/* Article Body */}
-      <div className="space-y-8 text-slate-700 leading-relaxed text-base sm:text-lg">
-        {sections.map((section, idx) => (
-          <section key={idx} className="space-y-3">
+      <div className="space-y-10 text-slate-700 leading-relaxed text-base sm:text-lg">
+        {sections.map((section) => (
+          <section key={section.heading} id={slugify(section.heading)} className="space-y-4 scroll-mt-24">
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
               {section.heading}
             </h2>
-            <p className="leading-relaxed font-normal text-slate-600">
-              {section.body}
-            </p>
+            {section.paragraphs.map((p, i) => (
+              <p key={i} className="leading-relaxed font-normal text-slate-600">
+                {p}
+              </p>
+            ))}
+            {section.bullets && (
+              <ul className="space-y-2 text-slate-600">
+                {section.bullets.map((b) => (
+                  <li key={b} className="flex items-start gap-3">
+                    <span className="mt-2.5 w-1.5 h-1.5 rounded-full bg-[#ff7d6e] shrink-0" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {section.table && (
+              <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
+                      {section.table.headers.map((h) => (
+                        <th key={h} className="p-3.5">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {section.table.rows.map((row, ri) => (
+                      <tr key={ri} className="hover:bg-slate-50/60 transition-colors">
+                        {row.map((cell, ci) => (
+                          <td
+                            key={ci}
+                            className={`p-3.5 ${ci === 0 ? 'font-semibold text-slate-800' : 'text-slate-600'}`}
+                          >
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
+        ))}
+      </div>
+
+      {/* Topics */}
+      <div className="flex flex-wrap gap-2">
+        {post.keywords.map((k) => (
+          <span
+            key={k}
+            className="text-xs font-medium px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/80"
+          >
+            {k}
+          </span>
         ))}
       </div>
 
@@ -211,7 +284,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           href="/"
           className="px-5 py-3 rounded-xl bg-gradient-to-r from-[#ff7d6e] to-[#ff9b8f] text-slate-950 font-bold text-xs sm:text-sm hover:opacity-95 transition-opacity whitespace-nowrap shadow-xs"
         >
-          Open Free Studio
+          Start Free
         </Link>
       </div>
 
@@ -239,7 +312,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </p>
               </div>
               <div className="pt-3 text-[11px] text-slate-400 font-medium">
-                {related.readTime} • {related.date}
+                {related.readTime} | {related.date}
               </div>
             </Link>
           ))}

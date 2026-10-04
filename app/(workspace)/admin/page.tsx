@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { FaMicrophone, FaSync, FaGoogle } from 'react-icons/fa';
-import { FiMic } from 'react-icons/fi';
+import { FiMic, FiZap } from 'react-icons/fi';
 import { useVoiceGenerator } from '../../hooks/useVoiceGenerator';
 import { useVoiceSamples } from '../../hooks/useVoiceSamples';
 import { useModels } from '../../hooks/useModels';
@@ -39,6 +39,8 @@ export default function AdminVoiceStudioPage() {
     isAuthenticated,
     isOnlineDb,
     remainingGenerations,
+    availableCredits,
+    userTier,
   } = useVoiceGenerator();
 
   const [sourceInfo, setSourceInfo] = useState<{ title?: string; type?: string } | null>(null);
@@ -205,6 +207,12 @@ export default function AdminVoiceStudioPage() {
       window.location.href = '/api/auth/google';
       return;
     }
+    if (isOnlineDb && isAuthenticated && availableCredits !== null && availableCredits < 2) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('open-topup-modal'));
+      }
+      return;
+    }
     if (!params.text.trim()) {
       handleGenerate(selectedApiVoice || undefined, selectedModelId, 'short', selectedProvider);
       return;
@@ -219,7 +227,7 @@ export default function AdminVoiceStudioPage() {
   };
 
   const isAuthRequired = isOnlineDb && !isAuthenticated;
-  const isLimitReached = isOnlineDb && isAuthenticated && remainingGenerations !== null && remainingGenerations <= 0;
+  const isLimitReached = isOnlineDb && isAuthenticated && availableCredits !== null && availableCredits < 2;
 
   const selectedVoiceObj = apiVoices.find((v) => v.voice_id === selectedApiVoice);
   const activeVoiceMeta = selectedVoiceObj
@@ -245,24 +253,34 @@ export default function AdminVoiceStudioPage() {
             Generate natural multi-model voiceovers for YouTube, Reels, and TikTok with ElevenLabs, Fish Audio &amp; Gemini.          </p>
         </div>
 
-        {/* Plan / Quota Status Badge */}
+        {/* Plan / Wallet Status Badge */}
         {isClient ? (
           <div>
-            {isAuthenticated && remainingGenerations !== null ? (
-              <div
-                className={`text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 border ${isLimitReached
-                  ? 'bg-rose-50 border-rose-200 text-rose-700'
-                  : 'bg-white border-slate-200 text-slate-700 shadow-2xs'
-                  }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${isLimitReached ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'
-                    }`}
-                />
-                <span>
-                  <strong>Free Studio Plan</strong> • {remainingGenerations} generation
-                  {remainingGenerations !== 1 ? 's' : ''} left today
-                </span>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <div className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-2 bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                  <span className="text-amber-500 font-bold flex items-center gap-1 font-mono">
+                    🪙 {availableCredits !== null ? availableCredits.toLocaleString() : 50}
+                  </span>
+                  <span className="text-slate-400">Credits</span>
+                  <span className="w-1 h-1 rounded-full bg-slate-300" />
+                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-orange-50 text-[#c83a2a]">
+                    {userTier || 'free'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('open-topup-modal'));
+                    }
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-[#ff7d6e] hover:bg-[#e04836] text-white text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1 cursor-pointer"
+                  title="Top-Up Wallet Credits"
+                >
+                  <FiZap className="w-3 h-3" />
+                  <span>+ Top Up</span>
+                </button>
               </div>
             ) : (
               <div className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 bg-white border border-slate-200 text-emerald-700 shadow-2xs">
@@ -280,7 +298,7 @@ export default function AdminVoiceStudioPage() {
       {sourceInfo && (
         <div className="flex items-center justify-between p-3.5 bg-orange-50/90 border border-orange-200/80 rounded-xl text-xs text-orange-950 shadow-2xs animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center gap-2.5">
-            <span className="p-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white rounded-lg shadow-2xs">
+            <span className="p-1.5 bg-[#ff7d6e] text-white rounded-lg shadow-2xs">
               <FiMic className="w-3.5 h-3.5" />
             </span>
             <span>

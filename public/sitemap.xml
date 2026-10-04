@@ -45,76 +45,52 @@
     <priority>0.3</priority>
   </url>
 
-  <!-- Creator Blog & Guide Articles (12 Canonical Posts) -->
+  <!-- Creator Blog & Guide Articles (8 Canonical Posts) -->
   <url>
-    <loc>https://www.genzee.video/blog/post-1</loc>
-    <lastmod>2026-10-03</lastmod>
+    <loc>https://www.genzee.video/blog/best-ai-voice-generators-2026</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.genzee.video/blog/post-2</loc>
-    <lastmod>2026-10-03</lastmod>
+    <loc>https://www.genzee.video/blog/faceless-youtube-channel-ai-voiceover-guide</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.genzee.video/blog/post-3</loc>
-    <lastmod>2026-10-03</lastmod>
+    <loc>https://www.genzee.video/blog/best-facebook-instagram-reels-scheduler-2026</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.genzee.video/blog/post-4</loc>
-    <lastmod>2026-10-03</lastmod>
+    <loc>https://www.genzee.video/blog/ai-content-calendar-json-chatgpt-claude</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.genzee.video/blog/post-5</loc>
-    <lastmod>2026-10-03</lastmod>
+    <loc>https://www.genzee.video/blog/elevenlabs-vs-gemini-vs-fish-audio</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.genzee.video/blog/post-6</loc>
-    <lastmod>2026-10-03</lastmod>
+    <loc>https://www.genzee.video/blog/ai-voice-licensing-youtube-monetization-guide</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.genzee.video/blog/post-7</loc>
-    <lastmod>2026-10-03</lastmod>
+    <loc>https://www.genzee.video/blog/voiceover-pacing-hooks-reels-shorts-tiktok</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.genzee.video/blog/post-8</loc>
-    <lastmod>2026-10-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.genzee.video/blog/post-9</loc>
-    <lastmod>2026-10-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.genzee.video/blog/post-10</loc>
-    <lastmod>2026-10-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.genzee.video/blog/post-11</loc>
-    <lastmod>2026-10-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.genzee.video/blog/post-12</loc>
-    <lastmod>2026-10-03</lastmod>
+    <loc>https://www.genzee.video/blog/agency-ai-content-pipeline-tool-stack</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

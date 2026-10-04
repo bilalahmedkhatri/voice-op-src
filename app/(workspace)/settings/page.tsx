@@ -8,6 +8,8 @@ import SettingsHeader from "./components/SettingsHeader";
 import SettingsStats from "./components/SettingsStats";
 import ProfileCard from "./components/ProfileCard";
 import UsageCard from "./components/UsageCard";
+import CreditHistoryCard from "./components/CreditHistoryCard";
+import TopUpModal from "@/app/components/TopUpModal";
 
 interface UserProfile {
   id: string;
@@ -15,6 +17,8 @@ interface UserProfile {
   name: string | null;
   image: string | null;
   google_id: string;
+  available_credits?: number;
+  tier?: string;
   created_at: string;
   updated_at: string;
 }
@@ -35,6 +39,7 @@ export default function SettingsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
 
   // Edit display name state
   const [displayName, setDisplayName] = useState("");
@@ -70,6 +75,26 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  // Listen for global credit update and top-up events
+  useEffect(() => {
+    const handleCreditsUpdated = (e: any) => {
+      if (user && e.detail?.credits !== undefined) {
+        setUser((prev) => (prev ? { ...prev, available_credits: e.detail.credits } : prev));
+      }
+      fetchSettings();
+    };
+
+    const handleOpenTopUp = () => setIsTopUpOpen(true);
+
+    window.addEventListener("credits-updated", handleCreditsUpdated);
+    window.addEventListener("open-topup-modal", handleOpenTopUp);
+
+    return () => {
+      window.removeEventListener("credits-updated", handleCreditsUpdated);
+      window.removeEventListener("open-topup-modal", handleOpenTopUp);
+    };
+  }, [user]);
 
   const handleSaveName = async () => {
     if (!displayName.trim()) return;
@@ -130,12 +155,12 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Sign in Required</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Please connect your Google account to view profile settings, usage quotas, and manage your templates.
+            Please connect your Google account to view profile settings, usage quotas, and manage your wallet credits.
           </p>
         </div>
         <a
           href="/api/auth/google"
-          className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl font-semibold transition-all shadow-xs cursor-pointer"
+          className="inline-flex items-center gap-2.5 px-6 py-3 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl font-semibold transition-all shadow-xs cursor-pointer"
         >
           <FaGoogle className="text-sm" />
           Sign in with Google
@@ -149,8 +174,14 @@ export default function SettingsPage() {
       {/* 1. Header */}
       <SettingsHeader onRefresh={fetchSettings} isLoading={isLoading} />
 
-      {/* 2. Top 4 Overview Stat Cards */}
-      <SettingsStats quota={quota} totalTemplates={totalTemplates} />
+      {/* 2. Top Overview Stat Cards */}
+      <SettingsStats
+        quota={quota}
+        totalTemplates={totalTemplates}
+        availableCredits={user.available_credits ?? 50}
+        tier={user.tier ?? "free"}
+        onTopUpClick={() => setIsTopUpOpen(true)}
+      />
 
       {/* 3. Main Split Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -172,6 +203,30 @@ export default function SettingsPage() {
           <UsageCard quota={quota} />
         </div>
       </div>
+
+      {/* 4. Full-width Credit Ledger & Transaction History Card */}
+      <CreditHistoryCard
+        currentCredits={user.available_credits ?? 50}
+        currentTier={user.tier ?? "free"}
+        onTopUpClick={() => setIsTopUpOpen(true)}
+      />
+
+      {/* 5. Top-Up Modal */}
+      <TopUpModal
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+        currentCredits={user.available_credits ?? 50}
+        currentTier={user.tier ?? "free"}
+        onSuccess={(newBalance) => {
+          setUser((prev) => (prev ? { ...prev, available_credits: newBalance } : prev));
+          fetchSettings();
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("credits-updated", { detail: { credits: newBalance } })
+            );
+          }
+        }}
+      />
     </div>
   );
 }

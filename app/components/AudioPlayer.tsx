@@ -352,7 +352,7 @@ const AudioPlayer = memo(function AudioPlayer({
           title="Click or drag to seek"
         >
           <div 
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] rounded-full pointer-events-none transition-all duration-100" 
+            className="absolute top-0 left-0 h-full bg-[#ff7d6e] rounded-full pointer-events-none transition-all duration-100" 
             style={{ width: `${progressPercent}%` }} 
           />
         </div>

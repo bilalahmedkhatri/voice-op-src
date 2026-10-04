@@ -14,6 +14,7 @@ import {
   FaMobileAlt,
   FaHashtag,
   FaPaperPlane,
+  FaMagic,
 } from 'react-icons/fa';
 
 interface FacebookPostEditorProps {
@@ -60,6 +61,7 @@ export default function FacebookPostEditor({
   const [scheduleTime, setScheduleTime] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -141,6 +143,45 @@ export default function FacebookPostEditor({
   const addHashtag = (tag: string) => {
     if (!message.includes(tag)) {
       setMessage((prev) => (prev ? `${prev} ${tag}` : tag));
+    }
+  };
+
+  const handleGenerateAiCaption = async () => {
+    setIsGeneratingCaption(true);
+    setStatus(null);
+    try {
+      const res = await fetch('/api/facebook/generate-caption', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: title || message || 'Viral Reel Content',
+          postType,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 402 || data.code === 'INSUFFICIENT_CREDITS') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('open-topup-modal', { detail: data }));
+          }
+        }
+        throw new Error(data.error || 'Failed to generate AI caption');
+      }
+
+      if (data.caption) {
+        setMessage(data.caption);
+        if (typeof window !== 'undefined' && data.remaining_credits !== undefined) {
+          window.dispatchEvent(
+            new CustomEvent('credits-updated', { detail: { credits: data.remaining_credits } })
+          );
+        }
+      }
+    } catch (err: any) {
+      setStatus({ type: 'error', text: err.message || 'Error generating AI caption.' });
+    } finally {
+      setIsGeneratingCaption(false);
     }
   };
 
@@ -227,6 +268,14 @@ export default function FacebookPostEditor({
             ? `Post scheduled successfully! ID: ${data.post_id || 'Queued'}`
             : `Post published successfully! ID: ${data.post_id || 'Live'}`,
         });
+
+        // Broadcast wallet balance update across components
+        if (typeof window !== 'undefined' && data.remaining_credits !== undefined) {
+          window.dispatchEvent(
+            new CustomEvent('credits-updated', { detail: { credits: data.remaining_credits } })
+          );
+        }
+
         setMessage('');
         setTitle('');
         removeMedia();
@@ -239,6 +288,11 @@ export default function FacebookPostEditor({
           onPostCreated();
         }
       } else {
+        if (res.status === 402 || data.code === 'INSUFFICIENT_CREDITS') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('open-topup-modal', { detail: data }));
+          }
+        }
         setStatus({
           type: 'error',
           text: data.error || 'Failed to publish post to Meta Graph API.',
@@ -291,17 +345,34 @@ export default function FacebookPostEditor({
         {/* Status Alert */}
         {status && (
           <div
-            className={`p-3.5 rounded-xl text-xs flex items-start gap-2.5 border ${status.type === 'success'
+            className={`p-3.5 rounded-xl text-xs flex items-center justify-between gap-2.5 border ${
+              status.type === 'success'
                 ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                 : 'bg-red-50 text-red-800 border-red-200'
-              }`}
+            }`}
           >
-            {status.type === 'success' ? (
-              <FaCheckCircle className="text-emerald-500 text-sm shrink-0 mt-0.5" />
-            ) : (
-              <FaExclamationCircle className="text-red-500 text-sm shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5">
+              {status.type === 'success' ? (
+                <FaCheckCircle className="text-emerald-500 text-sm shrink-0 mt-0.5" />
+              ) : (
+                <FaExclamationCircle className="text-red-500 text-sm shrink-0 mt-0.5" />
+              )}
+              <span className="font-medium">{status.text}</span>
+            </div>
+
+            {status.type === 'error' && (status.text.toLowerCase().includes('credit') || status.text.toLowerCase().includes('wallet')) && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('open-topup-modal'));
+                  }
+                }}
+                className="px-3 py-1 bg-[#ff7d6e] hover:bg-[#e04836] text-white font-bold rounded-lg text-[11px] shrink-0 transition-all shadow-2xs cursor-pointer"
+              >
+                Top-Up Credits
+              </button>
             )}
-            <span className="font-medium">{status.text}</span>
           </div>
         )}
 
@@ -390,7 +461,7 @@ export default function FacebookPostEditor({
                     type="button"
                     onClick={() => setPostType(fmt.id as any)}
                     className={`py-3 px-2 rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${isActive
-                        ? 'bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] border-[#ff7d6e] text-white shadow-xs'
+                        ? 'bg-[#ff7d6e] border-[#ff7d6e] text-white shadow-xs'
                         : 'bg-slate-50/80 border-slate-200 text-slate-600 hover:bg-orange-50/50 hover:border-[#ff9b8f]/60'
                       }`}
                   >
@@ -490,11 +561,23 @@ export default function FacebookPostEditor({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              4. Caption & Details
+              4. Caption &amp; Details
             </label>
-            <span className="text-[11px] text-slate-400 font-medium">
-              {message.length} / {maxChars}
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleGenerateAiCaption}
+                disabled={isGeneratingCaption}
+                className="px-2.5 py-1 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-[#c83a2a] border border-orange-200/80 rounded-lg text-[11px] font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                title="Generate engaging viral caption with AI (Cost: 1 Credit)"
+              >
+                <FaMagic className="text-[10px] text-amber-500" />
+                <span>{isGeneratingCaption ? 'Generating...' : '✨ AI Caption (1 Credit)'}</span>
+              </button>
+              <span className="text-[11px] text-slate-400 font-medium">
+                {message.length} / {maxChars}
+              </span>
+            </div>
           </div>
 
           <textarea
@@ -602,7 +685,7 @@ export default function FacebookPostEditor({
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting || (!message.trim() && !mediaFile && !mediaPreviewUrl)}
-          className="px-6 py-2.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:shadow-md disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+          className="px-6 py-2.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:shadow-md disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
         >
           {isSubmitting ? (
             <span>Publishing to Meta...</span>

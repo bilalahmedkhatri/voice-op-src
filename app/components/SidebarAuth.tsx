@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { FaSignOutAlt, FaUserCircle, FaBolt, FaUser } from "react-icons/fa";
+import { FaSignOutAlt, FaUserCircle, FaBolt, FaUser, FaCoins, FaCrown } from "react-icons/fa";
 import { DbUser } from "../lib/db/types";
 import { isDatabaseEnabled } from "../lib/config";
 import Link from "next/link";
+import TopUpModal from "./TopUpModal";
 
 function GoogleIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -32,8 +33,11 @@ function GoogleIcon({ className = "w-4 h-4" }: { className?: string }) {
 export default function SidebarAuth() {
   const [user, setUser] = useState<DbUser | null>(null);
   const [quota, setQuota] = useState<any | null>(null);
+  const [credits, setCredits] = useState<number>(50);
+  const [tier, setTier] = useState<string>("free");
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [topUpOpen, setTopUpOpen] = useState(false);
   const [dbEnabled, setDbEnabled] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -55,6 +59,8 @@ export default function SidebarAuth() {
       if (data.authenticated && data.user) {
         setUser(data.user);
         setQuota(data.quota);
+        setCredits(data.user.available_credits ?? 50);
+        setTier(data.user.tier ?? "free");
       } else {
         setUser(null);
         setQuota(null);
@@ -66,6 +72,28 @@ export default function SidebarAuth() {
       setLoading(false);
     }
   };
+
+  // Global listeners for top-up triggers and credit updates
+  useEffect(() => {
+    const handleOpenTopUp = () => setTopUpOpen(true);
+    const handleCreditsUpdated = (e: any) => {
+      if (e.detail?.credits !== undefined) {
+        setCredits(e.detail.credits);
+      }
+      if (e.detail?.tier) {
+        setTier(e.detail.tier);
+      }
+      fetchSession();
+    };
+
+    window.addEventListener("open-topup-modal", handleOpenTopUp);
+    window.addEventListener("credits-updated", handleCreditsUpdated);
+
+    return () => {
+      window.removeEventListener("open-topup-modal", handleOpenTopUp);
+      window.removeEventListener("credits-updated", handleCreditsUpdated);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -116,10 +144,10 @@ export default function SidebarAuth() {
 
   if (!user) {
     return (
-      <div className="p-4 border-slate-200">
+      <div className="p-4 border-t border-slate-200">
         <a
           href="/api/auth/google"
-          className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white border border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-sm"
+          className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white border border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors shadow-xs text-sm"
         >
           <GoogleIcon />
           <span>Login with Google</span>
@@ -128,76 +156,107 @@ export default function SidebarAuth() {
     );
   }
 
-  const remainingQuota = quota ? Math.max(0, (quota.max_daily_generations || 5) - (quota.generations_used || 0)) : 0;
-  const maxQuota = quota?.max_daily_generations || 5;
-
   return (
-    <div className="relative p-4 border-t border-slate-200/80 bg-slate-50/50" ref={menuRef}>
+    <div className="relative p-3.5 border-t border-slate-200/80 bg-slate-50/60" ref={menuRef}>
+
+      {/* 2. Dropdown Menu on Profile Click */}
       {menuOpen && (
-        <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-            <p className="text-sm font-bold text-slate-900 truncate">{user.name || "User"}</p>
+        <div className="absolute bottom-full left-3.5 right-3.5 mb-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div className="p-3.5 border-b border-slate-100 bg-slate-50/70">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-sm font-bold text-slate-900 truncate">{user.name || "User"}</p>
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-100/90 text-orange-900 border border-orange-200">
+                {tier}
+              </span>
+            </div>
             <p className="text-xs text-slate-500 truncate">{user.email}</p>
           </div>
 
-          <div className="p-4 border-b border-slate-100">
-            <div className="flex items-center justify-between text-sm mb-2">
+          <div className="p-3.5 border-b border-slate-100 space-y-2">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                <FaBolt className="text-[#ff7d6e]" />
-                Remaining Credits
+                <FaCoins className="text-amber-500" />
+                Available Credits
               </span>
-              <span className="font-bold text-slate-900">{remainingQuota} / {maxQuota}</span>
+              <span className="font-bold text-slate-900 font-mono">{credits.toLocaleString()}</span>
             </div>
-            <div className="w-full bg-slate-100 rounded-full h-1.5">
-              <div
-                className="bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] h-1.5 rounded-full"
-                style={{ width: `${Math.min(100, (remainingQuota / maxQuota) * 100)}%` }}
-              ></div>
+
+            <div className="text-[10px] text-slate-500 bg-orange-50/60 p-2 rounded-xl border border-orange-100">
+              ⚡ Pay-As-You-Go: 1 credit / caption, 2 credits / voiceover, 1 credit / social post.
             </div>
+
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                setTopUpOpen(true);
+              }}
+              className="w-full py-2 px-3 bg-[#ff7d6e] hover:bg-[#e04836] text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <FaBolt className="text-xs" />
+              <span>Top-Up Balance</span>
+            </button>
           </div>
 
-          <div className="p-2">
+          <div className="p-1.5">
             <Link
               href="/settings"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 hover:bg-orange-50/60 hover:text-[#c83a2a] rounded-lg transition-colors font-medium"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs text-slate-700 hover:bg-orange-50/60 hover:text-[#c83a2a] rounded-xl transition-colors font-semibold"
             >
-              <FaUser className="w-4 h-4" />
-              View Profile
+              <FaUser className="w-3.5 h-3.5" />
+              <span>View Profile &amp; Billing</span>
             </Link>
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium cursor-pointer"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-xl transition-colors font-semibold cursor-pointer"
             >
-              <FaSignOutAlt className="w-4 h-4" />
-              Sign Out
+              <FaSignOutAlt className="w-3.5 h-3.5" />
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
       )}
 
+      {/* 3. User Avatar Row */}
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-slate-100 transition-colors text-left cursor-pointer"
+        className="flex items-center gap-2.5 w-full p-1.5 rounded-xl hover:bg-white/80 transition-colors text-left cursor-pointer"
       >
         {user.image ? (
           <img
             src={user.image}
             alt={user.name || "User"}
-            className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
+            className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-2xs"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-orange-100 text-[#ff7d6e] flex items-center justify-center border border-orange-200">
-            <FaUserCircle className="w-6 h-6" />
+          <div className="w-8 h-8 rounded-full bg-orange-100 text-[#ff7d6e] flex items-center justify-center border border-orange-200">
+            <FaUserCircle className="w-5 h-5" />
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-900 truncate">
+          <p className="text-xs font-bold text-slate-900 truncate">
             {user.name || "User Account"}
           </p>
-          <p className="text-xs text-slate-500 truncate">{user.email}</p>
+          <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
         </div>
       </button>
+
+      {/* 4. Top-Up Modal (Embeded and accessible globally) */}
+      <TopUpModal
+        isOpen={topUpOpen}
+        onClose={() => setTopUpOpen(false)}
+        currentCredits={credits}
+        currentTier={tier}
+        onSuccess={(newBalance) => {
+          setCredits(newBalance);
+          fetchSession();
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("credits-updated", { detail: { credits: newBalance } })
+            );
+          }
+        }}
+      />
     </div>
   );
 }

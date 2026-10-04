@@ -28,6 +28,8 @@ export async function GET() {
     return NextResponse.json({
       authenticated: true,
       user,
+      credits: user.available_credits ?? 50,
+      tier: user.tier ?? 'free',
       quota,
     });
   } catch (error) {

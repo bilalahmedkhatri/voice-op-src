@@ -22,7 +22,7 @@ export async function GET() {
 
     // Fetch fresh profile from DB
     const rows = await sql`
-      SELECT id, email, name, image, google_id, created_at, updated_at
+      SELECT id, email, name, image, google_id, available_credits, tier, created_at, updated_at
       FROM users
       WHERE id = ${user.id}
       LIMIT 1
@@ -90,7 +90,7 @@ export async function PATCH(request: NextRequest) {
       UPDATE users
       SET name = ${trimmedName}, updated_at = NOW()
       WHERE id = ${user.id}
-      RETURNING id, email, name, image, google_id, created_at, updated_at
+      RETURNING id, email, name, image, google_id, available_credits, tier, created_at, updated_at
     `;
 
     return NextResponse.json({

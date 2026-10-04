@@ -78,7 +78,7 @@ const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
         {isEditing ? (
           <button
             onClick={() => setIsEditing(false)}
-            className="p-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-lg shadow-xs flex items-center justify-center transition-all cursor-pointer"
+            className="p-1.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-lg shadow-xs flex items-center justify-center transition-all cursor-pointer"
             title="Save changes"
           >
             <FiSave className="w-4 h-4" />
@@ -181,7 +181,7 @@ const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
     <div className="p-4 bg-white border border-slate-200/80 shadow-xs rounded-xl relative group">
       <div className="absolute top-2 right-2 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
-          <button onClick={() => setIsEditing(false)} className="p-1.5 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-lg shadow-xs cursor-pointer"><FiSave className="w-4 h-4" /></button>
+          <button onClick={() => setIsEditing(false)} className="p-1.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-lg shadow-xs cursor-pointer"><FiSave className="w-4 h-4" /></button>
         ) : (
           <button onClick={() => setIsEditing(true)} className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 hover:text-[#c83a2a] shadow-2xs cursor-pointer"><FiEdit2 className="w-4 h-4" /></button>
         )}

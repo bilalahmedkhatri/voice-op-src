@@ -6,7 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.genzee.video"),
   title: {
-    default: "GenZee — AI Voice & Content Automation Studio",
+    default: "GenZee | AI Voice & Content Automation Studio",
     template: "%s | GenZee Video",
   },
   description:
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://www.genzee.video",
-    title: "GenZee — AI Voice & Content Automation Studio",
+    title: "GenZee | AI Voice & Content Automation Studio",
     description:
       "Transform text into lifelike voiceovers, automate Facebook & Instagram posts, and generate multi-platform video content in seconds.",
     siteName: "GenZee Video",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GenZee — AI Voice & Content Automation Studio",
+    title: "GenZee | AI Voice & Content Automation Studio",
     description:
       "Transform text into lifelike voiceovers, automate Facebook & Instagram posts, and generate multi-platform video content in seconds.",
     images: ["/og-image.png"],

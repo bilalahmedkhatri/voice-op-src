@@ -43,7 +43,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
             <FaSave className="text-[#ff7d6e]" />
             <span>Saved Prompts</span>
           </h3>
-          <span className="px-3 py-1 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] text-white rounded-full text-xs font-semibold shadow-2xs font-mono">
+          <span className="px-3 py-1 bg-[#ff7d6e] text-white rounded-full text-xs font-semibold shadow-2xs font-mono">
             {prompts.length} {prompts.length === 1 ? 'prompt' : 'prompts'}
           </span>
         </div>
@@ -111,7 +111,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
                       e.stopPropagation();
                       onLoad(prompt);
                     }}
-                    className="flex-1 py-2 px-3 bg-gradient-to-r from-[#ff9b8f] to-[#ff7d6e] hover:from-[#f8887a] hover:to-[#f05a48] text-white rounded-xl text-xs font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2 px-3 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <FaDownload className="text-xs" />
                     <span>Load</span>
