@@ -113,12 +113,12 @@ export default function LandingInteractiveStudio() {
   const selectedVoiceObj = apiVoices.find((v) => v.voice_id === selectedApiVoice);
   const activeVoiceMeta = selectedVoiceObj
     ? {
-        voice_id: selectedVoiceObj.voice_id,
-        voice_name: selectedVoiceObj.voice_name.split('(')[0].trim() || selectedVoiceObj.voice_name,
-        language: selectedVoiceObj.language,
-        gender: selectedVoiceObj.gender,
-        model_id: selectedModelId,
-      }
+      voice_id: selectedVoiceObj.voice_id,
+      voice_name: selectedVoiceObj.voice_name.split('(')[0].trim() || selectedVoiceObj.voice_name,
+      language: selectedVoiceObj.language,
+      gender: selectedVoiceObj.gender,
+      model_id: selectedModelId,
+    }
     : null;
 
   return (
@@ -126,10 +126,6 @@ export default function LandingInteractiveStudio() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Heading */}
         <div className="text-center max-w-3xl mx-auto space-y-3 mb-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/80 text-[#c83a2a] text-xs font-semibold">
-            <FaMagic className="text-xs" />
-            <span>Interactive Multi-Model Voice Studio</span>
-          </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900">
             Generate Studio Voiceovers Live
           </h2>
