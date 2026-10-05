@@ -121,10 +121,10 @@ export default function RootLayout({
             }),
           }}
         />
-        <Analytics />
       </head>
       <body>
         {children}
+        <Analytics />
         <SpeedInsights />
         <script src="https://analytics.ahrefs.com/analytics.js" data-key="qp2KBbEj214lhUA3JEg2aw" async></script>
       </body>
