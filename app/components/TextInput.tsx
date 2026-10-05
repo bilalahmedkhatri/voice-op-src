@@ -104,8 +104,8 @@ const TextInput = memo(function TextInput({
 
         <div className="flex items-center gap-2">
           {estimatedCost > 0 && (
-            <span className="font-mono text-xs font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-md text-amber-700 bg-amber-50 border border-amber-200 shadow-2xs">
-              <FaCoins className="text-amber-500 text-[10px]" />
+            <span className="font-mono text-xs font-bold flex items-center gap-1.5 px-2 py-0.5 text-[#c83a2a]">
+              <FaCoins className="text-[#ff7d6e] text-[10px]" />
               Est. Cost: {estimatedCost} Credit{estimatedCost > 1 ? 's' : ''}
             </span>
           )}

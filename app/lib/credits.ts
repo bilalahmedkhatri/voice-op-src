@@ -92,19 +92,20 @@ export async function getUserWallet(userId: string): Promise<WalletState> {
  */
 export async function verifyCreditBalance(
   userId: string,
-  actionType: ActionType
+  actionType: ActionType,
+  customAmount?: number
 ): Promise<VerificationResult> {
   if (!isDatabaseEnabled()) {
     return {
       ok: true,
-      requiredCredits: ACTION_CREDIT_COSTS[actionType] || 0,
+      requiredCredits: customAmount !== undefined ? customAmount : (ACTION_CREDIT_COSTS[actionType] || 0),
       availableCredits: 999,
       tier: 'pro',
     };
   }
 
   const wallet = await getUserWallet(userId);
-  const requiredCredits = ACTION_CREDIT_COSTS[actionType] || 0;
+  const requiredCredits = customAmount !== undefined ? customAmount : (ACTION_CREDIT_COSTS[actionType] || 0);
 
   // Check 1: Premium Voiceover (ElevenLabs) tier check
   if (actionType === 'premium_voiceover' && wallet.tier === 'free' && wallet.availableCredits < requiredCredits) {
@@ -148,10 +149,13 @@ export async function deductCredits(
     description?: string;
     referenceId?: string | null;
     metadata?: Record<string, any>;
+    customAmount?: number;
   } = {}
 ): Promise<{ success: boolean; balanceAfter: number; creditsDeducted: number }> {
+  const requiredCredits = options.customAmount !== undefined ? options.customAmount : (ACTION_CREDIT_COSTS[actionType] || 0);
+
   if (!isDatabaseEnabled()) {
-    return { success: true, balanceAfter: 999, creditsDeducted: ACTION_CREDIT_COSTS[actionType] || 0 };
+    return { success: true, balanceAfter: 999, creditsDeducted: requiredCredits };
   }
 
   const sql = getDb();
@@ -159,7 +163,6 @@ export async function deductCredits(
     throw new Error('Database is not available for credit deduction.');
   }
 
-  const requiredCredits = ACTION_CREDIT_COSTS[actionType] || 0;
   if (requiredCredits <= 0) {
     const wallet = await getUserWallet(userId);
     return { success: true, balanceAfter: wallet.availableCredits, creditsDeducted: 0 };

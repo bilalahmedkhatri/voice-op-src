@@ -4,6 +4,7 @@ import { getDb } from '@/app/lib/db';
 import { formatErrorMessage } from '@/app/lib/errorUtils';
 import { isDatabaseEnabled } from '@/app/lib/config';
 import { verifyCreditBalance, deductCredits, ActionType } from '@/app/lib/credits';
+import { calculateVoiceCost } from '@/app/lib/pricing';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -59,12 +60,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine credit action type: ElevenLabs = premium (4 credits), Gemini/Fish = standard (2 credits)
-    const isElevenLabs = targetModelId.toLowerCase().includes('elevenlabs');
+    const isElevenLabs = targetModelId.toLowerCase().includes('elevenlabs') || targetProvider?.toLowerCase().includes('eleven');
     const creditAction: ActionType = isElevenLabs ? 'premium_voiceover' : 'standard_voiceover';
+
+    const calculatedCost = calculateVoiceCost(text.length, targetModelId, targetProvider);
 
     // Strict balance check before any API call is triggered
     if (user && isDatabaseEnabled()) {
-      const creditCheck = await verifyCreditBalance(user.id, creditAction);
+      const creditCheck = await verifyCreditBalance(user.id, creditAction, calculatedCost);
       if (!creditCheck.ok) {
         return NextResponse.json(
           {
@@ -191,6 +194,7 @@ export async function POST(request: NextRequest) {
           const deductRes = await deductCredits(user.id, creditAction, {
             description: `${targetModelId} Voiceover (${targetVoiceId})`,
             metadata: { textLength: text.length, voice: targetVoiceId, model: targetModelId },
+            customAmount: calculatedCost,
           });
           asyncRemainingCredits = deductRes.balanceAfter;
 
@@ -255,6 +259,7 @@ export async function POST(request: NextRequest) {
           description: `${targetModelId} Voiceover (${targetVoiceId})`,
           referenceId: historyId,
           metadata: { textLength: text.length, voice: targetVoiceId, model: targetModelId },
+          customAmount: calculatedCost,
         });
         remainingCredits = deductRes.balanceAfter;
       } catch (dbError) {

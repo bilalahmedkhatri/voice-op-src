@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.genzee.video"),
@@ -125,6 +125,7 @@ export default function RootLayout({
       </head>
       <body>
         {children}
+        <SpeedInsights />
         <script src="https://analytics.ahrefs.com/analytics.js" data-key="qp2KBbEj214lhUA3JEg2aw" async></script>
       </body>
     </html>
