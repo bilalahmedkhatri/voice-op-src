@@ -25,9 +25,9 @@ interface TemplateRendererProps {
   onDataChange?: (newData: any) => void;
 }
 
-const sanitizeText = (text: string) => text.replace(/—/g, "-");
+export const sanitizeText = (text: string) => text.replace(/—/g, "-");
 
-const checkIsUrl = (str: string) => {
+export const checkIsUrl = (str: string) => {
   try {
     new URL(str);
     return str.startsWith("http");
@@ -36,14 +36,21 @@ const checkIsUrl = (str: string) => {
   }
 };
 
-const getHref = (str: string) => {
+export const getHref = (str: string) => {
   if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str) && !str.startsWith("mailto:")) {
     return `mailto:${str}`;
   }
   return str;
 };
 
-const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
+export const formatKey = (key: string) => {
+  return key
+    .replace(/_/g, " ")
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase());
+};
+
+export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: string, onValueChange?: (val: string) => void }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(sanitizeText(initialValue));
   const [copied, setCopied] = useState(false);
@@ -78,7 +85,10 @@ const PromptTextarea = ({ initialValue }: { initialValue: string }) => {
         />
         {isEditing ? (
           <IconButton
-            onClick={() => setIsEditing(false)}
+            onClick={() => {
+              setIsEditing(false);
+              if (onValueChange) onValueChange(value);
+            }}
             title="Save changes"
             icon={<FiSave className="w-4 h-4" />}
             variant="primary"
@@ -154,7 +164,7 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
   );
 }
 
-const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
+export const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
   const formattedTags = initialTags.map(t => {
     let tag = t.trim();
     if (tag && !tag.startsWith("#")) tag = "#" + tag;
@@ -205,7 +215,7 @@ const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
   );
 };
 
-const SceneTable = ({ items }: { items: any[] }) => {
+export const SceneTable = ({ items }: { items: any[] }) => {
   if (!items.length) return null;
   const keys = Array.from(new Set(items.flatMap(item => Object.keys(item))));
 
@@ -232,29 +242,32 @@ const SceneTable = ({ items }: { items: any[] }) => {
   const renderTableCell = (value: any, keyName: string) => {
     if (value === undefined || value === null) return "-";
 
-    // Prevent [object Object] for array of objects (like posts in a table)
+    // Prevent [object Object] for array of objects (like posts or resources in a table cell)
     if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
       return (
-        <div className="flex flex-col gap-2 py-1 min-w-[260px] max-w-sm">
+        <div className="flex flex-col gap-3 py-1 min-w-[280px]">
           {value.map((item: any, idx: number) => (
-            <div key={idx} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
-              <div className="flex items-center justify-between font-semibold text-slate-800">
-                <span>{item.post_number ? `Post #${item.post_number}` : `Item #${idx + 1}`} {item.time ? `• ${item.time}` : ''}</span>
-                {item.format && (
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${item.format.toLowerCase() === 'video'
-                    ? 'bg-orange-50 text-orange-800 border border-orange-200/80'
-                    : 'bg-slate-100 text-slate-700 border border-slate-200'
-                    }`}>
-                    {item.format}
-                  </span>
-                )}
+            <div key={idx} className="p-3 bg-white border border-slate-200 shadow-sm rounded-lg text-xs space-y-2">
+              <div className="font-semibold text-slate-800 border-b border-slate-100 pb-1 mb-1">
+                {item.post_number ? `Post #${item.post_number}` : `Item #${idx + 1}`}
               </div>
-              {item.caption && <p className="text-slate-600 line-clamp-2 leading-relaxed">{sanitizeText(item.caption)}</p>}
-              {item.generation_prompt && (
-                <p className="text-slate-500 font-mono text-[10px] line-clamp-2 bg-white p-1 rounded border border-slate-200">
-                  {sanitizeText(item.generation_prompt)}
-                </p>
-              )}
+              {Object.entries(item).map(([k, v]) => {
+                if (k === 'post_number' || typeof v === 'object') return null;
+                return (
+                  <div key={k} className="flex flex-col gap-0.5">
+                    <span className="font-semibold text-slate-500 text-[10px] uppercase tracking-wider">{formatKey(k)}</span>
+                    <span className="text-slate-700 whitespace-pre-wrap">
+                      {typeof v === 'string' && checkIsUrl(v) ? (
+                        <a href={getHref(v)} target="_blank" rel="noreferrer" className="text-[#c83a2a] hover:underline break-all">
+                          {v}
+                        </a>
+                      ) : (
+                        String(v)
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -264,13 +277,24 @@ const SceneTable = ({ items }: { items: any[] }) => {
     // Prevent [object Object] for a single object
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       return (
-        <div className="text-xs text-slate-700 bg-slate-50 p-2 rounded border border-slate-200 space-y-1">
-          {Object.entries(value).slice(0, 3).map(([k, v]) => (
-            <div key={k} className="flex gap-1.5">
-              <span className="font-semibold text-slate-500 uppercase text-[10px]">{k}:</span>
-              <span className="truncate">{String(v)}</span>
-            </div>
-          ))}
+        <div className="text-xs text-slate-700 bg-white shadow-sm p-3 rounded-lg border border-slate-200 space-y-2 min-w-[200px]">
+          {Object.entries(value).map(([k, v]) => {
+            if (typeof v === 'object') return null;
+            return (
+              <div key={k} className="flex flex-col gap-0.5">
+                <span className="font-semibold text-slate-500 uppercase text-[10px] tracking-wider">{formatKey(k)}</span>
+                <span className="text-slate-700 whitespace-pre-wrap">
+                  {typeof v === 'string' && checkIsUrl(v) ? (
+                    <a href={getHref(v)} target="_blank" rel="noreferrer" className="text-[#c83a2a] hover:underline break-all">
+                      {v}
+                    </a>
+                  ) : (
+                    String(v)
+                  )}
+                </span>
+              </div>
+            );
+          })}
         </div>
       );
     }
@@ -913,12 +937,7 @@ export default function TemplateRenderer({
     );
   }
 
-  const formatKey = (key: string) => {
-    return key
-      .replace(/_/g, " ")
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str) => str.toUpperCase());
-  };
+
 
   if (Array.isArray(data)) {
     // If array of strings
@@ -1108,7 +1127,17 @@ export default function TemplateRenderer({
               {data.algorithm_reasoning && (
                 <div className="flex-[2] min-w-[250px] space-y-2">
                   <label className="block text-sm font-semibold text-slate-900 mb-1">Algorithm Reasoning</label>
-                  <PromptTextarea initialValue={sanitizeText(String(data.algorithm_reasoning))} />
+                  <PromptTextarea 
+                    initialValue={sanitizeText(String(data.algorithm_reasoning))} 
+                    onValueChange={(val) => {
+                      if (onDataChange) {
+                        onDataChange({
+                          ...data,
+                          algorithm_reasoning: val
+                        });
+                      }
+                    }}
+                  />
                 </div>
               )}
             </div>

@@ -24,21 +24,45 @@ const extractYouTubeInfo = (jsonData: any) => {
     return { title: "Unknown YouTube Strategy", channel: "Unknown Channel", contentInfo: "No data", statuses: [] };
   }
 
-  let title = jsonData?.content_strategy?.long_video?.title || jsonData?.title || jsonData?.topic || "Untitled Video Strategy";
-  let channel = jsonData?.channel_info?.channel_name || jsonData?.channel || "YouTube Channel";
+  let title = jsonData?.general_information?.main_title || jsonData?.channel_info?.main_title || jsonData?.main_title || jsonData?.title || jsonData?.topic || "Untitled Video Strategy";
+  let channel = jsonData?.general_information?.channel_name || jsonData?.general_information?.general_name || jsonData?.channel_info?.channel_name || jsonData?.channel_name || jsonData?.channel || "YouTube Channel";
 
   const contentParts = [];
   const statuses: string[] = [];
+  const strategy = jsonData?.content_strategy;
 
-  if (jsonData?.content_strategy?.shorts && Array.isArray(jsonData.content_strategy.shorts)) {
-    contentParts.push(`${jsonData.content_strategy.shorts.length} Shorts`);
-    jsonData.content_strategy.shorts.forEach((short: any) => {
+  if (strategy?.shorts && Array.isArray(strategy.shorts)) {
+    contentParts.push(`${strategy.shorts.length} Shorts`);
+    strategy.shorts.forEach((short: any) => {
       statuses.push(short.status || "pending");
     });
   }
-  if (jsonData?.content_strategy?.long_video) {
-    contentParts.push("1 Long Video");
-    statuses.push(jsonData.content_strategy.long_video.status || "pending");
+
+  if (strategy) {
+    const keys = Object.keys(strategy);
+    const longVideoKeys = keys.filter(k => k.startsWith('long_video') || k.includes('long_video'));
+    if (longVideoKeys.length > 0) {
+      const longVideoCount = longVideoKeys.length;
+      contentParts.push(`${longVideoCount} Long Video${longVideoCount > 1 ? 's' : ''}`);
+      longVideoKeys.forEach(k => {
+        const lv = strategy[k];
+        const status = Array.isArray(lv) ? lv[0]?.status : lv?.status;
+        statuses.push(status || "pending");
+      });
+      // also if we didn't find a title above, try to extract from the first long video
+      if (title === "Untitled Video Strategy") {
+         const firstLv = strategy[longVideoKeys[0]];
+         const lvObj = Array.isArray(firstLv) ? firstLv[0] : firstLv;
+         if (lvObj?.title || lvObj?.topic) {
+            title = lvObj.title || lvObj.topic;
+         }
+      }
+    } else if (strategy.long_video) {
+        // Fallback to legacy single object check
+        contentParts.push("1 Long Video");
+        const lvObj = Array.isArray(strategy.long_video) ? strategy.long_video[0] : strategy.long_video;
+        statuses.push(lvObj?.status || "pending");
+    }
   }
 
   return {
@@ -103,18 +127,27 @@ export default function YouTubeTemplatesPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, statusesList: string[] = []) => {
+    const total = statusesList.length;
+    const completed = statusesList.filter(s => s.toLowerCase() === 'completed' || s.toLowerCase() === 'published').length;
+    const percent = total > 0 ? (completed / total) * 100 : 0;
+    const finalPercent = (status.toLowerCase() === "published" || status.toLowerCase() === "completed") ? 100 : percent;
+
+    const getStyle = (fillColor: string, bgColor: string) => ({
+      background: `linear-gradient(to right, ${fillColor} ${finalPercent}%, ${bgColor} ${finalPercent}%)`
+    });
+
     switch (status.toLowerCase()) {
       case "published":
-        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">Published</span>;
+        return <span style={getStyle("#a7f3d0", "#ecfdf5")} className="px-2.5 py-1 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">Published</span>;
       case "completed":
-        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">Completed</span>;
+        return <span style={getStyle("#a7f3d0", "#ecfdf5")} className="px-2.5 py-1 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">Completed</span>;
       case "pending":
-        return <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-xs font-semibold rounded-full border border-amber-200/80">Pending</span>;
+        return <span style={getStyle("#fde68a", "#fffbeb")} className="px-2.5 py-1 text-amber-800 text-xs font-semibold rounded-full border border-amber-200/80">Pending</span>;
       case "draft":
-        return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">Draft</span>;
+        return <span style={getStyle("#e2e8f0", "#f8fafc")} className="px-2.5 py-1 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">Draft</span>;
       default:
-        return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
+        return <span style={getStyle("#e2e8f0", "#f8fafc")} className="px-2.5 py-1 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
     }
   };
 
@@ -243,7 +276,7 @@ export default function YouTubeTemplatesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        {getStatusBadge(template.status)}
+                        {getStatusBadge(template.status, info.statuses)}
                       </td>
                       <td className="px-6 py-4 text-slate-500 text-xs">
                         {new Date(template.updated_at).toLocaleString()}

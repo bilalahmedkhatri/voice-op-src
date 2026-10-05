@@ -7,11 +7,12 @@ import { FiRadio, FiShield, FiCheckCircle } from 'react-icons/fi';
 export default function FooterBrandCard() {
   return (
     <div className="space-y-4">
-      {/* Brand Logo & Name */}
       <Link href="/" className="inline-flex items-center gap-2.5 group">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#e04836] via-[#ff7d6e] to-[#ff9b8f] flex items-center justify-center text-white font-black text-sm shadow-md group-hover:scale-105 transition-transform">
-          GZ
-        </div>
+        <img
+          src="/logo.jpg"
+          alt="GenZee Video Logo"
+          className="w-9 h-9 rounded-xl object-cover shadow-md group-hover:scale-105 transition-transform border border-slate-700/60"
+        />
         <div className="flex flex-col">
           <span className="font-extrabold tracking-tight text-white text-xl leading-none">
             GenZee Video

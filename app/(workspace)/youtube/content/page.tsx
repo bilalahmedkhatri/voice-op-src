@@ -21,8 +21,6 @@ type ContentItem = {
   title: string;
   description: string;
   script: string;
-  tags: string;
-  tags_count: number;
   search_keywords: string;
   status: string;
   original_ref: any;
@@ -58,26 +56,6 @@ export default function YouTubeContentPage() {
     router.push("/admin?from=content");
   };
 
-  const formatTags = (tags: any) => {
-    if (!Array.isArray(tags)) {
-      if (typeof tags === "string") {
-        return tags
-          .split(",")
-          .map((t) => {
-            const trimmed = t.trim();
-            return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
-          })
-          .join(", ");
-      }
-      return "";
-    }
-    return tags
-      .map((t: string) => {
-        const trimmed = typeof t === "string" ? t.trim() : String(t).trim();
-        return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
-      })
-      .join(", ");
-  };
 
   const formatKeywords = (keywords: any) => {
     if (!Array.isArray(keywords)) {
@@ -109,24 +87,31 @@ export default function YouTubeContentPage() {
       const parsedItems: ContentItem[] = [];
 
       if (strategy) {
-        if (strategy.long_video) {
-          parsedItems.push({
-            id: strategy.long_video.id || "long_1",
-            type: "long_video",
-            title: strategy.long_video.title || "Untitled Long Video",
-            description: strategy.long_video.description || "No description",
-            script: strategy.long_video.script || "No script",
-            tags: formatTags(strategy.long_video.tags),
-            tags_count: Array.isArray(strategy.long_video.tags) ? strategy.long_video.tags.length : 0,
-            search_keywords: formatKeywords(
-              strategy.long_video.search_keywords ||
-              strategy.long_video.media_search_keywords ||
-              strategy.long_video.keywords
-            ),
-            status: strategy.long_video.status || "pending",
-            original_ref: strategy.long_video,
-          });
-        }
+        const keys = Object.keys(strategy);
+        const longVideoKeys = keys.filter(k => k.startsWith('long_video') || k.includes('long_video'));
+
+        longVideoKeys.forEach((key, index) => {
+          let lvObj = strategy[key];
+          if (Array.isArray(lvObj)) {
+            lvObj = lvObj[0]; // Take first item if it's an array
+          }
+          if (lvObj) {
+            parsedItems.push({
+              id: lvObj.id || `long_${index + 1}`,
+              type: "long_video",
+              title: lvObj.title || lvObj.topic || `Untitled Long Video ${index + 1}`,
+              description: lvObj.description || "No description",
+              script: lvObj.script || "No script",
+              search_keywords: formatKeywords(
+                lvObj.search_keywords ||
+                lvObj.media_search_keywords ||
+                lvObj.keywords
+              ),
+              status: lvObj.status || "pending",
+              original_ref: lvObj,
+            });
+          }
+        });
 
         if (Array.isArray(strategy.shorts)) {
           strategy.shorts.forEach((short: any, index: number) => {
@@ -136,8 +121,6 @@ export default function YouTubeContentPage() {
               title: short.title || `Untitled Short ${index + 1}`,
               description: short.description || "No description",
               script: short.script || "No script",
-              tags: formatTags(short.tags),
-              tags_count: Array.isArray(short.tags) ? short.tags.length : 0,
               search_keywords: formatKeywords(
                 short.search_keywords || short.media_search_keywords || short.keywords
               ),
@@ -458,15 +441,6 @@ export default function YouTubeContentPage() {
                     {/* Actions: Generate Media & Voice */}
                     <td className="px-4 py-4 align-top text-right w-24">
                       <div className="flex gap-2 items-center justify-end">
-                        <IconButton
-                          icon={<FiSearch className="w-3.5 h-3.5 text-slate-600" />}
-                          title="Generate Media"
-                          size="sm"
-                          variant="secondary"
-                          isLoading={downloadingItems[`${item.id}_keywords`]}
-                          disabled={downloadingItems[`${item.id}_keywords`]}
-                          onClick={() => handleFetchByKeywords(item)}
-                        />
                         <IconButton
                           icon={<FiMic className="w-3.5 h-3.5" />}
                           title="Generate Voice"

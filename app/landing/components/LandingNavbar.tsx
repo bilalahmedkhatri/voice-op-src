@@ -12,9 +12,11 @@ export default function LandingNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#e04836] via-[#ff7d6e] to-[#ff9b8f] flex items-center justify-center text-white font-black text-sm shadow-xs">
-            GZ
-          </div>
+          <img
+            src="/logo.jpg"
+            alt="GenZee Video Logo"
+            className="w-9 h-9 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform border border-slate-200/80"
+          />
           <div className="flex flex-col">
             <span className="font-extrabold tracking-tight leading-none text-slate-900 text-lg">GenZee</span>
             <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase mt-0.5">Content Studio</span>

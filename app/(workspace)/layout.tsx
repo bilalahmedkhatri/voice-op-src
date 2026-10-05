@@ -87,9 +87,11 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200">
           <Link href="/admin" className="flex items-center gap-2.5 text-xl font-bold text-slate-900 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#e04836] via-[#ff7d6e] to-[#ff9b8f] flex items-center justify-center text-white font-black text-sm shadow-xs">
-              GZ
-            </div>
+            <img
+              src="/logo.jpg"
+              alt="GenZee Logo"
+              className="w-8 h-8 rounded-lg object-cover shadow-xs group-hover:scale-105 transition-transform border border-slate-200"
+            />
             <div className="flex flex-col">
               <span className="font-extrabold tracking-tight leading-none text-slate-900">GenZee</span>
               <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase mt-0.5">Studio</span>

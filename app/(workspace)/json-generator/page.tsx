@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { FiUpload, FiFileText, FiAlertCircle, FiSave, FiCheck, FiLoader, FiEdit2 } from "react-icons/fi";
-import TemplateRenderer from "../../components/TemplateRenderer";
+import JsonTemplateTest from "../../components/JsonTemplateTest";
 import { Button } from "@/components/ui";
 
 export default function JsonPage() {
@@ -276,7 +276,7 @@ export default function JsonPage() {
                 </Button>
               </div>
             </div>
-            <TemplateRenderer
+            <JsonTemplateTest
               data={parsedData}
               isEditing={isEditing}
               onDataChange={handleDataChange}
