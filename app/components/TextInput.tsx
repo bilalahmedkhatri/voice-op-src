@@ -1,24 +1,31 @@
 'use client';
 
 import { useState, memo } from 'react';
-import { FaEdit, FaTrash, FaFont, FaExclamationTriangle } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaFont, FaExclamationTriangle, FaCoins } from 'react-icons/fa';
+import { calculateVoiceCost } from '../lib/pricing';
 
 interface TextInputProps {
   text: string;
   onTextChange: (text: string) => void;
   disabled?: boolean;
+  selectedModelId?: string;
+  selectedProvider?: string;
 }
 
 const TextInput = memo(function TextInput({
   text,
   onTextChange,
   disabled = false,
+  selectedModelId = '',
+  selectedProvider = '',
 }: TextInputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
   const charCount = text.length;
   const wordCount = text.trim() ? text.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
   const isLargeText = charCount > 2500;
+  
+  const estimatedCost = calculateVoiceCost(charCount, selectedModelId, selectedProvider);
 
   return (
     <div className="relative flex flex-col h-full justify-between gap-3">
@@ -95,10 +102,18 @@ const TextInput = memo(function TextInput({
           )}
         </div>
 
-        <span className="font-mono text-xs font-semibold flex items-center gap-1 px-2 py-0.5 rounded-md text-slate-600 bg-slate-100">
-          <FaFont className="text-[10px]" />
-          {charCount.toLocaleString()} chars
-        </span>
+        <div className="flex items-center gap-2">
+          {estimatedCost > 0 && (
+            <span className="font-mono text-xs font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-md text-amber-700 bg-amber-50 border border-amber-200 shadow-2xs">
+              <FaCoins className="text-amber-500 text-[10px]" />
+              Est. Cost: {estimatedCost} Credit{estimatedCost > 1 ? 's' : ''}
+            </span>
+          )}
+          <span className="font-mono text-xs font-semibold flex items-center gap-1 px-2 py-0.5 rounded-md text-slate-600 bg-slate-100">
+            <FaFont className="text-[10px]" />
+            {charCount.toLocaleString()} chars
+          </span>
+        </div>
       </div>
     </div>
   );

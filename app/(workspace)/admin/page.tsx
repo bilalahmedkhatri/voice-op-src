@@ -20,6 +20,7 @@ import {
 } from '../../lib/localPresetStorage';
 import FormatSelectionModal, { VideoFormat } from '../../components/FormatSelectionModal';
 import { Button } from '@/components/ui';
+import { calculateVoiceCost } from '../../lib/pricing';
 
 export default function AdminVoiceStudioPage() {
   const {
@@ -240,6 +241,8 @@ export default function AdminVoiceStudioPage() {
     }
     : null;
 
+  const currentEstimatedCost = calculateVoiceCost(params.text.length, selectedModelId, selectedProvider);
+
   return (
     <div className="space-y-6 mx-auto">
       {/* Workspace Header */}
@@ -332,6 +335,8 @@ export default function AdminVoiceStudioPage() {
               text={params.text}
               onTextChange={(text) => setParams({ ...params, text })}
               disabled={isLimitReached}
+              selectedModelId={selectedModelId}
+              selectedProvider={selectedProvider}
             />
           </div>
 
@@ -401,7 +406,10 @@ export default function AdminVoiceStudioPage() {
                 className="w-full sm:w-auto shadow-xs hover:shadow"
                 icon={<FaMicrophone className="w-3.5 h-3.5" />}
               >
-                {isGenerating ? "Generating..." : "Generate Voiceover"}
+                {isGenerating 
+                  ? "Generating..." 
+                  : `Generate Voiceover ${currentEstimatedCost > 0 ? `(${currentEstimatedCost} Credit${currentEstimatedCost > 1 ? 's' : ''})` : ''}`
+                }
               </Button>
             )}
           </div>
