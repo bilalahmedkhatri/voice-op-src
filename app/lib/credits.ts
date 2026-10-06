@@ -34,15 +34,15 @@ export const ACTION_CREDIT_COSTS: Record<ActionType, number> = {
 
 export const TIER_LIMITS: Record<UserTier, { maxMetaAccounts: number; label: string }> = {
   free: {
-    maxMetaAccounts: 1,
+    maxMetaAccounts: 3,
     label: 'Free Tier',
   },
   starter: {
-    maxMetaAccounts: 3,
+    maxMetaAccounts: 10,
     label: 'Starter ($10)',
   },
   pro: {
-    maxMetaAccounts: 10,
+    maxMetaAccounts: 50,
     label: 'Pro ($30)',
   },
 };
@@ -305,11 +305,11 @@ export async function checkMetaAccountLimit(
 ): Promise<{ allowed: boolean; currentCount: number; maxAllowed: number; tier: UserTier; error?: string }> {
   const sql = getDb();
   if (!sql) {
-    return { allowed: true, currentCount: 0, maxAllowed: 10, tier: 'pro' };
+    return { allowed: true, currentCount: 0, maxAllowed: 50, tier: 'pro' };
   }
 
   const wallet = await getUserWallet(userId);
-  const maxAllowed = TIER_LIMITS[wallet.tier]?.maxMetaAccounts || 1;
+  const maxAllowed = TIER_LIMITS[wallet.tier]?.maxMetaAccounts || 3;
 
   // Count existing active pages excluding the one being updated (if updating)
   const countRows = await sql`
@@ -322,12 +322,21 @@ export async function checkMetaAccountLimit(
   const currentCount = Number(countRows[0]?.count || 0);
 
   if (currentCount >= maxAllowed) {
+    const upgradePrompt =
+      wallet.tier === 'free'
+        ? 'Please top up to Starter (10 accounts) or Pro (50 accounts) to link more pages.'
+        : wallet.tier === 'starter'
+          ? 'Please top up to Pro (50 accounts) to link more pages.'
+          : wallet.tier === 'pro'
+            ? 'You have reached the maximum account limit for your current plan.'
+            : 'Please upgrade your plan to link more pages.';
+
     return {
       allowed: false,
       currentCount,
       maxAllowed,
       tier: wallet.tier,
-      error: `Your current ${TIER_LIMITS[wallet.tier].label} allows linking up to ${maxAllowed} Meta account${maxAllowed > 1 ? 's' : ''}. Please top up to Starter (3 accounts) or Pro (10 accounts) to link more pages.`,
+      error: `Your current ${TIER_LIMITS[wallet.tier].label} allows linking up to ${maxAllowed} Meta account${maxAllowed > 1 ? 's' : ''}. ${upgradePrompt}`,
     };
   }
 

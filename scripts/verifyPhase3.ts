@@ -88,9 +88,9 @@ async function verifyPhase3() {
 
   // Verify Starter Meta Account Limit
   const starterLimits = await checkMetaAccountLimit(testUser.id);
-  console.log(`Starter Meta Limits: Max Allowed = ${starterLimits.maxAllowed} (Expected: 3)`);
-  if (starterLimits.maxAllowed !== 3) {
-    throw new Error(`Starter Meta limit mismatch: Expected 3, got ${starterLimits.maxAllowed}`);
+  console.log(`Starter Meta Limits: Max Allowed = ${starterLimits.maxAllowed} (Expected: 10)`);
+  if (starterLimits.maxAllowed !== 10) {
+    throw new Error(`Starter Meta limit mismatch: Expected 10, got ${starterLimits.maxAllowed}`);
   }
   console.log('✅ Starter Package Top-Up & Tier Upgrade Verified!\n');
 
@@ -112,9 +112,9 @@ async function verifyPhase3() {
 
   // Verify Pro Meta Account Limit
   const proLimits = await checkMetaAccountLimit(testUser.id);
-  console.log(`Pro Meta Limits: Max Allowed = ${proLimits.maxAllowed} (Expected: 10)`);
-  if (proLimits.maxAllowed !== 10) {
-    throw new Error(`Pro Meta limit mismatch: Expected 10, got ${proLimits.maxAllowed}`);
+  console.log(`Pro Meta Limits: Max Allowed = ${proLimits.maxAllowed} (Expected: 50)`);
+  if (proLimits.maxAllowed !== 50) {
+    throw new Error(`Pro Meta limit mismatch: Expected 50, got ${proLimits.maxAllowed}`);
   }
   console.log('✅ Pro Package Top-Up & Tier Upgrade Verified!\n');
 

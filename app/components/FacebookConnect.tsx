@@ -133,6 +133,9 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
   const savePages = async (pages: any[]) => {
     try {
       let isUnauthorized = false;
+      let limitErrorMsg: string | null = null;
+      let savedCount = 0;
+
       for (const page of pages) {
         const storeRes = await fetch('/api/facebook/store-token', {
           method: 'POST',
@@ -146,6 +149,14 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
         if (storeRes.status === 401) {
           isUnauthorized = true;
           break;
+        }
+        if (storeRes.status === 403) {
+          const errData = await storeRes.json();
+          limitErrorMsg = errData.error || 'Meta account limit reached based on your current plan.';
+          break; // Stop storing further pages once limit is reached
+        }
+        if (storeRes.ok) {
+           savedCount++;
         }
       }
 
@@ -168,6 +179,11 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
 
       setIsConnecting(false);
       setStatusText(null);
+
+      // If we hit a limit, show it but still load the pages that *were* successfully saved.
+      if (limitErrorMsg) {
+        setError(`${limitErrorMsg} (Only ${savedCount} out of ${pages.length} pages were saved).`);
+      }
 
       if (pagesData.pages && pagesData.pages.length > 0) {
         onPagesFetched(pagesData.pages);

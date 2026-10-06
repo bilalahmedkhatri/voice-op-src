@@ -156,12 +156,15 @@ GenZee uses a strict **Pay-As-You-Go Credit System** (1 Credit = $0.015 USD). Th
    - Credit deductions (`deductCredits`) MUST use atomic SQL queries to prevent race conditions: `UPDATE users SET available_credits = available_credits - $1 WHERE id = $2 AND available_credits >= $1`.
    - Never update credits blindly from the frontend or bypass the ledger.
 
-2. **Deduction Costs (Reference)**:
-   - **AI Caption & Hashtags**: 1 Credit
+2. **Deduction Costs (Reference & Future Roadmap)**:
+   - **AI Caption & Hashtags (Facebook/IG)**: 1 Credit
    - **Social Scheduling (Facebook/IG)**: 1 Credit
-   - **Standard Voice Synthesis (Gemini/Fish)**: 2 Credits
-   - **Premium Voice Synthesis (ElevenLabs)**: 4 Credits
-   - **Full 1-Click Automation (Caption + Audio + Schedule)**: 5 Credits
+   - **Standard Voice Synthesis (Gemini/Fish/Kokoro)**: Dynamic cost calculated via `calculateVoiceCost` (Base: 2 Credits)
+   - **Premium Voice Synthesis (ElevenLabs)**: Dynamic cost calculated via `calculateVoiceCost` (Base: 4 Credits)
+   - **YouTube JSON Strategy Generation (Upcoming)**: 1 Credit (Deducted when AI automatically generates a complete YouTube strategy/JSON from a topic prompt via `/api/youtube/generate-strategy`)
+   - **YouTube Video Publishing & Scheduling (Upcoming)**: 1 Credit (Deducted when a Reel/Short is published or scheduled to YouTube via `/api/youtube/publish`)
+   - **AI Thumbnail & Image Generation (Upcoming)**: 1 to 2 Credits (Deducted for Midjourney/Stable Diffusion API calls)
+   - **Full 1-Click Automation (Caption + Audio + Schedule)**: 5 Credits (Bulk deduction)
 
 3. **Frontend Interceptors & Top-Up Flow**:
    - Any API returning an `INSUFFICIENT_CREDITS` error must be caught by the frontend components.
