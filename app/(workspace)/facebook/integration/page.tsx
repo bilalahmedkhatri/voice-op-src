@@ -101,15 +101,12 @@ export default function WorkspaceFacebookIntegrationPage() {
   };
 
   const handleDisconnect = async () => {
-    if (connectedPages.length > 0) {
-      const active = connectedPages[0];
-      try {
-        await fetch(`/api/facebook/pages?page_id=${active.page_id || active.id}`, {
-          method: "DELETE",
-        });
-      } catch (e) {
-        console.error("Failed to disconnect page:", e);
-      }
+    try {
+      await fetch(`/api/facebook/pages?page_id=all`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Failed to disconnect pages:", e);
     }
     setConnectedPages([]);
   };

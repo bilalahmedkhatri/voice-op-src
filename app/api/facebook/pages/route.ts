@@ -83,6 +83,15 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing page_id parameter' }, { status: 400 });
     }
 
+    if (pageId === 'all') {
+      await sql`
+        UPDATE facebook_pages
+        SET is_active = FALSE, updated_at = NOW()
+        WHERE user_id = ${userId}
+      `;
+      return NextResponse.json({ success: true, message: 'All pages disconnected successfully' });
+    }
+
     await sql`
       UPDATE facebook_pages
       SET is_active = FALSE, updated_at = NOW()

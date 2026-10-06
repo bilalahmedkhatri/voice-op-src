@@ -316,6 +316,7 @@ export async function checkMetaAccountLimit(
     SELECT COUNT(*) as count 
     FROM facebook_pages 
     WHERE user_id = ${userId} 
+      AND is_active = TRUE
       AND (${targetPageId || null}::text IS NULL OR page_id != ${targetPageId})
   `;
 

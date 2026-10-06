@@ -14,6 +14,7 @@ import {
   FiSearch,
 } from "react-icons/fi";
 import { Button, IconButton } from "@/components/ui";
+import FlowBatchGenerator from "./components/FlowBatchGenerator";
 
 type ContentItem = {
   id: string;
@@ -35,6 +36,7 @@ export default function YouTubeContentPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [downloadingItems, setDownloadingItems] = useState<{ [key: string]: boolean }>({});
+  const [selectedFlowItemIds, setSelectedFlowItemIds] = useState<string[]>([]);
 
   const router = useRouter();
 
@@ -322,6 +324,12 @@ export default function YouTubeContentPage() {
         </Button>
       </div>
 
+      <FlowBatchGenerator
+        items={items}
+        selectedIds={selectedFlowItemIds}
+        onSelectionChange={setSelectedFlowItemIds}
+      />
+
       {/* Video Format Legend */}
       <div className="flex items-center gap-5 px-1 pb-1">
         <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
@@ -338,6 +346,9 @@ export default function YouTubeContentPage() {
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-600 uppercase bg-slate-50 border-b border-slate-200">
               <tr>
+                <th className="px-3 py-4 font-semibold w-10" scope="col">
+                  <span className="sr-only">Select</span>
+                </th>
                 <th className="px-4 py-4 font-semibold w-[20%]">Title</th>
                 <th className="px-4 py-4 font-semibold w-[25%]">Description</th>
                 <th className="px-4 py-4 font-semibold w-[25%]">Script</th>
@@ -348,7 +359,7 @@ export default function YouTubeContentPage() {
             <tbody className="divide-y divide-slate-200">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                     No video content strategy found in this template.
                   </td>
                 </tr>
@@ -363,6 +374,20 @@ export default function YouTubeContentPage() {
                         : "bg-slate-50/40 hover:bg-slate-100/60"
                       }`}
                   >
+                    <td className="px-3 py-4 align-top">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${item.title} for Flow batch`}
+                        checked={selectedFlowItemIds.includes(item.id)}
+                        disabled={!item.script?.trim()}
+                        onChange={(event) => setSelectedFlowItemIds((current) =>
+                          event.target.checked
+                            ? [...current, item.id]
+                            : current.filter((id) => id !== item.id)
+                        )}
+                        className="mt-1 h-4 w-4 rounded border-slate-300 accent-[#c83a2a] disabled:opacity-40"
+                      />
+                    </td>
                     {/* Title */}
                     <td className="px-4 py-4 align-top group relative">
                       <div className="relative">
