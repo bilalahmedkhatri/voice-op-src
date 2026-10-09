@@ -253,7 +253,7 @@ export default function AdminVoiceStudioPage() {
             <span>GenZee Voice Studio</span>
           </h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Generate natural multi-model voiceovers for YouTube, Reels, and TikTok with ElevenLabs, Fish Audio &amp; Gemini.          </p>
+            Generate natural multi-model voiceovers for YouTube, Facebook, and TikTok with ElevenLabs, Fish Audio &amp; Gemini.          </p>
         </div>
 
         {/* Plan / Wallet Status Badge */}
@@ -406,8 +406,8 @@ export default function AdminVoiceStudioPage() {
                 className="w-full sm:w-auto shadow-xs hover:shadow"
                 icon={<FaMicrophone className="w-3.5 h-3.5" />}
               >
-                {isGenerating 
-                  ? "Generating..." 
+                {isGenerating
+                  ? "Generating..."
                   : `Generate Voiceover ${currentEstimatedCost > 0 ? `(${currentEstimatedCost} Credit${currentEstimatedCost > 1 ? 's' : ''})` : ''}`
                 }
               </Button>

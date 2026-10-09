@@ -199,14 +199,14 @@ export function useVoiceGenerator() {
 
       // Handle async processing response (backend acknowledges request)
       if (data.status === 'processing' || data.message === 'processing' || data.job_id || data.task_id) {
-        
+
         const jobId = data.job_id || data.task_id;
-        
+
         // Save the job_id if we came from Content Detail page
         if (typeof window !== 'undefined' && jobId) {
           const tId = localStorage.getItem('pending_voice_template_id');
           const iId = localStorage.getItem('pending_voice_item_id');
-          
+
           if (tId && iId) {
             fetch('/api/templates/audio-job', {
               method: 'POST',
@@ -232,10 +232,10 @@ export function useVoiceGenerator() {
         let pollCount = 0;
         let isCompleted = false;
         let pollError: string | null = null;
-        
-        while (pollCount < 5 && !isCompleted && !pollError) {
-          await new Promise(resolve => setTimeout(resolve, 10000)); // 10 seconds
-          
+
+        while (pollCount < 50 && !isCompleted && !pollError) {
+          await new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
+
           if (generationControllerRef.current?.signal.aborted) {
             return;
           }
@@ -322,13 +322,13 @@ export function useVoiceGenerator() {
       // Refresh DB quota after successful generation
       await refreshQuota();
 
-      // If we finished successfully from polling and came from Content Detail page, update the DB with URL
+      // If we finished successfully from polling or direct generation and came from Content Detail page, update the DB with URL
       if (data.audio_url && typeof window !== 'undefined') {
         const tId = localStorage.getItem('pending_voice_template_id');
         const iId = localStorage.getItem('pending_voice_item_id');
-        const jobId = data.job_id || data.task_id;
-        
-        if (tId && iId && jobId) {
+        const jobId = data.job_id || data.task_id || `job_${Date.now()}`;
+
+        if (tId && iId) {
           fetch('/api/templates/audio-job', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -339,9 +339,10 @@ export function useVoiceGenerator() {
               audioUrl: data.audio_url,
               voiceName: data.voice_name || apiVoiceId,
               voiceId: apiVoiceId,
-              modelId: targetModelId
-            })
-          }).catch(e => console.error('Failed to save audio_url to db:', e));
+              modelId: targetModelId,
+              createdAt: new Date().toISOString(),
+            }),
+          }).catch((e) => console.error('Failed to save audio_url to db:', e));
         }
       }
 
@@ -350,14 +351,14 @@ export function useVoiceGenerator() {
       setIsGenerating(false);
     } catch (error) {
       setIsGenerating(false);
-      
+
       if (error instanceof Error && error.name === 'AbortError') {
         generationControllerRef.current = null;
         return;
       }
 
       const rawMessage = formatErrorMessage(error);
-      
+
       const errorMap: Record<string, string> = {
         '404': 'The selected voice model is not available. Please try a different voice or contact support.',
         'Failed to download audio': 'The audio file could not be downloaded. Please verify the backend configuration.',
@@ -366,7 +367,7 @@ export function useVoiceGenerator() {
 
       const matchedKey = Object.keys(errorMap).find(key => rawMessage.includes(key));
       const uiMessage = matchedKey ? errorMap[matchedKey] : rawMessage;
-      
+
       setErrorMessage(uiMessage);
       generationControllerRef.current = null;
     }

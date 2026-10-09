@@ -79,6 +79,14 @@ export default function YouTubeContentDetailPage() {
       // Extract audio_urls from template
       if (data.template.audio_urls && Array.isArray(data.template.audio_urls)) {
         const matchingAudios = data.template.audio_urls.filter((a: any) => a.audio_id === iId);
+        
+        // Sort newest first
+        matchingAudios.sort((a: any, b: any) => {
+          const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return timeB - timeA;
+        });
+
         foundItem.audio_list = matchingAudios;
 
         for (const audio of matchingAudios) {
@@ -97,9 +105,10 @@ export default function YouTubeContentDetailPage() {
                       itemId: iId,
                       jobId: audio.job_id,
                       audioUrl: statusData.audio_url,
-                      voiceName: audio.voice_name,
-                      voiceId: audio.voice_id,
-                      modelId: audio.model_id
+                      voiceName: audio.voice_name || statusData.voice_name,
+                      voiceId: audio.voice_id || statusData.voice_id,
+                      modelId: audio.model_id || statusData.model_id,
+                      createdAt: audio.created_at || new Date().toISOString(),
                     })
                   }).catch(e => console.error('Failed to save audio_url to db:', e));
                 }
