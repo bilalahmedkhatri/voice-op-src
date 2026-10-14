@@ -1,28 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/app/lib/auth/googleAuth';
-import { getDb } from '@/app/lib/db';
+import { gatewayHeaders } from '@/app/lib/gatewayHeaders';
+import { requireUser, requireOwnedFacebookPage, requireOwnedTemplateItem, ownershipErrorResponse } from '@/app/lib/auth/ownership';
 import { verifyCreditBalance, deductCredits, ActionType } from '@/app/lib/credits';
 
-async function resolveUserId(): Promise<string | null> {
-  const user = await getCurrentUser();
-  if (user?.id) return user.id;
-
-  const sql = getDb();
-  if (sql) {
-    return null; // Require login when database is enabled
-  }
-  return 'local_user';
-}
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await resolveUserId();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Please log in to post or schedule to Facebook' },
-        { status: 401 }
-      );
-    }
+    const context = await requireUser();
+    const { user, sql } = context;
+    const userId = user.id;
     const incomingFormData = await request.formData();
 
     const pageId = incomingFormData.get('page_id') as string;
@@ -43,6 +29,9 @@ export async function POST(request: NextRequest) {
     if (!message && (!mediaFile || mediaFile.size === 0)) {
       return NextResponse.json({ error: 'Post message or media is required' }, { status: 400 });
     }
+
+    await requireOwnedFacebookPage(context, pageId);
+    if (templateId || contentItemId) await requireOwnedTemplateItem(context, templateId, contentItemId);
 
     const isFullAutomation =
       incomingFormData.get('is_full_automation') === 'true' ||
@@ -72,7 +61,7 @@ export async function POST(request: NextRequest) {
       const minSchedule = now + 600; // 10 minutes
       const maxSchedule = now + 75 * 24 * 3600; // 75 days
 
-      if (scheduledTimestamp < minSchedule) {
+      if (!Number.isFinite(scheduledTimestamp) || scheduledTimestamp < minSchedule) {
         return NextResponse.json(
           { error: 'Meta requires scheduled posts to be at least 10 minutes in the future.' },
           { status: 400 }
@@ -107,6 +96,7 @@ export async function POST(request: NextRequest) {
 
     const fastApiResponse = await fetch(`${apiUrl}/api/v1/facebook/post-pages`, {
       method: 'POST',
+      headers: gatewayHeaders(),
       body: forwardFormData,
     });
 
@@ -122,7 +112,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Post succeeded on FastAPI & Facebook. Now record in Neon DB scheduled_posts!
-    const sql = getDb();
     if (sql) {
       // Look up page name
       const pageRows = await sql`
@@ -171,11 +160,8 @@ export async function POST(request: NextRequest) {
         ? 'Post scheduled successfully on Facebook & registered in database.'
         : 'Post published successfully on Facebook.',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in /api/facebook/post-pages:', error);
-    return NextResponse.json(
-      { error: error.message || 'Internal error communicating with Facebook server' },
-      { status: 500 }
-    );
+    return ownershipErrorResponse(error);
   }
 }

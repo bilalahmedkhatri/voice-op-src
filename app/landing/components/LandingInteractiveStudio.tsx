@@ -10,6 +10,7 @@ import { useModels } from '@/app/hooks/useModels';
 import TextInput from '@/app/components/TextInput';
 import VoiceControls from '@/app/components/VoiceControls';
 import AudioPlayer from '@/app/components/AudioPlayer';
+import LiveAudioPreview from '@/app/components/LiveAudioPreview';
 import GenerationStatus from '@/app/components/GenerationStatus';
 import Toast from '@/app/components/Toast';
 import FormatSelectionModal, { VideoFormat } from '@/app/components/FormatSelectionModal';
@@ -31,6 +32,7 @@ export default function LandingInteractiveStudio() {
     generationTime,
     errorMessage,
     dismissError,
+    chunkProgress, liveJob, pendingJob, retryAvailable, handleResume,
     toastNotification,
     clearToast,
     isAuthenticated,
@@ -231,7 +233,11 @@ export default function LandingInteractiveStudio() {
             <GenerationStatus
               errorMessage={errorMessage}
               onDismissError={dismissError}
-            />
+              progress={chunkProgress} isGenerating={isGenerating && !audioBlob}
+              onResume={pendingJob ? handleResume : undefined} retryAvailable={retryAvailable}
+            >
+              {liveJob && <LiveAudioPreview key={liveJob.jobId} job={liveJob} />}
+            </GenerationStatus>
 
             {toastNotification && (
               <div className="fixed bottom-4 right-4 z-50">

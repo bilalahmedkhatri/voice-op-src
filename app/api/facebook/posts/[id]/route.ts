@@ -1,17 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/app/lib/auth/googleAuth';
-import { getDb } from '@/app/lib/db';
+import { requireUser, ownershipErrorResponse } from '@/app/lib/auth/ownership';
 
-async function resolveUserId(): Promise<string | null> {
-  const user = await getCurrentUser();
-  if (user?.id) return user.id;
-
-  const sql = getDb();
-  if (sql) {
-    return null; // Require login when database is enabled
-  }
-  return 'local_user';
-}
 
 // DELETE /api/facebook/posts/[id] - Cancel/delete scheduled post
 export async function DELETE(
@@ -20,15 +9,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const userId = await resolveUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized: Please log in first' }, { status: 401 });
-    }
-    const sql = getDb();
+    const context = await requireUser();
+    const { user, sql } = context;
+    const userId = user.id;
 
-    if (!sql) {
-      return NextResponse.json({ error: 'Database unavailable' }, { status: 500 });
-    }
 
     const postRows = await sql`
       SELECT id, user_id, page_id, fb_post_id, status
@@ -55,12 +39,9 @@ export async function DELETE(
       message: 'Scheduled post cancelled successfully',
       id: post.id
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error cancelling scheduled post:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to cancel post' },
-      { status: 500 }
-    );
+    return ownershipErrorResponse(error);
   }
 }
 
@@ -71,17 +52,12 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const userId = await resolveUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized: Please log in first' }, { status: 401 });
-    }
+    const context = await requireUser();
+    const { user, sql } = context;
+    const userId = user.id;
     const body = await request.json();
     const { scheduled_publish_time, message } = body;
-    const sql = getDb();
 
-    if (!sql) {
-      return NextResponse.json({ error: 'Database unavailable' }, { status: 500 });
-    }
 
     const postRows = await sql`
       SELECT id, user_id, page_id, fb_post_id, status
@@ -112,11 +88,8 @@ export async function PATCH(
       status: 'success',
       message: 'Post updated successfully'
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating scheduled post:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to update post' },
-      { status: 500 }
-    );
+    return ownershipErrorResponse(error);
   }
 }

@@ -14,7 +14,6 @@ export default function FacebookIntegrationRedirect() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="text-center space-y-3 max-w-md">
-        <div className="w-8 h-8 border-2 border-[#ff7d6e] border-t-transparent rounded-full animate-spin mx-auto" />
         <h1 className="text-xl font-bold text-slate-900">
           Redirecting to Facebook &amp; Instagram Integration
         </h1>

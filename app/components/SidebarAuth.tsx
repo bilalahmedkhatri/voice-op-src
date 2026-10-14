@@ -1,11 +1,17 @@
 "use client";
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
+import { notifyIdentityChanged } from '../lib/ownerStorage';
+
 import React, { useState, useEffect, useRef } from "react";
-import { FaSignOutAlt, FaUserCircle, FaBolt, FaUser, FaCoins, FaCrown } from "react-icons/fa";
+import { FaSignOutAlt, FaUserCircle, FaBolt, FaUser, FaCoins } from "react-icons/fa";
 import { DbUser } from "../lib/db/types";
 import { isDatabaseEnabled } from "../lib/config";
 import Link from "next/link";
 import TopUpModal from "./TopUpModal";
+import type { WalletBalance } from "./TopUpButton";
+import { usePathname } from "next/navigation";
 
 function GoogleIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -30,16 +36,21 @@ function GoogleIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-export default function SidebarAuth() {
+export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wallet: WalletBalance | null) => void }) {
+  const pathname = usePathname();
   const [user, setUser] = useState<DbUser | null>(null);
-  const [quota, setQuota] = useState<any | null>(null);
-  const [credits, setCredits] = useState<number>(50);
+  const [credits, setCredits] = useState<number | null>(null);
   const [tier, setTier] = useState<string>("free");
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [topUpOpen, setTopUpOpen] = useState(false);
   const [dbEnabled, setDbEnabled] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const sessionRequest = useRef(0);
+
+  useEffect(() => {
+    onWalletChange?.(user ? { credits, tier } : null);
+  }, [user, credits, tier, onWalletChange]);
 
   useEffect(() => {
     const isEnabled = isDatabaseEnabled();
@@ -50,48 +61,52 @@ export default function SidebarAuth() {
       return;
     }
     fetchSession();
-  }, []);
+  }, [pathname]);
 
   const fetchSession = async () => {
+    const request = ++sessionRequest.current;
     try {
       const res = await fetch("/api/auth/session");
       const data = await res.json();
+      if (request !== sessionRequest.current) return;
       if (data.authenticated && data.user) {
         setUser(data.user);
-        setQuota(data.quota);
-        setCredits(data.user.available_credits ?? 50);
+        setCredits(data.user.available_credits ?? null);
         setTier(data.user.tier ?? "free");
       } else {
         setUser(null);
-        setQuota(null);
       }
     } catch {
+      if (request !== sessionRequest.current) return;
       setUser(null);
-      setQuota(null);
     } finally {
-      setLoading(false);
+      if (request === sessionRequest.current) setLoading(false);
     }
   };
 
   // Global listeners for top-up triggers and credit updates
   useEffect(() => {
     const handleOpenTopUp = () => setTopUpOpen(true);
-    const handleCreditsUpdated = (e: any) => {
-      if (e.detail?.credits !== undefined) {
-        setCredits(e.detail.credits);
+    const handleCreditsUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ credits?: number; tier?: string }>).detail;
+      if (typeof detail?.credits === "number") {
+        setCredits(detail.credits);
       }
-      if (e.detail?.tier) {
-        setTier(e.detail.tier);
+      if (detail?.tier) {
+        setTier(detail.tier);
       }
       fetchSession();
     };
 
     window.addEventListener("open-topup-modal", handleOpenTopUp);
     window.addEventListener("credits-updated", handleCreditsUpdated);
+    const refreshOnFocus = () => { if (isDatabaseEnabled()) fetchSession(); };
+    window.addEventListener("focus", refreshOnFocus);
 
     return () => {
       window.removeEventListener("open-topup-modal", handleOpenTopUp);
       window.removeEventListener("credits-updated", handleCreditsUpdated);
+      window.removeEventListener("focus", refreshOnFocus);
     };
   }, []);
 
@@ -108,8 +123,8 @@ export default function SidebarAuth() {
   const handleSignOut = async () => {
     try {
       await fetch("/api/auth/signout", { method: "POST" });
+      notifyIdentityChanged();
       setUser(null);
-      setQuota(null);
       setMenuOpen(false);
       window.location.reload();
     } catch (e) {
@@ -178,7 +193,7 @@ export default function SidebarAuth() {
                 <FaCoins className="text-amber-500" />
                 Available Credits
               </span>
-              <span className="font-bold text-slate-900 font-mono">{credits.toLocaleString()}</span>
+              <span className="font-bold text-slate-900 font-mono">{credits?.toLocaleString() ?? "—"}</span>
             </div>
 
             <div className="text-[10px] text-slate-500 bg-orange-50/60 p-2 rounded-xl border border-orange-100">
@@ -245,7 +260,7 @@ export default function SidebarAuth() {
       <TopUpModal
         isOpen={topUpOpen}
         onClose={() => setTopUpOpen(false)}
-        currentCredits={credits}
+        currentCredits={credits ?? 0}
         currentTier={tier}
         onSuccess={(newBalance) => {
           setCredits(newBalance);

@@ -1,22 +1,16 @@
 "use client";
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
+import { ownerDrafts } from '@/app/lib/ownerStorage';
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  FiArrowLeft,
-  FiRefreshCw,
-  FiAlertCircle,
-  FiSave,
-  FiCheck,
-  FiCopy,
-  FiTag,
-  FiLayers,
-  FiChevronDown,
-  FiX,
-  FiShare2,
-  FiExternalLink,
-} from "react-icons/fi";
+import { FiArrowLeft, FiAlertCircle, FiSave, FiCheck, FiCopy, FiTag, FiLayers, FiChevronDown, FiX, FiShare2, FiExternalLink } from "react-icons/fi";
 import { FaFacebook } from "react-icons/fa";
 import Pagination from "@/components/ui/Pagination";
 import { Button, IconButton } from "@/components/ui";
@@ -217,7 +211,7 @@ export default function FacebookContentPage() {
       templateId: template?.id,
       itemId: item.id,
     };
-    sessionStorage.setItem("fb_composer_prefill", JSON.stringify(payload));
+    ownerDrafts.setItem("fb_composer_prefill", JSON.stringify(payload));
     router.push("/facebook/integration");
   };
 
@@ -437,9 +431,7 @@ export default function FacebookContentPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <FiRefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
-      </div>
+      <WorkspaceLoading />
     );
   }
 
@@ -506,9 +498,7 @@ export default function FacebookContentPage() {
               {pageName}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2 line-clamp-1 mt-0.5">
-            {mainTitle}
-          </h1>
+          <WorkspacePageHeader title={mainTitle} />
           <div className="flex items-center gap-2 text-slate-500 font-mono text-xs">
             <span>Plan: #{template.id.split("_")[1]?.substring(0, 8) || template.id}</span>
             <span>•</span>

@@ -1,5 +1,7 @@
 'use client';
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
 import { useState, useRef, useEffect } from 'react';
 import {
   FaImage,

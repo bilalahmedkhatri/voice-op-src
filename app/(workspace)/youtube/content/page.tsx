@@ -1,18 +1,16 @@
 "use client";
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
+import { ownerDrafts } from '@/app/lib/ownerStorage';
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  FiArrowLeft,
-  FiRefreshCw,
-  FiAlertCircle,
-  FiSave,
-  FiCheck,
-  FiCopy,
-  FiMic,
-  FiSearch,
-} from "react-icons/fi";
+import { FiArrowLeft, FiAlertCircle, FiSave, FiCheck, FiCopy, FiMic, FiSearch } from "react-icons/fi";
 import { Button, IconButton } from "@/components/ui";
 import FlowBatchGenerator from "./components/FlowBatchGenerator";
 
@@ -47,12 +45,14 @@ export default function YouTubeContentPage() {
       return;
     }
     if (typeof window !== "undefined") {
-      localStorage.setItem("pending_voice_script", contentText);
+      ownerDrafts.removeItem("pending_voice_template_id");
+      ownerDrafts.removeItem("pending_voice_item_id");
+      ownerDrafts.setItem("pending_voice_script", contentText);
       if (type) {
-        localStorage.setItem("pending_voice_format", type === "long_video" ? "long" : "short");
+        ownerDrafts.setItem("pending_voice_format", type === "long_video" ? "long" : "short");
       }
       if (title) {
-        localStorage.setItem("pending_voice_title", title);
+        ownerDrafts.setItem("pending_voice_title", title);
       }
     }
     router.push("/admin?from=content");
@@ -220,6 +220,7 @@ export default function YouTubeContentPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           item_id: item.id,
+          template_id: template?.id,
           keywords,
           filters,
         }),
@@ -266,9 +267,7 @@ export default function YouTubeContentPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <FiRefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
-      </div>
+      <WorkspaceLoading />
     );
   }
 
@@ -302,9 +301,7 @@ export default function YouTubeContentPage() {
           >
             <FiArrowLeft /> Back to YouTube Strategies
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2 line-clamp-1">
-            {mainTitle}
-          </h1>
+          <WorkspacePageHeader title={mainTitle} />
           <p className="text-slate-500 font-mono text-xs">
             Template: #{template.id.split("_")[1]?.substring(0, 8) || template.id} • {items.length} Videos
           </p>

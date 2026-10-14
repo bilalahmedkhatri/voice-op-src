@@ -1,9 +1,12 @@
 "use client";
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiRefreshCw, FiAlertCircle, FiVideo } from "react-icons/fi";
+import { FiAlertCircle, FiVideo } from "react-icons/fi";
 import { detectTemplatePlatform } from "@/lib/platformDetector";
 
 export default function ContentRedirectDispatcher() {
@@ -65,10 +68,6 @@ export default function ContentRedirectDispatcher() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-80 space-y-3">
-      <FiRefreshCw className="w-8 h-8 text-[#ff7d6e] animate-spin" />
-      <p className="text-sm font-semibold text-slate-700">Opening content workspace...</p>
-      <p className="text-xs text-slate-400">Detecting platform strategy...</p>
-    </div>
+    <WorkspaceLoading />
   );
 }

@@ -1,9 +1,15 @@
 "use client";
 
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
+import { ownerDrafts } from '@/app/lib/ownerStorage';
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  FiArrowLeft,
   FiShare2,
   FiCheckCircle,
   FiCalendar,
@@ -83,12 +89,12 @@ export default function WorkspaceFacebookIntegrationPage() {
 
     // Check for prefilled data from Workflow B (e.g. from /facebook/content)
     try {
-      const stored = sessionStorage.getItem("fb_composer_prefill");
+      const stored = ownerDrafts.getItem("fb_composer_prefill");
       if (stored) {
         const parsed = JSON.parse(stored);
         setPrefilledData(parsed);
         // Clear after picking it up
-        sessionStorage.removeItem("fb_composer_prefill");
+        ownerDrafts.removeItem("fb_composer_prefill");
       }
     } catch (e) {
       console.error("Failed to parse prefilled data:", e);
@@ -132,37 +138,6 @@ export default function WorkspaceFacebookIntegrationPage() {
 
   return (
     <div className="space-y-6 pb-16">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/facebook/templates"
-              className="inline-flex items-center gap-1.5 text-xs text-[#c83a2a] hover:underline font-semibold mb-1"
-            >
-              <FiArrowLeft /> Back to Facebook Plans
-            </Link>
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-orange-50 text-[#ff7d6e] text-sm font-black">
-              f
-            </span>
-            Facebook & Instagram Studio
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Connect your Facebook Pages, publish Reels or Shorts directly from your plans, or schedule them up to 75 days in advance.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/facebook/templates"
-            className="px-4 py-2 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 text-slate-700 rounded-xl text-sm font-semibold shadow-2xs transition-all cursor-pointer"
-          >
-            View Facebook Plans
-          </Link>
-        </div>
-      </div>
 
       {/* Prefill Notification Banner */}
       {prefilledData && (

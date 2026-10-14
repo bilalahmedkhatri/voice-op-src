@@ -1,33 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/app/lib/auth/googleAuth';
-import { getDb } from '@/app/lib/db';
+import { requireUser, requireOwnedFacebookPage, ownershipErrorResponse } from '@/app/lib/auth/ownership';
 
-async function resolveUserId(): Promise<string | null> {
-  const user = await getCurrentUser();
-  if (user?.id) return user.id;
-
-  const sql = getDb();
-  if (sql) {
-    return null; // Require login when database is enabled
-  }
-  return 'local_user';
-}
 
 // GET /api/facebook/pages - Fetch connected Facebook Pages & Instagram accounts
 export async function GET() {
   try {
-    const sql = getDb();
-    if (!sql) {
-      return NextResponse.json({ pages: [] });
-    }
-
-    const userId = await resolveUserId();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Please log in to view connected pages', pages: [] },
-        { status: 401 }
-      );
-    }
+    const { user, sql } = await requireUser();
+    const userId = user.id;
 
     const pages = await sql`
       SELECT 
@@ -52,30 +31,17 @@ export async function GET() {
       success: true,
       pages: pages || []
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching connected Facebook pages:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch connected pages', pages: [] },
-      { status: 500 }
-    );
+    return ownershipErrorResponse(error);
   }
 }
 
 // DELETE /api/facebook/pages?page_id=xyz - Disconnect a Facebook page
 export async function DELETE(request: NextRequest) {
   try {
-    const sql = getDb();
-    if (!sql) {
-      return NextResponse.json({ error: 'Database unavailable' }, { status: 500 });
-    }
-
-    const userId = await resolveUserId();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Please log in to manage pages' },
-        { status: 401 }
-      );
-    }
+    const { user, sql } = await requireUser();
+    const userId = user.id;
     const { searchParams } = new URL(request.url);
     const pageId = searchParams.get('page_id');
 
@@ -92,6 +58,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'All pages disconnected successfully' });
     }
 
+    await requireOwnedFacebookPage({ user, sql }, pageId);
     await sql`
       UPDATE facebook_pages
       SET is_active = FALSE, updated_at = NOW()
@@ -99,11 +66,8 @@ export async function DELETE(request: NextRequest) {
     `;
 
     return NextResponse.json({ success: true, message: 'Page disconnected successfully' });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error disconnecting Facebook page:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to disconnect page' },
-      { status: 500 }
-    );
+    return ownershipErrorResponse(error);
   }
 }

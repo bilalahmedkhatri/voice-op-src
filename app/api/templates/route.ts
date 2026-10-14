@@ -145,7 +145,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, status, confirmed_by_email, json_data } = body;
+    const { id, status, json_data } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
@@ -161,7 +161,7 @@ export async function PATCH(request: NextRequest) {
       UPDATE json_templates
       SET
         status = COALESCE(${status ?? null}, status),
-        confirmed_by_email = COALESCE(${confirmed_by_email ?? null}, confirmed_by_email),
+        confirmed_by_email = COALESCE(${status === 'confirmed' ? user.email : null}, confirmed_by_email),
         json_data = COALESCE(${json_data ? JSON.stringify(json_data) : null}::jsonb, json_data),
         updated_by = ${user.id},
         updated_at = NOW()

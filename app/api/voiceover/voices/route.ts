@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { gatewayHeaders } from '@/app/lib/gatewayHeaders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
     if (searchSearchParam) apiUrlStr += `&search=${encodeURIComponent(searchSearchParam)}`;
 
     const response = await fetch(apiUrlStr, {
+      headers: gatewayHeaders(),
       next: { revalidate: 60 }
     });
     

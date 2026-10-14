@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/app/lib/auth/googleAuth';
 import { getDb } from '@/app/lib/db';
-import { isDatabaseEnabled } from '@/app/lib/config';
 
 // GET /api/billing/status/[orderId] - Query if a PayFast/Swich order has been confirmed and credited
 export async function GET(
@@ -12,10 +11,6 @@ export async function GET(
 
   if (!orderId) {
     return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
-  }
-
-  if (!isDatabaseEnabled()) {
-    return NextResponse.json({ status: 'simulated', credited: true });
   }
 
   try {

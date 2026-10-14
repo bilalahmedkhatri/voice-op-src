@@ -11,6 +11,7 @@ interface ConfirmModalProps {
   confirmText?: string;
   icon?: ReactNode;
   isLoading?: boolean;
+  error?: string | null;
   isSuccess?: boolean;
   successMessage?: string;
 }
@@ -25,6 +26,7 @@ export default function ConfirmModal({
   confirmText = isAlert ? "OK" : "Delete",
   icon,
   isLoading = false,
+  error,
   isSuccess = false,
   successMessage = "Action completed successfully!"
 }: ConfirmModalProps) {
@@ -53,6 +55,7 @@ export default function ConfirmModal({
                 <p className="mt-1 text-sm text-slate-500 leading-relaxed">
                   {message}
                 </p>
+                {error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
               </div>
             </div>
             <div className="px-5 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-end gap-3">

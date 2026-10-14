@@ -1,5 +1,7 @@
 "use client";
 
+import { ownerDrafts } from '@/app/lib/ownerStorage';
+
 import React, { useState, useEffect } from "react";
 import {
   FiCopy,
@@ -68,7 +70,9 @@ export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: 
   const handleSendToVoiceStudio = () => {
     if (!value.trim()) return;
     if (typeof window !== "undefined") {
-      localStorage.setItem("pending_voice_script", value);
+      ownerDrafts.removeItem("pending_voice_template_id");
+      ownerDrafts.removeItem("pending_voice_item_id");
+      ownerDrafts.setItem("pending_voice_script", value);
       window.location.href = "/admin?from=json";
     }
   };

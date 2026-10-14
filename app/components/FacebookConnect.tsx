@@ -1,5 +1,7 @@
 'use client';
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
 import { useState, useEffect } from 'react';
 import { FaFacebook, FaInstagram, FaCheckCircle } from 'react-icons/fa';
 

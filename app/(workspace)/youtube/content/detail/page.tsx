@@ -1,9 +1,14 @@
 "use client";
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
+import { ownerDrafts } from '@/app/lib/ownerStorage';
+
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiArrowLeft, FiRefreshCw, FiAlertCircle } from "react-icons/fi";
+import { FiArrowLeft, FiAlertCircle } from "react-icons/fi";
 
 import DetailHeader from "@/components/ContentDetail/DetailHeader";
 import ScriptSection from "@/components/ContentDetail/ScriptSection";
@@ -156,18 +161,18 @@ export default function YouTubeContentDetailPage() {
       return;
     }
     if (typeof window !== "undefined") {
-      localStorage.setItem("pending_voice_script", contentText);
+      ownerDrafts.setItem("pending_voice_script", contentText);
       if (type) {
-        localStorage.setItem("pending_voice_format", type === "long_video" ? "long" : "short");
+        ownerDrafts.setItem("pending_voice_format", type === "long_video" ? "long" : "short");
       }
       if (title) {
-        localStorage.setItem("pending_voice_title", title);
+        ownerDrafts.setItem("pending_voice_title", title);
       }
       if (templateId) {
-        localStorage.setItem("pending_voice_template_id", templateId);
+        ownerDrafts.setItem("pending_voice_template_id", templateId);
       }
       if (item?.id) {
-        localStorage.setItem("pending_voice_item_id", item.id);
+        ownerDrafts.setItem("pending_voice_item_id", item.id);
       }
     }
     router.push("/admin?from=youtube");
@@ -366,6 +371,7 @@ export default function YouTubeContentDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           item_id: item.id,
+          template_id: templateId,
           urls: urlsToDelete
         })
       });
@@ -388,9 +394,7 @@ export default function YouTubeContentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <FiRefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
-      </div>
+      <WorkspaceLoading />
     );
   }
 
@@ -609,6 +613,8 @@ export default function YouTubeContentDetailPage() {
       </div>
 
       <ExtractedMediaGallery
+        templateId={templateId}
+        itemId={item?.id || null}
         signedMediaUrls={signedMediaUrls}
         selectedMediaUrls={selectedMediaUrls}
         setSelectedMediaUrls={setSelectedMediaUrls}
@@ -622,6 +628,8 @@ export default function YouTubeContentDetailPage() {
       />
 
       <PreviewModal
+        templateId={templateId}
+        itemId={item?.id || null}
         previewMediaUrl={previewMediaUrl}
         setPreviewMediaUrl={setPreviewMediaUrl}
       />

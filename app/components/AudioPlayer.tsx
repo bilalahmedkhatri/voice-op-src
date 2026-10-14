@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect, memo } from 'react';
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import AudioJobRecovery from './AudioJobRecovery';
 import { FaPlay, FaPause, FaDownload, FaRedoAlt, FaBolt, FaBookmark, FaCheck, FaSlidersH } from 'react-icons/fa';
 import { generateVoiceoverFilename } from '../lib/filenameUtils';
 
@@ -84,6 +87,10 @@ const AudioPlayer = memo(function AudioPlayer({
   }, [audioBlob]);
 
   const activeSrc = blobUrl || resolvedAudioUrl;
+  const recoverAudio = useCallback((url: string) => {
+    setResolvedAudioUrl(url);
+    onAudioUrlRenewed?.(url);
+  }, [onAudioUrlRenewed]);
 
   // Helper to renew expired or invalid URL via the backend status endpoint
   const renewUrl = async (): Promise<string | null> => {
@@ -325,7 +332,7 @@ const AudioPlayer = memo(function AudioPlayer({
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   if (!activeSrc) {
-    return null;
+    return jobId ? <AudioJobRecovery jobId={jobId} onReady={recoverAudio} /> : null;
   }
 
   return (
@@ -443,7 +450,7 @@ const AudioPlayer = memo(function AudioPlayer({
             {/* Dynamic model parameters (Speed, Temperature, etc.) */}
             {activeParameters &&
               Object.entries(activeParameters).map(([key, val]) => {
-                if (val === undefined || val === null) return null;
+                if (val === undefined || val === null || ['server_owned_job', 'gateway_job_missing', 'size_bytes'].includes(key)) return null;
                 const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
                 const formattedVal =
                   typeof val === 'number' && (key === 'speed' || key === 'rate')

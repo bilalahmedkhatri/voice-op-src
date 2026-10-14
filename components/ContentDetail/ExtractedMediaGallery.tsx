@@ -1,9 +1,12 @@
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 import React, { useState } from 'react';
 import { FiImage, FiDownloadCloud, FiTrash2, FiVideo, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { Button } from '@/components/ui';
 
 interface ExtractedMediaGalleryProps {
+  templateId: string | null;
+  itemId: string | null;
   signedMediaUrls: string[];
   selectedMediaUrls: string[];
   setSelectedMediaUrls: React.Dispatch<React.SetStateAction<string[]>>;
@@ -17,6 +20,8 @@ interface ExtractedMediaGalleryProps {
 }
 
 export default function ExtractedMediaGallery({
+  templateId,
+  itemId,
   signedMediaUrls,
   selectedMediaUrls,
   setSelectedMediaUrls,
@@ -59,7 +64,7 @@ export default function ExtractedMediaGallery({
       const url = selectedMediaUrls[i];
       try {
         // Use Next.js API proxy instead of direct fetch to avoid CORS and hide endpoints
-        const response = await fetch(`/api/media/download?url=${encodeURIComponent(url)}`);
+        const response = await fetch(`/api/media/download?${new URLSearchParams({ url, templateId: templateId || '', itemId: itemId || '' })}`);
         if (!response.ok) throw new Error(`HTTP error ${response.status}`);
 
         const blob = await response.blob();

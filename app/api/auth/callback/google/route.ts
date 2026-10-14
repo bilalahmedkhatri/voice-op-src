@@ -17,23 +17,18 @@ export async function GET(request: NextRequest) {
 
   // Validate state and extract returnTo with CSRF nonce verification
   let returnTo = '/admin';
-  if (stateRaw) {
-    try {
-      const parsed = JSON.parse(Buffer.from(stateRaw, 'base64url').toString('utf-8'));
-      if (parsed.returnTo && typeof parsed.returnTo === 'string' && parsed.returnTo.startsWith('/')) {
-        returnTo = parsed.returnTo;
-      }
-      // CSRF check: if nonce was set, ensure it matches
-      if (storedNonce && parsed.nonce && parsed.nonce !== storedNonce) {
-        console.warn('OAuth state CSRF mismatch detected');
-        return NextResponse.redirect(`${baseUrl}/admin?error=csrf_state_mismatch`);
-      }
-    } catch {
-      // Legacy fallback
-      if (stateRaw.startsWith('/')) {
-        returnTo = stateRaw;
-      }
+  try {
+    if (!stateRaw || !storedNonce) throw new Error('Missing OAuth state');
+    const parsed = JSON.parse(Buffer.from(stateRaw, 'base64url').toString('utf-8'));
+    if (typeof parsed.nonce !== 'string' || parsed.nonce !== storedNonce) throw new Error('Invalid OAuth state');
+    if (typeof parsed.returnTo === 'string' && parsed.returnTo.startsWith('/') && !parsed.returnTo.startsWith('//')) {
+      const target = new URL(parsed.returnTo, baseUrl);
+      if (target.origin === baseUrl) returnTo = target.pathname + target.search + target.hash;
     }
+  } catch {
+    const response = NextResponse.redirect(`${baseUrl}/admin?error=csrf_state_mismatch`);
+    response.cookies.delete('vg_oauth_nonce');
+    return response;
   }
 
   if (!code) {
@@ -47,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     const profile = await getGoogleUserProfile(tokens.access_token);
-    if (!profile || !profile.sub || !profile.email) {
+    if (!profile || !profile.sub || !profile.email || profile.email_verified !== true) {
       return NextResponse.redirect(`${baseUrl}/admin?error=profile_failed`);
     }
 

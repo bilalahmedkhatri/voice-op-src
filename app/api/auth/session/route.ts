@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/app/lib/auth/googleAuth';
+import { createHash } from 'node:crypto';
+import { getGuestOwner } from '@/app/lib/auth/guestOwner';
+import { isDatabaseEnabled } from '@/app/lib/config';
 import { getDb } from '@/app/lib/db';
 
 export async function GET() {
   try {
     const user = await getCurrentUser();
 
+    const identity = user?.id || await getGuestOwner(true);
+    const owner_scope = createHash('sha256').update(identity).digest('hex');
+    const database_enabled = isDatabaseEnabled();
     if (!user) {
-      return NextResponse.json({ authenticated: false, user: null });
+      return NextResponse.json({ authenticated: false, user: null, owner_scope, database_enabled });
     }
 
     // Fetch user quota from DB
@@ -27,6 +33,8 @@ export async function GET() {
 
     return NextResponse.json({
       authenticated: true,
+      owner_scope,
+      database_enabled,
       user,
       credits: user.available_credits ?? 50,
       tier: user.tier ?? 'free',

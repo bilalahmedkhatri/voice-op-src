@@ -1,6 +1,7 @@
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
 import React from 'react';
 import Link from 'next/link';
-import { FiArrowLeft, FiYoutube, FiVideo, FiMic, FiCheck, FiCopy } from 'react-icons/fi';
+import { FiArrowLeft, FiYoutube, FiVideo } from 'react-icons/fi';
 
 interface DetailHeaderProps {
   templateId: string | null;
@@ -19,36 +20,12 @@ export default function DetailHeader({
   backText,
   itemType,
   item,
-  handleSendToVoice,
-  copiedId,
-  handleCopy
 }: DetailHeaderProps) {
   const returnHref = backUrl || (templateId ? `/youtube/content?id=${templateId}` : `/content?id=${templateId}`);
-  return (
-    <>
-      <div className="flex flex-col sm:space-y-2">
-        <Link href={returnHref} className="hidden sm:inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline font-semibold w-fit">
-          <FiArrowLeft /> {backText || "Back to YouTube Strategy"}
-        </Link>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex flex-row items-center gap-2">
-            {itemType === "long_video" ? (
-              <span className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 bg-orange-100 text-orange-900 border border-orange-200/80 rounded-xl text-sm font-bold shadow-2xs" title="Long Video">
-                <FiYoutube className="w-4 h-4 text-[#ff7d6e]" />
-                <span className="hidden sm:inline ml-1.5">Long Video</span>
-              </span>
-            ) : (
-              <span className="inline-flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 bg-orange-50 text-orange-800 border border-orange-200/80 rounded-xl text-sm font-bold shadow-2xs" title="Short Video">
-                <FiVideo className="w-4 h-4 text-[#ff7d6e]" />
-                <span className="hidden sm:inline ml-1.5">Short Video</span>
-              </span>
-            )}
-            <h1 className="text-lg sm:text-2xl font-bold text-slate-900 line-clamp-2 sm:line-clamp-1 flex-1">
-              {item.title || "Untitled Video"}
-            </h1>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  return <WorkspacePageHeader title={item.title || "Untitled Video"}
+    icon={itemType === "long_video" ? <FiYoutube /> : <FiVideo />}
+    description={itemType === "long_video" ? "Long Video" : "Short Video"}
+    breadcrumbs={<Link href={returnHref} className="inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline font-semibold">
+      <FiArrowLeft /> {backText || "Back to YouTube Strategy"}
+    </Link>} />;
 }

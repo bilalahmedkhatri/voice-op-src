@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { isDatabaseEnabled } from "./lib/config";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -78,6 +79,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="font-sans">
       <head>
+        <script id="genzee-runtime-mode" dangerouslySetInnerHTML={{ __html: `window.__GENZEE_DATABASE_ENABLED__=${JSON.stringify(isDatabaseEnabled())};` }} />
         <meta name="ahrefs-site-verification" content="30231419b3e40319f15735ba0552cc64ddcf537c2825370f4e87d6f57828ddec"></meta>
         {/*  Google tag (gtag.js)  */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-YHG27Q1JE4" />

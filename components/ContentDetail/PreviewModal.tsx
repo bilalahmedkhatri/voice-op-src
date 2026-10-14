@@ -1,19 +1,22 @@
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 import React from "react";
 import { FiVideo, FiDownloadCloud, FiX } from "react-icons/fi";
 import { IconButton } from "@/components/ui";
 
 interface PreviewModalProps {
+  templateId: string | null;
+  itemId: string | null;
   previewMediaUrl: string | null;
   setPreviewMediaUrl: (url: string | null) => void;
 }
 
-export default function PreviewModal({ previewMediaUrl, setPreviewMediaUrl }: PreviewModalProps) {
+export default function PreviewModal({ templateId, itemId, previewMediaUrl, setPreviewMediaUrl }: PreviewModalProps) {
   if (!previewMediaUrl) return null;
 
   const handleSingleDownload = async (url: string) => {
     try {
       // Use the proxy instead of direct fetching
-      const response = await fetch(`/api/media/download?url=${encodeURIComponent(url)}`);
+      const response = await fetch(`/api/media/download?${new URLSearchParams({ url, templateId: templateId || '', itemId: itemId || '' })}`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob();
       

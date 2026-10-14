@@ -1,8 +1,14 @@
 "use client";
 
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiTrash2, FiRefreshCw, FiAlertCircle, FiPlus, FiShare2, FiCalendar } from "react-icons/fi";
+import { FiTrash2, FiAlertCircle, FiPlus, FiShare2, FiCalendar } from "react-icons/fi";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import Button from "@/components/ui/Button";
 import IconButton from "@/components/ui/IconButton";
@@ -147,9 +153,7 @@ export default function FacebookTemplatesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <FiRefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
-      </div>
+      <WorkspaceLoading />
     );
   }
 
@@ -164,48 +168,33 @@ export default function FacebookTemplatesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2 mt-1">
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#1877F2] text-white text-xs font-black">
-              f
-            </span>
-            Facebook Content Plans
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Manage your Facebook post packages, daily themes, batch copy presets, and page publishing.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <IconButton
-            title="Refresh"
-            variant="ghost"
-            size="lg"
-            isLoading={isLoading}
-            onClick={fetchTemplates}
-          />
-          <Button
-            href="/facebook/integration"
-            variant="secondary"
-            size="md"
-            icon={<FiShare2 className="w-4 h-4 text-[#ff7d6e]" />}
-            hideTextOnMobile={true}
-          >
-            Page Integration
-          </Button>
-          <Button
-            href="/json-generator"
-            variant="primary"
-            size="md"
-            icon={<FiPlus className="w-4 h-4" />}
-            hideTextOnMobile={true}
-          >
-            New Facebook Plan
-          </Button>
-        </div>
-      </div>
+      <WorkspacePageHeader actions={<>
+        <IconButton
+          title="Refresh"
+          variant="secondary"
+          size="md"
+          isLoading={isLoading}
+          onClick={fetchTemplates}
+        />
+        <Button
+          href="/facebook/integration"
+          variant="secondary"
+          size="md"
+          icon={<FiShare2 className="w-4 h-4 text-[#ff7d6e]" />}
+          hideTextOnMobile={true}
+        >
+          Page Integration
+        </Button>
+        <Button
+          href="/json-generator"
+          variant="primary"
+          size="md"
+          icon={<FiPlus className="w-4 h-4" />}
+          hideTextOnMobile={true}
+        >
+          New Facebook Plan
+        </Button>
+      </>} />
 
       {/* Table */}
       <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">

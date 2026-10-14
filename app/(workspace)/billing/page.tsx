@@ -1,9 +1,13 @@
 "use client";
 
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
 import React, { useState, useEffect } from "react";
 import {
   FaCoins,
-  FaBolt,
   FaCrown,
   FaCheck,
   FaShieldAlt,
@@ -79,52 +83,8 @@ export default function BillingPage() {
     return () => window.removeEventListener("credits-updated", handleCreditsUpdated);
   }, []);
 
-  const starterPkg = TOPUP_PACKAGES.starter;
-  const proPkg = TOPUP_PACKAGES.pro;
-
   return (
-    <div className="w-full space-y-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-in fade-in duration-300">
-      {/* 1. Header & Quick Wallet Balance */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#ff9b8f] to-[#ff7d6e] flex items-center justify-center text-white shadow-xs">
-              <FaCoins className="text-base" />
-            </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Pricing &amp; Wallet Management
-            </h1>
-          </div>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1">
-            Pay-As-You-Go Credits • No Monthly Subscriptions • Credits Never Expire
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
-            <FaCoins className="text-amber-500 text-sm" />
-            <div className="flex items-baseline gap-1 font-mono">
-              <span className="text-base font-extrabold text-slate-900">
-                {wallet.available_credits.toLocaleString()}
-              </span>
-              <span className="text-xs text-slate-400 font-semibold">Credits</span>
-            </div>
-            <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-100 text-orange-950 border border-orange-200 ml-1">
-              {wallet.tier}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsTopUpOpen(true)}
-            className="px-4 py-2 bg-[#ff7d6e] hover:bg-[#e04836] text-white text-xs font-bold rounded-2xl shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <FaBolt />
-            <span>+ Top-Up Balance</span>
-          </button>
-        </div>
-      </div>
-
+    <div className="w-full space-y-6 mx-auto animate-in fade-in duration-300">
       {/* 2. Celebration Notification (if returning from payment) */}
       {showCelebration && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-900 flex items-center justify-between shadow-xs animate-in slide-in-from-top-2">

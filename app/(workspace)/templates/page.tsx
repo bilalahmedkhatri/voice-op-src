@@ -1,8 +1,14 @@
 "use client";
 
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiTrash2, FiDatabase, FiRefreshCw, FiAlertCircle, FiVideo } from "react-icons/fi";
+import { FiTrash2, FiDatabase, FiAlertCircle, FiVideo } from "react-icons/fi";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import IconButton from "@/components/ui/IconButton";
 import FilterTab from "@/components/ui/FilterTab";
@@ -196,9 +202,7 @@ export default function TemplatesDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <FiRefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
-      </div>
+      <WorkspaceLoading />
     );
   }
 
@@ -222,23 +226,6 @@ export default function TemplatesDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <FiDatabase className="w-6 h-6 text-[#ff7d6e]" /> Saved Templates
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">Manage and track YouTube strategies and Facebook content plans saved in your database.</p>
-        </div>
-        <IconButton
-          title="Refresh"
-          variant="ghost"
-          size="lg"
-          isLoading={isLoading}
-          onClick={fetchTemplates}
-          className="self-start sm:self-auto"
-        />
-      </div>
-
       {/* Platform Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
         <FilterTab

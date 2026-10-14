@@ -21,10 +21,11 @@ export interface LocalHistoryItem {
 const STORE_NAME = 'history';
 
 export async function saveLocalHistoryItem(
-  item: Omit<LocalHistoryItem, 'id' | 'created_at'>
+  item: Omit<LocalHistoryItem, 'id' | 'created_at'> & { id?: string },
+  expectedScope?: string
 ): Promise<LocalHistoryItem> {
-  const db = await getLocalDB();
-  const id = `loc_${crypto.randomUUID().replace(/-/g, '')}`;
+  const db = await getLocalDB(expectedScope);
+  const id = item.id || `loc_${crypto.randomUUID().replace(/-/g, '')}`;
   const newItem: LocalHistoryItem = {
     ...item,
     id,
@@ -60,15 +61,16 @@ export async function getLocalHistoryItems(): Promise<LocalHistoryItem[]> {
   });
 }
 
-export async function deleteLocalHistoryItem(id: string): Promise<void> {
-  const db = await getLocalDB();
+export async function deleteLocalHistoryItem(id: string | string[], expectedScope?: string): Promise<void> {
+  const db = await getLocalDB(expectedScope);
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    const req = store.delete(id);
+    for (const itemId of Array.isArray(id) ? id : [id]) store.delete(itemId);
 
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+    tx.oncomplete = () => resolve();
+    tx.onabort = () => reject(tx.error || new Error('Audio deletion was interrupted.'));
+    tx.onerror = () => reject(tx.error);
   });
 }
 

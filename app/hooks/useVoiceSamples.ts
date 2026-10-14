@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getVoiceSamples, VoiceSample } from '../lib/voiceoverApi';
+import type { VoiceSample } from '../lib/voiceoverApi';
 
 export function useVoiceSamples(modelId?: string) {
   const [voices, setVoices] = useState<VoiceSample[]>([]);

@@ -1,19 +1,14 @@
 "use client";
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  FiArrowLeft,
-  FiRefreshCw,
-  FiAlertCircle,
-  FiSave,
-  FiCheck,
-  FiCopy,
-  FiTag,
-  FiShare2,
-  FiImage,
-} from "react-icons/fi";
+import { FiArrowLeft, FiAlertCircle, FiSave, FiCheck, FiCopy, FiTag, FiShare2, FiImage } from "react-icons/fi";
 import { Button } from "@/components/ui";
 
 export default function FacebookPostDetailPage() {
@@ -197,16 +192,13 @@ export default function FacebookPostDetailPage() {
   const handleSendToIntegration = () => {
     if (typeof window !== "undefined") {
       const fullText = [caption, tags].filter(Boolean).join("\n\n");
-      localStorage.setItem("pending_facebook_post", fullText);
     }
     router.push("/facebook/integration");
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <FiRefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
-      </div>
+      <WorkspaceLoading />
     );
   }
 
@@ -255,9 +247,7 @@ export default function FacebookPostDetailPage() {
               <span className="text-xs text-slate-500 font-medium">🕒 {post.time}</span>
             )}
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mt-1">
-            {post.theme || `Post #${postNumber} Details`}
-          </h1>
+          <WorkspacePageHeader title={post.theme || `Post #${postNumber} Details`} />
         </div>
 
         <div className="flex items-center gap-2.5">

@@ -1,7 +1,13 @@
 "use client";
 
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
 import React, { useState, useRef } from "react";
-import { FiUpload, FiFileText, FiAlertCircle, FiSave, FiCheck, FiLoader, FiEdit2 } from "react-icons/fi";
+import { FiUpload, FiFileText, FiAlertCircle, FiSave, FiCheck, FiEdit2 } from "react-icons/fi";
 import JsonTemplateTest from "../../components/JsonTemplateTest";
 import { Button } from "@/components/ui";
 
@@ -151,30 +157,13 @@ export default function JsonPage() {
 
   if (isLoadingTemplate) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <FiLoader className="w-8 h-8 text-[#ff7d6e] animate-spin" />
-          <p className="text-slate-500 font-medium">Loading template...</p>
-        </div>
-      </div>
+      <WorkspaceLoading />
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <div className="mx-auto space-y-8">
-        {!isGenerated && (
-          <header className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
-              <FiFileText className="w-8 h-8 text-[#ff7d6e]" />
-              Dynamic Template Generator
-            </h1>
-            <p className="text-slate-500 text-lg">
-              Upload or paste JSON to automatically generate a functional user interface.
-            </p>
-          </header>
-        )}
-
+      <div className="mx-auto space-y-6">
         {!isGenerated ? (
           <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
             <div className="p-6 space-y-6">

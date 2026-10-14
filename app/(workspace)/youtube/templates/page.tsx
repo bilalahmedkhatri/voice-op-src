@@ -1,8 +1,14 @@
 "use client";
 
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiTrash2, FiRefreshCw, FiAlertCircle, FiVideo, FiPlus } from "react-icons/fi";
+import { FiTrash2, FiAlertCircle, FiVideo, FiPlus } from "react-icons/fi";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import Button from "@/components/ui/Button";
 import IconButton from "@/components/ui/IconButton";
@@ -51,17 +57,17 @@ const extractYouTubeInfo = (jsonData: any) => {
       });
       // also if we didn't find a title above, try to extract from the first long video
       if (title === "Untitled Video Strategy") {
-         const firstLv = strategy[longVideoKeys[0]];
-         const lvObj = Array.isArray(firstLv) ? firstLv[0] : firstLv;
-         if (lvObj?.title || lvObj?.topic) {
-            title = lvObj.title || lvObj.topic;
-         }
+        const firstLv = strategy[longVideoKeys[0]];
+        const lvObj = Array.isArray(firstLv) ? firstLv[0] : firstLv;
+        if (lvObj?.title || lvObj?.topic) {
+          title = lvObj.title || lvObj.topic;
+        }
       }
     } else if (strategy.long_video) {
-        // Fallback to legacy single object check
-        contentParts.push("1 Long Video");
-        const lvObj = Array.isArray(strategy.long_video) ? strategy.long_video[0] : strategy.long_video;
-        statuses.push(lvObj?.status || "pending");
+      // Fallback to legacy single object check
+      contentParts.push("1 Long Video");
+      const lvObj = Array.isArray(strategy.long_video) ? strategy.long_video[0] : strategy.long_video;
+      statuses.push(lvObj?.status || "pending");
     }
   }
 
@@ -163,9 +169,7 @@ export default function YouTubeTemplatesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <FiRefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
-      </div>
+      <WorkspaceLoading />
     );
   }
 
@@ -180,36 +184,24 @@ export default function YouTubeTemplatesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2 mt-1">
-            <FiVideo className="w-6 h-6 text-[#ff7d6e]" /> YouTube Strategies
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Manage your YouTube Shorts and Long Video content strategies, video assets, and scripts.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <IconButton
-            title="Refresh"
-            variant="ghost"
-            size="lg"
-            isLoading={isLoading}
-            onClick={fetchTemplates}
-          />
-          <Button
-            href="/json-generator"
-            variant="primary"
-            size="md"
-            icon={<FiPlus className="w-4 h-4" />}
-            hideTextOnMobile={true}
-          >
-            New Video Strategy
-          </Button>
-        </div>
-      </div>
+      <WorkspacePageHeader actions={<>
+        <IconButton
+          title="Refresh"
+          variant="secondary"
+          size="md"
+          isLoading={isLoading}
+          onClick={fetchTemplates}
+        />
+        <Button
+          href="/json-generator"
+          variant="primary"
+          size="md"
+          icon={<FiPlus className="w-4 h-4" />}
+          hideTextOnMobile={true}
+        >
+          New Video Strategy
+        </Button>
+      </>} />
 
       {/* Table */}
       <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">

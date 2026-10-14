@@ -14,8 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const host = request.headers.get('host') || '';
-    const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+    const isLocalhost = process.env.NODE_ENV === 'development' && process.env.ENABLE_PAYMENT_SANDBOX === 'true';
 
     if (!isLocalhost) {
       return NextResponse.json(
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
     // DEV / SANDBOX SIMULATION FLOW:
     // If simulateSuccess is true (for developer testing or local sandbox demonstration),
     // atomically add credits immediately and return success!
-    if (simulateSuccess || process.env.NODE_ENV !== 'production' && body.isTest) {
+    if (simulateSuccess === true || body.isTest === true) {
       const result = await addCredits(user.id, selectedPackage.credits, selectedPackage.tier, {
         actionType: packageId === 'starter' ? 'topup_starter' : 'topup_pro',
         description: `${selectedPackage.name} ($${selectedPackage.priceUsd} USD / ~${selectedPackage.pricePkr} PKR)`,

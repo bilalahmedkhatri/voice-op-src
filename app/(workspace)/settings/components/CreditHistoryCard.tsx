@@ -1,5 +1,7 @@
 'use client';
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
 import React, { useState, useEffect } from 'react';
 import {
   FaCoins,
@@ -8,7 +10,6 @@ import {
   FaArrowDown,
   FaGift,
   FaHistory,
-  FaCheckCircle,
 } from 'react-icons/fa';
 
 interface CreditLedgerItem {

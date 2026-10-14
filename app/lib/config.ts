@@ -10,5 +10,5 @@ export function isDatabaseEnabled(): boolean {
   if (typeof window === 'undefined') {
     return Boolean(process.env.DATABASE_URL || process.env.POSTGRES_URL);
   }
-  return false;
+  return (window as Window & { __GENZEE_DATABASE_ENABLED__?: boolean }).__GENZEE_DATABASE_ENABLED__ ?? false;
 }

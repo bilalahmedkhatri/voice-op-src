@@ -1,5 +1,9 @@
 'use client';
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
+import { notifyIdentityChanged } from '../lib/ownerStorage';
+
 import { useState, useEffect, useRef, memo } from 'react';
 import { FaSignOutAlt, FaUserCircle, FaBolt, FaLaptopCode } from 'react-icons/fa';
 import { DbUser } from '../lib/db/types';
@@ -89,6 +93,7 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
   const handleSignOut = async () => {
     try {
       await fetch('/api/auth/signout', { method: 'POST' });
+      notifyIdentityChanged();
       setUser(null);
       setQuota(null);
       setMenuOpen(false);

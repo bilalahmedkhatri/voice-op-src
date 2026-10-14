@@ -5,17 +5,23 @@
  * Ensures a single source of truth for database versioning and schema migrations.
  */
 
+import { knownOwnerScope, setOwnerScope, resolveOwnerScope } from './ownerStorage';
+
 export const LOCAL_DB_NAME = 'VoiceGeneratorDB';
 export const LOCAL_DB_VERSION = 2;
 
-export function getLocalDB(): Promise<IDBDatabase> {
+export async function getLocalDB(expectedScope?: string): Promise<IDBDatabase> {
+  const initiatingScope = expectedScope || knownOwnerScope();
+  const scope = await resolveOwnerScope();
+  if (initiatingScope && initiatingScope !== scope) throw new Error('Account changed while this operation was running.');
+  if (!initiatingScope) setOwnerScope(scope);
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined' || !window.indexedDB) {
       reject(new Error('IndexedDB is not available in this environment.'));
       return;
     }
 
-    const request = indexedDB.open(LOCAL_DB_NAME, LOCAL_DB_VERSION);
+    const request = indexedDB.open(`${LOCAL_DB_NAME}:${scope}`, LOCAL_DB_VERSION);
 
     request.onupgradeneeded = () => {
       const db = request.result;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { gatewayHeaders } from '@/app/lib/gatewayHeaders';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -30,6 +31,7 @@ export async function GET(request: NextRequest) {
     const targetUrl = `${apiUrl}/api/v1/audio/sample?model=${encodeURIComponent(modelParam)}&voice=${encodeURIComponent(voiceParam)}`;
     
     const response = await fetch(targetUrl, {
+      headers: gatewayHeaders(),
       signal: AbortSignal.timeout(30000), // 30s timeout to allow Gemini generation & caching
     });
     

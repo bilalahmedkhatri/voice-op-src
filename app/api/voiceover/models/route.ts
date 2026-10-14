@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
+import { gatewayHeaders } from '@/app/lib/gatewayHeaders';
 
 export async function GET() {
   try {
     const apiUrl = process.env.VOICEOVER_API_URL || 'http://localhost:8000';
     const response = await fetch(`${apiUrl}/api/v1/audio/models`, {
+      headers: gatewayHeaders(),
       next: { revalidate: 60 } // Cache for 60 seconds
     });
     

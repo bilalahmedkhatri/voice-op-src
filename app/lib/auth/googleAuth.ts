@@ -81,6 +81,7 @@ export async function getGoogleUserProfile(accessToken: string): Promise<{
   sub: string;
   name: string;
   email: string;
+  email_verified: boolean;
   picture: string;
 } | null> {
   try {

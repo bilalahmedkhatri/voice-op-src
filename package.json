@@ -9,6 +9,8 @@
     "lint": "eslint",
     "db:init": "tsx scripts/initDb.ts",
     "generate-samples": "tsx scripts/generateVoiceSamples.ts",
+    "test:ownership": "node tests/ownership.test.cjs",
+    "test:audio-json": "node tests/audio-json-postgres.cjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },

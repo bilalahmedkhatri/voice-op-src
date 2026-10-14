@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/app/lib/auth/googleAuth';
-import { getDb } from '@/app/lib/db';
+import { gatewayHeaders } from '@/app/lib/gatewayHeaders';
 import { formatErrorMessage } from '@/app/lib/errorUtils';
 import { isDatabaseEnabled } from '@/app/lib/config';
 import { verifyCreditBalance, deductCredits, ActionType } from '@/app/lib/credits';
 import { calculateVoiceCost } from '@/app/lib/pricing';
+import { requireUser, requireOwnedTemplateItem, OwnershipError } from '@/app/lib/auth/ownership';
+import { getGuestOwner, issueGuestJobToken } from '@/app/lib/auth/guestOwner';
+import { linkOwnedAudioJob } from '@/app/lib/audioJobLinks';
+import { audioMetadata } from '@/app/lib/audioMetadata';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -48,15 +51,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Check DB User & Quota if logged in
-    const user = await getCurrentUser();
-    const sql = getDb();
-
-    // In Online Database Mode, require Google authentication
-    if (isDatabaseEnabled() && !user) {
-      return NextResponse.json(
-        { error: 'Please sign in with Google to generate voiceovers.' },
-        { status: 401 }
-      );
+    const context = isDatabaseEnabled() ? await requireUser() : null;
+    const user = context?.user ?? null;
+    const sql = context?.sql ?? null;
+    const guestOwner = context ? null : await getGuestOwner(true);
+    if (guestOwner) issueGuestJobToken(guestOwner, 'configuration-check');
+    const templateId = body.templateId;
+    const itemId = body.itemId;
+    if (templateId || itemId) {
+      if (!context) throw new OwnershipError('Sign in to attach audio to a template.', 401);
+      await requireOwnedTemplateItem(context, templateId, itemId);
     }
 
     // Determine credit action type: ElevenLabs = premium (4 credits), Gemini/Fish = standard (2 credits)
@@ -132,7 +136,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Collect extra parameters only if adjusted by user
-    const extraParams: Record<string, any> = {};
+    const extraParams: Record<string, unknown> = {};
     if (mergedOptions.pitch !== undefined && mergedOptions.pitch !== 1.0) extraParams.pitch = mergedOptions.pitch;
     if (mergedOptions.volume !== undefined && mergedOptions.volume !== 1.0) extraParams.volume = mergedOptions.volume;
     if (mergedOptions.speed !== undefined && mergedOptions.speed !== 1.0) extraParams.speed = mergedOptions.speed;
@@ -144,7 +148,7 @@ export async function POST(request: NextRequest) {
 
     // Forward to dynamic API (6 core fields guaranteed)
     const apiUrl = process.env.VOICEOVER_API_URL || 'http://localhost:8000';
-    const payload: Record<string, any> = {
+    const payload: Record<string, unknown> = {
       title: body.title || "Voiceover Script",
       text: text,
       provider: targetProvider,
@@ -161,10 +165,10 @@ export async function POST(request: NextRequest) {
     try {
       response = await fetch(`${apiUrl}/api/v1/audio/tts`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: gatewayHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(payload),
       });
-    } catch (err) {
+    } catch {
       throw new Error(`Unable to reach backend API at ${apiUrl}. Please ensure the backend server is running.`);
     }
 
@@ -187,6 +191,17 @@ export async function POST(request: NextRequest) {
     if (contentType.includes('application/json')) {
       const data = JSON.parse(Buffer.from(arrayBuffer).toString('utf-8'));
       
+      const jobId = data.job_id || data.task_id;
+      if (typeof jobId !== 'string' || !jobId) throw new OwnershipError('Invalid generation response.', 502);
+      if (context && sql && user) {
+        const rows = await sql`INSERT INTO generation_history
+          (id, user_id, prompt_text, model_id, model_name, voice_id, voice_name, audio_url, parameters, created_at)
+          VALUES (${jobId}, ${user.id}, ${text}, ${targetModelId}, ${targetModelId},
+            ${targetVoiceId}, ${targetVoiceId}, NULL, ${JSON.stringify({ ...mergedOptions, server_owned_job: true })}::jsonb, NOW())
+          RETURNING *`;
+        if (templateId && itemId) await linkOwnedAudioJob(context, templateId, itemId, rows[0]);
+      }
+
       // Update quota and deduct credits even for async jobs
       let asyncRemainingCredits: number | null = null;
       if (user && sql) {
@@ -212,22 +227,24 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         ...data,
+        job_token: guestOwner ? issueGuestJobToken(guestOwner, jobId) : undefined,
         remaining_credits: asyncRemainingCredits,
       });
     }
 
     const base64Audio = Buffer.from(arrayBuffer).toString('base64');
+    const metadata = audioMetadata(new Uint8Array(arrayBuffer));
     const audioUrl = `data:${contentType};base64,${base64Audio}`;
 
-    const id = `vo_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const id = `${user ? 'gh' : 'vo'}_${crypto.randomUUID().replace(/-/g, '')}`;
     const elapsedSeconds = Math.round(((Date.now() - startTime) / 1000) * 10) / 10;
     let remainingCredits: number | null = null;
 
     // Save record to DB for authenticated user
     if (user && sql) {
       try {
-        const historyId = `gh_${crypto.randomUUID().replace(/-/g, '')}`;
-        await sql`
+        const historyId = id;
+        const saved = await sql`
           INSERT INTO generation_history (
             id, user_id, prompt_text, model_id, model_name, voice_id, voice_name, audio_url, duration_sec, generation_time_sec, parameters, created_at
           )
@@ -240,12 +257,13 @@ export async function POST(request: NextRequest) {
             ${targetVoiceId},
             ${targetVoiceId},
             ${audioUrl},
-            NULL,
+            ${metadata.duration_sec},
             ${elapsedSeconds},
-            ${JSON.stringify(mergedOptions)},
+            ${JSON.stringify({ ...mergedOptions, size_bytes: metadata.size_bytes })},
             NOW()
-          )
+          ) RETURNING *
         `;
+        if (context && templateId && itemId) await linkOwnedAudioJob(context, templateId, itemId, saved[0]);
 
         await sql`
           UPDATE user_quotas
@@ -264,6 +282,7 @@ export async function POST(request: NextRequest) {
         remainingCredits = deductRes.balanceAfter;
       } catch (dbError) {
         console.error('Failed to log generation history or deduct credits in DB:', dbError);
+        throw new OwnershipError('Unable to save your voiceover. Please check your history before retrying.', 500);
       }
     }
 
@@ -271,7 +290,8 @@ export async function POST(request: NextRequest) {
       id: id,
       audio_url: audioUrl,
       voice_name: targetVoiceId,
-      duration_seconds: 0,
+      duration_seconds: metadata.duration_sec,
+      size_bytes: metadata.size_bytes,
       generation_time_sec: elapsedSeconds,
       file_size: arrayBuffer.byteLength,
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -280,11 +300,11 @@ export async function POST(request: NextRequest) {
       reset_at: null,
       model_id: targetModelId,
     });
-  } catch (error: any) {
+  } catch (error) {
     const errorMsg = formatErrorMessage(error);
     return NextResponse.json(
       { error: errorMsg },
-      { status: error?.status || 500 }
+      { status: error instanceof OwnershipError ? error.status : 500 }
     );
   }
 }

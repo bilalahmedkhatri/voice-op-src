@@ -1,11 +1,17 @@
 'use client';
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
+import { currentOwnerScope, setOwnerScope, resolveOwnerScope, ownerDrafts } from '@/app/lib/ownerStorage';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { VoiceParams } from '../types';
+import type { LiveJob } from '../components/LiveAudioPreview';
 import { isDatabaseEnabled } from '../lib/config';
 import { saveLocalHistoryItem } from '../lib/localHistoryStorage';
 import { formatErrorMessage } from '../lib/errorUtils';
 import { playCompletionSound } from '../lib/audioNotification';
+import { pendingAudioJobs, pendingJobFromHistory, savePendingAudioJob, removePendingAudioJob, type PendingGeneration } from '../lib/pendingAudioJobs';
 
 function dataUriToBlob(dataUri: string): Blob {
   const [header, base64] = dataUri.split(',');
@@ -39,6 +45,11 @@ export function useVoiceGenerator() {
   });
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [chunkProgress, setChunkProgress] = useState<{ completed: number; total: number } | null>(null);
+  const [liveJob, setLiveJob] = useState<LiveJob | null>(null);
+  const liveAttemptRef = useRef(0);
+  const [pendingJob, setPendingJob] = useState<PendingGeneration | null>(null);
+  const [retryAvailable, setRetryAvailable] = useState(false);
   const [generationTime, setGenerationTime] = useState<number | null>(null);
   const [videoFormat, setVideoFormat] = useState<'short' | 'long'>('short');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -48,6 +59,8 @@ export function useVoiceGenerator() {
   const [userTier, setUserTier] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const generationControllerRef = useRef<AbortController | null>(null);
+  const identityScopeRef = useRef<string | null>(null);
+  const restoredJob = useRef<string | null>(null);
 
   // Load session & quota from DB
   const refreshQuota = useCallback(async () => {
@@ -58,10 +71,38 @@ export function useVoiceGenerator() {
         localStorage.removeItem('voice_generator_usage');
       }
 
-      if (!isDatabaseEnabled()) return;
-
       const res = await fetch('/api/auth/session');
       const data = await res.json();
+      if (!res.ok || typeof data.owner_scope !== 'string') throw new Error('Account check failed.');
+      if (identityScopeRef.current && identityScopeRef.current !== data.owner_scope) {
+        generationControllerRef.current?.abort();
+        setAudioBlob(null);
+        window.location.reload();
+        return;
+      }
+      const initialIdentity = !identityScopeRef.current;
+      identityScopeRef.current = data.owner_scope;
+      setOwnerScope(data.owner_scope);
+      if (initialIdentity) {
+        const requested = new URLSearchParams(window.location.search).get('resumeJob');
+        const records = pendingAudioJobs();
+        let stored = requested ? records.find(job => job.jobId === requested) : records[0];
+        if (!stored && data.authenticated && isDatabaseEnabled()) {
+          try {
+            const response = await fetch('/api/history?pending=true', { cache: 'no-store' });
+            const history = response.ok ? await response.json() : {};
+            if (currentOwnerScope() !== data.owner_scope) return;
+            const rows = history.items || [];
+            const row = requested ? rows.find((entry: { id: string }) => entry.id === requested) : rows[0];
+            stored = row ? pendingJobFromHistory(row, data.owner_scope) || undefined : undefined;
+          } catch { /* Session/local recovery can still continue if history is unavailable. */ }
+        }
+        if (stored) {
+          restoredJob.current = stored.jobId;
+          setPendingJob(stored);
+          setParams(stored.params);
+        }
+      }
       if (data.authenticated) {
         setIsAuthenticated(true);
         if (data.quota) setUserQuota(data.quota);
@@ -88,7 +129,8 @@ export function useVoiceGenerator() {
 
   // Synchronize credits when updated across tabs or components
   useEffect(() => {
-    const handleCreditsUpdated = (e: any) => {
+    const handleCreditsUpdated = (event: Event) => {
+      const e = event as CustomEvent<{ credits?: number; tier?: string }>;
       if (e.detail?.credits !== undefined) {
         setAvailableCredits(e.detail.credits);
       }
@@ -104,19 +146,21 @@ export function useVoiceGenerator() {
 
   // Cleanup: abort pending requests on unmount
   useEffect(() => {
-    const controller = generationControllerRef.current;
     return () => {
-      controller?.abort();
+      generationControllerRef.current?.abort();
     };
   }, []);
 
-  const handleGenerate = async (
+  const handleGenerate = useCallback(async (
     apiVoiceId?: string,
     targetModelId?: string,
     targetFormat: 'short' | 'long' = 'short',
-    targetProvider?: string
+    targetProvider?: string,
+    resume?: PendingGeneration
   ) => {
-    if (!params.text.trim()) {
+    if (generationControllerRef.current || isGenerating) return;
+    const generationParams = resume?.params || structuredClone(params);
+    if (!generationParams.text.trim()) {
       setErrorMessage('Please enter some text to generate a voiceover.');
       return;
     }
@@ -139,111 +183,129 @@ export function useVoiceGenerator() {
 
     setVideoFormat(targetFormat);
     setErrorMessage(null);
+    if (!resume) {
+      setPendingJob(null);
+      setLiveJob(null);
+      setRetryAvailable(false);
+      setChunkProgress(null);
+    }
     const startTime = performance.now();
 
     try {
-      generationControllerRef.current?.abort();
       const controller = new AbortController();
       generationControllerRef.current = controller;
 
       setIsGenerating(true);
 
-      const cachedTitle = typeof window !== 'undefined' ? localStorage.getItem("pending_voice_title") : null;
-
-      const response = await fetch('/api/voiceover', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: cachedTitle || 'Voiceover Script',
-          text: params.text,
-          voice_id: apiVoiceId,
-          model_id: targetModelId,
-          provider: targetProvider,
-          options: {
-            ...(params.options || {}),
-            video_format: targetFormat,
-          },
-          speed: params.rate,
-          pitch: params.pitch,
-          volume: params.volume,
-          tone: 'neutral',
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        let errorMsg = 'Failed to generate voiceover';
-        try {
-          const errData = await response.json();
-          errorMsg = formatErrorMessage(errData);
-          if (response.status === 402 || errData.error === 'INSUFFICIENT_CREDITS' || errData.code === 'INSUFFICIENT_CREDITS') {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('open-topup-modal', { detail: errData }));
-            }
-          }
-        } catch {
-          errorMsg = `Server error: ${response.status} ${response.statusText}`;
-        }
-        throw new Error(errorMsg);
+      const operationScope = await resolveOwnerScope();
+      if (operationScope !== currentOwnerScope() || (resume && resume.ownerScope !== operationScope)) {
+        window.location.reload();
+        throw new Error('Account changed before generation.');
       }
-
-      let data = await response.json();
-
-      // Update available credits balance if returned by API
-      if (data.remaining_credits !== undefined) {
-        setAvailableCredits(data.remaining_credits);
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('credits-updated', { detail: { credits: data.remaining_credits } }));
+      let data;
+      if (resume) {
+        data = { status: 'processing', job_id: resume.jobId, job_token: resume.jobToken };
+        if (retryAvailable) {
+          const retryResponse = await fetch('/api/templates/audio-job/retry', {
+            method: 'POST', headers: { 'Content-Type': 'application/json',
+              ...(resume.jobToken ? { 'X-Voice-Job-Token': resume.jobToken } : {}) },
+            body: JSON.stringify({ jobId: resume.jobId }), signal: controller.signal,
+          });
+          if (!retryResponse.ok && retryResponse.status !== 409) {
+            throw new Error(formatErrorMessage(await retryResponse.json()));
+          }
+          setRetryAvailable(false);
         }
+      } else {
+        const templateId = ownerDrafts.getItem('pending_voice_template_id');
+        const itemId = ownerDrafts.getItem('pending_voice_item_id');
+        const cachedTitle = typeof window !== 'undefined' ? ownerDrafts.getItem("pending_voice_title") : null;
+
+        const response = await fetch('/api/voiceover', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            templateId,
+            itemId,
+            title: cachedTitle || 'Voiceover Script',
+            text: generationParams.text,
+            voice_id: apiVoiceId,
+            model_id: targetModelId,
+            provider: targetProvider,
+            options: {
+              ...(generationParams.options || {}),
+              video_format: targetFormat,
+            },
+            speed: generationParams.rate,
+            pitch: generationParams.pitch,
+            volume: generationParams.volume,
+            tone: 'neutral',
+          }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          let errorMsg = 'Failed to generate voiceover';
+          try {
+            const errData = await response.json();
+            errorMsg = formatErrorMessage(errData);
+            if (response.status === 402 || errData.error === 'INSUFFICIENT_CREDITS' || errData.code === 'INSUFFICIENT_CREDITS') {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('open-topup-modal', { detail: errData }));
+              }
+            }
+          } catch {
+            errorMsg = `Server error: ${response.status} ${response.statusText}`;
+          }
+          throw new Error(errorMsg);
+        }
+
+        data = await response.json();
+
+        // Update available credits balance if returned by API
+        if (data.remaining_credits !== undefined) {
+          setAvailableCredits(data.remaining_credits);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('credits-updated', { detail: { credits: data.remaining_credits } }));
+          }
+        }
+
       }
 
       // Handle async processing response (backend acknowledges request)
       if (data.status === 'processing' || data.message === 'processing' || data.job_id || data.task_id) {
 
         const jobId = data.job_id || data.task_id;
+        const jobToken = data.job_token;
+        setLiveJob({ jobId, jobToken, ownerScope: operationScope, attempt: ++liveAttemptRef.current });
+        const persisted = { jobId, jobToken, ownerScope: operationScope, params: generationParams,
+          voice: apiVoiceId, model: targetModelId, provider: targetProvider, format: targetFormat };
+        setPendingJob(persisted);
+        savePendingAudioJob(persisted);
 
-        // Save the job_id if we came from Content Detail page
-        if (typeof window !== 'undefined' && jobId) {
-          const tId = localStorage.getItem('pending_voice_template_id');
-          const iId = localStorage.getItem('pending_voice_item_id');
-
-          if (tId && iId) {
-            fetch('/api/templates/audio-job', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                templateId: tId,
-                itemId: iId,
-                jobId: jobId,
-                voiceName: data.voice_name || apiVoiceId,
-                voiceId: apiVoiceId,
-                modelId: targetModelId
-              })
-            }).catch(e => console.error('Failed to save audio job_id:', e));
-          }
-        }
-
-        setToastNotification({
-          type: 'info',
-          message: 'Your request is processing. Please wait...'
-        });
-
-        // Polling logic: 5 requests, 10 seconds apart
+        // Reuse owned polling for both initial generation and selective retry.
         let pollCount = 0;
         let isCompleted = false;
         let pollError: string | null = null;
 
         while (pollCount < 50 && !isCompleted && !pollError) {
-          await new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
+          if (pollCount > 0) await new Promise(resolve => setTimeout(resolve, 5000));
 
-          if (generationControllerRef.current?.signal.aborted) {
+          if (controller.signal.aborted) {
             return;
           }
 
           try {
-            const statusRes = await fetch(`/api/templates/audio-job/status?jobId=${jobId}`);
+            const statusRes = await fetch(`/api/templates/audio-job/status?jobId=${encodeURIComponent(jobId)}`, { signal: controller.signal, cache: 'no-store', headers: jobToken ? { 'X-Voice-Job-Token': jobToken } : {} });
+            if ([401, 403, 404].includes(statusRes.status)) {
+              setPendingJob(null);
+              removePendingAudioJob(jobId);
+              throw new Error('This audio job is no longer accessible for your account.');
+            }
             if (statusRes.ok) {
               const statusData = await statusRes.json();
+              if (statusData.chunks) setChunkProgress(statusData.chunks);
+              setRetryAvailable(statusData.retry_available === true);
               if (statusData.status === 'completed' || statusData.status === 'success') {
                 isCompleted = true;
                 data = statusData;
@@ -254,7 +316,8 @@ export function useVoiceGenerator() {
               // else: still 'processing', loop continues
             }
           } catch (e) {
-            console.warn('Polling check failed (network?), will retry:', e);
+            if (controller.signal.aborted) return;
+            pollError = formatErrorMessage(e);
           }
           pollCount++;
         }
@@ -265,10 +328,10 @@ export function useVoiceGenerator() {
         }
 
         if (!isCompleted) {
-          // Timed out after 5 attempts — backend still processing
+          // Polling window ended; background generation may still be running
           setToastNotification({
             type: 'info',
-            message: 'Audio is still being processed. Check Content Detail page later for the result.'
+            message: 'Audio is still processing. Use Check progress to continue.'
           });
           setIsGenerating(false);
           generationControllerRef.current = null;
@@ -289,10 +352,17 @@ export function useVoiceGenerator() {
         throw new Error('No audio data received from the server.');
       }
 
+      if (controller.signal.aborted || await resolveOwnerScope() !== operationScope) throw new Error('Account changed during generation.');
       setAudioBlob(downloadedBlob);
+      setChunkProgress(null);
+      setLiveJob(null);
+      setToastNotification(null);
+      if (data.job_id || resume?.jobId) removePendingAudioJob(data.job_id || resume?.jobId);
+      setPendingJob(null);
+      setRetryAvailable(false);
 
       const elapsed = Math.round((performance.now() - startTime) / 100) / 10;
-      setGenerationTime(elapsed);
+      setGenerationTime(typeof data.generation_time_sec === 'number' ? data.generation_time_sec : elapsed);
 
       // Play completion chime notification for background/active tab feedback
       playCompletionSound();
@@ -300,7 +370,8 @@ export function useVoiceGenerator() {
       // Save to local IndexedDB storage (instant offline history fallback)
       try {
         await saveLocalHistoryItem({
-          prompt_text: params.text,
+          id: data.job_id || resume?.jobId,
+          prompt_text: generationParams.text,
           model_id: targetModelId,
           model_name: targetModelId,
           voice_id: apiVoiceId,
@@ -310,46 +381,24 @@ export function useVoiceGenerator() {
           generation_time_sec: elapsed,
           video_format: targetFormat,
           parameters: {
-            speed: params.rate ?? (params.options?.speed ?? 1.0),
+            speed: generationParams.rate ?? (generationParams.options?.speed ?? 1.0),
             video_format: targetFormat,
-            ...(params.options || {}),
+            ...(generationParams.options || {}),
           },
-        });
+        }, operationScope);
       } catch (localDbErr) {
         console.error('Failed to save to local IndexedDB history:', localDbErr);
       }
+      window.dispatchEvent(new Event('audio-library-updated'));
 
       // Refresh DB quota after successful generation
       await refreshQuota();
-
-      // If we finished successfully from polling or direct generation and came from Content Detail page, update the DB with URL
-      if (data.audio_url && typeof window !== 'undefined') {
-        const tId = localStorage.getItem('pending_voice_template_id');
-        const iId = localStorage.getItem('pending_voice_item_id');
-        const jobId = data.job_id || data.task_id || `job_${Date.now()}`;
-
-        if (tId && iId) {
-          fetch('/api/templates/audio-job', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              templateId: tId,
-              itemId: iId,
-              jobId: jobId,
-              audioUrl: data.audio_url,
-              voiceName: data.voice_name || apiVoiceId,
-              voiceId: apiVoiceId,
-              modelId: targetModelId,
-              createdAt: new Date().toISOString(),
-            }),
-          }).catch((e) => console.error('Failed to save audio_url to db:', e));
-        }
-      }
 
       setErrorMessage(null);
       generationControllerRef.current = null;
       setIsGenerating(false);
     } catch (error) {
+      setToastNotification(null);
       setIsGenerating(false);
 
       if (error instanceof Error && error.name === 'AbortError') {
@@ -371,7 +420,14 @@ export function useVoiceGenerator() {
       setErrorMessage(uiMessage);
       generationControllerRef.current = null;
     }
-  };
+  }, [params, isGenerating, isAuthenticated, retryAvailable, refreshQuota]);
+
+  useEffect(() => {
+    if (!pendingJob || restoredJob.current !== pendingJob.jobId || (isDatabaseEnabled() && !isAuthenticated)) return;
+    restoredJob.current = null;
+    // Resume polling once; a failed/quota-limited job still needs explicit retry.
+    void handleGenerate(pendingJob.voice, pendingJob.model, pendingJob.format, pendingJob.provider, pendingJob);
+  }, [pendingJob, isAuthenticated, handleGenerate]);
 
   const loadPrompt = (prompt: string) => {
     setParams(prev => ({ ...prev, text: prompt }));
@@ -391,6 +447,12 @@ export function useVoiceGenerator() {
     audioBlob,
     handleGenerate,
     isGenerating,
+    chunkProgress,
+    liveJob,
+    pendingJob: Boolean(pendingJob),
+    retryAvailable,
+    handleResume: () => pendingJob && handleGenerate(pendingJob.voice, pendingJob.model,
+      pendingJob.format, pendingJob.provider, pendingJob),
     generationTime,
     errorMessage,
     dismissError,

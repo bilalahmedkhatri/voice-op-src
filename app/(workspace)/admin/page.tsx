@@ -1,17 +1,23 @@
 'use client';
 
+import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
+
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+
+import { ownerDrafts } from '@/app/lib/ownerStorage';
+
 import { useState, useEffect, useCallback } from 'react';
 import { FaMicrophone, FaSync, FaGoogle } from 'react-icons/fa';
-import { FiMic, FiZap } from 'react-icons/fi';
+import { FiMic } from 'react-icons/fi';
 import { useVoiceGenerator } from '../../hooks/useVoiceGenerator';
 import { useVoiceSamples } from '../../hooks/useVoiceSamples';
 import { useModels } from '../../hooks/useModels';
 import TextInput from '../../components/TextInput';
 import VoiceControls from '../../components/VoiceControls';
 import AudioPlayer from '../../components/AudioPlayer';
+import LiveAudioPreview from '@/app/components/LiveAudioPreview';
 import GenerationStatus from '../../components/GenerationStatus';
 import Toast from '../../components/Toast';
-import { useIsClient } from '../../hooks/useIsClient';
 import {
   VoicePresetItem,
   getLocalPresets,
@@ -35,13 +41,13 @@ export default function AdminVoiceStudioPage() {
     generationTime,
     errorMessage,
     dismissError,
+    chunkProgress, liveJob, pendingJob, retryAvailable, handleResume,
     toastNotification,
     clearToast,
     isAuthenticated,
     isOnlineDb,
     remainingGenerations,
     availableCredits,
-    userTier,
   } = useVoiceGenerator();
 
   const [sourceInfo, setSourceInfo] = useState<{ title?: string; type?: string } | null>(null);
@@ -49,9 +55,9 @@ export default function AdminVoiceStudioPage() {
   // Check for script prefilled from Content Strategy
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const pendingScript = localStorage.getItem('pending_voice_script');
-      const pendingFormat = localStorage.getItem('pending_voice_format');
-      const pendingTitle = localStorage.getItem('pending_voice_title');
+      const pendingScript = ownerDrafts.getItem('pending_voice_script');
+      const pendingFormat = ownerDrafts.getItem('pending_voice_format');
+      const pendingTitle = ownerDrafts.getItem('pending_voice_title');
 
       if (pendingScript) {
         setParams((prev) => ({ ...prev, text: pendingScript }));
@@ -63,9 +69,9 @@ export default function AdminVoiceStudioPage() {
         } else {
           setSourceInfo({ title: 'Imported Campaign Script', type: pendingFormat || 'Short Video' });
         }
-        localStorage.removeItem('pending_voice_script');
-        localStorage.removeItem('pending_voice_format');
-        localStorage.removeItem('pending_voice_title');
+        ownerDrafts.removeItem('pending_voice_script');
+        ownerDrafts.removeItem('pending_voice_format');
+        ownerDrafts.removeItem('pending_voice_title');
       }
     }
   }, [setParams, setVideoFormat]);
@@ -85,7 +91,6 @@ export default function AdminVoiceStudioPage() {
   const [selectedApiVoice, setSelectedApiVoice] = useState('');
   const [presets, setPresets] = useState<VoicePresetItem[]>([]);
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
-  const isClient = useIsClient();
 
   // Load Presets (both online DB and local IndexedDB)
   const refreshPresets = useCallback(async () => {
@@ -245,57 +250,6 @@ export default function AdminVoiceStudioPage() {
 
   return (
     <div className="space-y-6 mx-auto">
-      {/* Workspace Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2.5">
-            <FiMic className="w-6 h-6 text-[#ff7d6e]" />
-            <span>GenZee Voice Studio</span>
-          </h1>
-          <p className="text-slate-500 mt-1 text-sm">
-            Generate natural multi-model voiceovers for YouTube, Facebook, and TikTok with ElevenLabs, Fish Audio &amp; Gemini.          </p>
-        </div>
-
-        {/* Plan / Wallet Status Badge */}
-        {isClient ? (
-          <div>
-            {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <div className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-2 bg-white border border-slate-200 text-slate-700 shadow-2xs">
-                  <span className="text-amber-500 font-bold flex items-center gap-1 font-mono">
-                    🪙 {availableCredits !== null ? availableCredits.toLocaleString() : 50}
-                  </span>
-                  <span className="text-slate-400">Credits</span>
-                  <span className="w-1 h-1 rounded-full bg-slate-300" />
-                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-orange-50 text-[#c83a2a]">
-                    {userTier || 'free'}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof window !== 'undefined') {
-                      window.dispatchEvent(new CustomEvent('open-topup-modal'));
-                    }
-                  }}
-                  className="px-2.5 py-1.5 rounded-xl bg-[#ff7d6e] hover:bg-[#e04836] text-white text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1 cursor-pointer"
-                  title="Top-Up Wallet Credits"
-                >
-                  <FiZap className="w-3 h-3" />
-                  <span>+ Top Up</span>
-                </button>
-              </div>
-            ) : (
-              <div className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 bg-white border border-slate-200 text-emerald-700 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span>Free Studio Plan</span>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="h-7 w-32 bg-slate-100 animate-pulse rounded-xl" />
-        )}
-      </div>
 
       {/* Script Source Notification */}
       {sourceInfo && (
@@ -417,7 +371,11 @@ export default function AdminVoiceStudioPage() {
           <GenerationStatus
             errorMessage={errorMessage}
             onDismissError={dismissError}
-          />
+            progress={chunkProgress} isGenerating={isGenerating && !audioBlob}
+            onResume={pendingJob ? handleResume : undefined} retryAvailable={retryAvailable}
+          >
+            {liveJob && <LiveAudioPreview key={liveJob.jobId} job={liveJob} />}
+          </GenerationStatus>
 
           {toastNotification && (
             <div className="fixed bottom-4 right-4 z-50">

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { gatewayHeaders } from '@/app/lib/gatewayHeaders';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -29,7 +30,7 @@ export async function GET(
     // Try Gemini sample endpoint first
     try {
       const geminiEndpoint = `${apiUrl}/api/v1/audio/gemini-sample?voice=${encodeURIComponent(voiceId)}`;
-      const res = await fetch(geminiEndpoint);
+      const res = await fetch(geminiEndpoint, { headers: gatewayHeaders() });
       if (res.ok) {
         const audioBuffer = await res.arrayBuffer();
         return new NextResponse(audioBuffer, {
@@ -47,7 +48,7 @@ export async function GET(
     // Try general sample endpoint /api/v1/audio/sample?voice=...
     try {
       const generalEndpoint = `${apiUrl}/api/v1/audio/sample?voice=${encodeURIComponent(voiceId)}`;
-      const res = await fetch(generalEndpoint);
+      const res = await fetch(generalEndpoint, { headers: gatewayHeaders() });
       if (res.ok) {
         const audioBuffer = await res.arrayBuffer();
         return new NextResponse(audioBuffer, {

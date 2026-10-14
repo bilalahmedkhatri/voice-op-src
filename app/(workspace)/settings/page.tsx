@@ -1,7 +1,10 @@
 "use client";
 
+import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
+import WorkspaceLoading from "@/app/components/WorkspaceLoading";
+
 import React, { useState, useEffect } from "react";
-import { FiSettings, FiRefreshCw, FiAlertCircle } from "react-icons/fi";
+import { FiSettings, FiAlertCircle } from "react-icons/fi";
 import { FaGoogle } from "react-icons/fa";
 
 import SettingsHeader from "./components/SettingsHeader";
@@ -122,10 +125,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-80 space-y-3">
-        <FiRefreshCw className="w-8 h-8 text-[#ff7d6e] animate-spin" />
-        <p className="text-sm font-medium text-slate-500">Loading account settings...</p>
-      </div>
+      <WorkspaceLoading />
     );
   }
 
@@ -171,9 +171,6 @@ export default function SettingsPage() {
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-300">
-      {/* 1. Header */}
-      <SettingsHeader onRefresh={fetchSettings} isLoading={isLoading} />
-
       {/* 2. Top Overview Stat Cards */}
       <SettingsStats
         quota={quota}
