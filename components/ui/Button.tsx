@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import {Link as LocaleLink} from '@/i18n/navigation';
 import { FiRefreshCw } from 'react-icons/fi';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'soft' | 'danger' | 'dangerSoft' | 'ghost';
@@ -73,7 +74,7 @@ export default function Button({
 }: ButtonProps) {
   const baseClasses =
     'inline-flex items-center justify-center transition-all cursor-pointer select-none flex-shrink-0 disabled:cursor-not-allowed disabled:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9b8f]/40';
-  
+
   const responsiveClasses = hideTextOnMobile ? mobileIconBoxStyles[size] : '';
   const combinedClasses = `${baseClasses} ${variantStyles[variant]} ${sizeStyles[size]} ${responsiveClasses} ${className}`.trim();
 
@@ -92,10 +93,11 @@ export default function Button({
   );
 
   if (href && !disabled && !isLoading) {
+    const NavigationLink = /^\/(api|_next)(\/|$)/.test(href) || !href.startsWith('/') ? Link : LocaleLink;
     return (
-      <Link href={href} target={target} rel={rel} className={combinedClasses}>
+      <NavigationLink href={href} target={target} rel={rel} className={combinedClasses}>
         {content}
-      </Link>
+      </NavigationLink>
     );
   }
 

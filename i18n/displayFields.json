@@ -1,0 +1,8 @@
+[
+  "title", "default", "absolute", "description", "label", "name", "text", "q", "a", "question", "answer",
+  "subtitle", "badge", "heading", "content", "placeholder", "benefit", "benefits", "features", "items",
+  "bullets", "paragraphs", "headers", "rows", "takeaways", "readTime", "keywords", "featureList",
+  "detail", "stat", "note", "tagline", "ctaText", "feature", "free", "starter", "pro", "script", "hook", "theme",
+  "summary", "subheading", "ctaLabel", "statusText", "points", "tag", "caption", "daily_capacity",
+  "confirmText", "cancelText", "successMessage", "buttonText", "action", "credits", "alt"
+]

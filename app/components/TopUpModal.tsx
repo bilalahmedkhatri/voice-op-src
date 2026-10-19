@@ -1,5 +1,9 @@
 'use client';
 
+import {errorCopy} from '@/i18n/errors';
+
+import {useCopy, copyData} from '@/i18n/copy';
+
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 
 import React, { useState, useEffect } from 'react';
@@ -31,6 +35,9 @@ export default function TopUpModal({
   currentTier = 'free',
   onSuccess,
 }: TopUpModalProps) {
+  const copy = useCopy();
+
+
   const [selectedPackage, setSelectedPackage] = useState<'starter' | 'pro'>('starter');
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -89,8 +96,8 @@ export default function TopUpModal({
     }
   };
 
-  const starterPkg = TOPUP_PACKAGES.starter;
-  const proPkg = TOPUP_PACKAGES.pro;
+  const starterPkg = copyData(TOPUP_PACKAGES.starter, copy);
+  const proPkg = copyData(TOPUP_PACKAGES.pro, copy);
 
   const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
@@ -103,13 +110,12 @@ export default function TopUpModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <span>Top-Up Wallet Credits</span>
+                <span>{copy("Top-Up Wallet Credits")}</span>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-100/80 text-orange-950 border border-orange-200">
-                  {currentTier.toUpperCase()} TIER
-                </span>
+                  {currentTier.toUpperCase()} {copy(" TIER")}</span>
               </h3>
               <p className="text-xs text-slate-500">
-                Pay-As-You-Go • Credits have <strong>NO expiry date</strong>
+                {copy("Pay-As-You-Go • Credits have ")}<strong>{copy("NO expiry date")}</strong>
               </p>
             </div>
           </div>
@@ -117,7 +123,7 @@ export default function TopUpModal({
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
               <FaCoins className="text-amber-500" />
-              <span>{currentCredits} Credits</span>
+              <span>{currentCredits} {copy(" Credits")}</span>
             </div>
             <button
               onClick={onClose}
@@ -140,7 +146,7 @@ export default function TopUpModal({
           {errorMessage && (
             <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs font-bold text-rose-800 flex items-center gap-2">
               <FaTimes className="text-rose-500" />
-              <span>{errorMessage}</span>
+              <span>{errorCopy(errorMessage, copy)}</span>
             </div>
           )}
 
@@ -172,11 +178,10 @@ export default function TopUpModal({
                 </div>
 
                 <div className="flex items-baseline gap-1.5 mb-1">
-                  <span className="text-xl font-black text-slate-900">Pay-As-You-Go</span>
+                  <span className="text-xl font-black text-slate-900">{copy("Pay-As-You-Go")}</span>
                 </div>
                 <div className="text-xs font-bold text-[#c83a2a] mb-4">
-                  {starterPkg.credits} Non-expiring Credits
-                </div>
+                  {starterPkg.credits} {copy(" Non-expiring Credits")}</div>
 
                 <ul className="space-y-2 text-xs text-slate-600">
                   {starterPkg.features.map((feat, idx) => (
@@ -189,8 +194,8 @@ export default function TopUpModal({
               </div>
 
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
-                <span>Credits never expire</span>
-                <span className="font-bold text-slate-700">140 Full Reels</span>
+                <span>{copy("Credits never expire")}</span>
+                <span className="font-bold text-slate-700">{copy("140 Full Reels")}</span>
               </div>
             </div>
 
@@ -204,8 +209,7 @@ export default function TopUpModal({
               }`}
             >
               <div className="absolute -top-3 right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                <FaCrown className="text-[9px]" /> Best Value
-              </div>
+                <FaCrown className="text-[9px]" /> {copy(" Best Value")}</div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -224,11 +228,10 @@ export default function TopUpModal({
                 </div>
 
                 <div className="flex items-baseline gap-1.5 mb-1">
-                  <span className="text-xl font-black text-slate-900">Pay-As-You-Go</span>
+                  <span className="text-xl font-black text-slate-900">{copy("Pay-As-You-Go")}</span>
                 </div>
                 <div className="text-xs font-bold text-emerald-600 mb-4">
-                  {proPkg.credits} Credits (+100 Bonus)
-                </div>
+                  {proPkg.credits} {copy(" Credits (+100 Bonus)")}</div>
 
                 <ul className="space-y-2 text-xs text-slate-600">
                   {proPkg.features.map((feat, idx) => (
@@ -241,8 +244,8 @@ export default function TopUpModal({
               </div>
 
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
-                <span>ElevenLabs Unlocked</span>
-                <span className="font-bold text-slate-700">440 Full Reels</span>
+                <span>{copy("ElevenLabs Unlocked")}</span>
+                <span className="font-bold text-slate-700">{copy("440 Full Reels")}</span>
               </div>
             </div>
           </div>
@@ -251,16 +254,16 @@ export default function TopUpModal({
             <div className="p-3.5 bg-rose-50 rounded-2xl border border-rose-200/80 flex flex-col gap-1.5 text-xs text-rose-800">
               <div className="flex items-center gap-2 font-bold">
                 <FaShieldAlt className="text-rose-600 text-sm" />
-                <span>Payments Disabled (Testing Phase)</span>
+                <span>{copy("Payments Disabled (Testing Phase)")}</span>
               </div>
               <p className="pl-6">
-                Payments are currently disabled during the public testing phase. If you need more credits to test the app, you can request them by emailing <a href="mailto:bilalahmed_bhabma@outlook.com" className="font-bold underline">bilalahmed_bhabma@outlook.com</a>.
+                {copy("Payments are currently disabled during the public testing phase. If you need more credits to test the app, you can request them by emailing ")}<a href="mailto:bilalahmed_bhabma@outlook.com" className="font-bold underline">{copy("bilalahmed_bhabma@outlook.com")}</a>.
               </p>
             </div>
           ) : (
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center gap-2 text-xs text-slate-500">
               <FaShieldAlt className="text-emerald-600 text-sm" />
-              <span>Secure checkout. Credits are added to your wallet right after payment.</span>
+              <span>{copy("Secure checkout. Credits are added to your wallet right after payment.")}</span>
             </div>
           )}
         </div>
@@ -272,8 +275,7 @@ export default function TopUpModal({
             onClick={onClose}
             className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer self-start sm:self-center"
           >
-            Cancel
-          </button>
+            {copy("Cancel")}</button>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
             {!isLiveEnvironment && (
@@ -282,10 +284,10 @@ export default function TopUpModal({
                 onClick={() => handleCheckout(true)}
                 disabled={isLoading}
                 className="px-4 py-2.5 bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 text-emerald-700 rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-                title="Test immediate wallet credit without paying real money"
+                title={copy("Test immediate wallet credit without paying real money")}
               >
                 <FaBolt className="text-emerald-500 text-[10px]" />
-                <span>⚡ Test Sandbox Top-Up</span>
+                <span>{copy("⚡ Test Sandbox Top-Up")}</span>
               </button>
             )}
 
@@ -296,12 +298,12 @@ export default function TopUpModal({
               className="px-5 py-2.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:shadow-md disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
             >
               {isLoading ? (
-                <span>Processing...</span>
+                <span>{copy("Processing...")}</span>
               ) : (
                 <>
                   <FaBolt />
                   <span>
-                    {isLiveEnvironment ? "Disabled in Beta" : `Get ${selectedPackage === 'starter' ? starterPkg.name : proPkg.name}`}
+                    {isLiveEnvironment ? copy("Disabled in Beta") : copy("Get {v0}", {v0: selectedPackage === 'starter' ? starterPkg.name : proPkg.name})}
                   </span>
                 </>
               )}

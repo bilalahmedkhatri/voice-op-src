@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
 import React from 'react';
 import Link from 'next/link';
@@ -21,10 +23,13 @@ export default function DetailHeader({
   itemType,
   item,
 }: DetailHeaderProps) {
+  const copy = useCopy();
+
+
   const returnHref = backUrl || (templateId ? `/youtube/content?id=${templateId}` : `/content?id=${templateId}`);
-  return <WorkspacePageHeader title={item.title || "Untitled Video"}
+  return <WorkspacePageHeader title={item.title || copy("Untitled Video")}
     icon={itemType === "long_video" ? <FiYoutube /> : <FiVideo />}
-    description={itemType === "long_video" ? "Long Video" : "Short Video"}
+    description={itemType === "long_video" ? copy("Long Video") : copy("Short Video")}
     breadcrumbs={<Link href={returnHref} className="inline-flex items-center gap-2 text-sm text-[#c83a2a] hover:underline font-semibold">
       <FiArrowLeft /> {backText || "Back to YouTube Strategy"}
     </Link>} />;

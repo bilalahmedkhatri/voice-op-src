@@ -1,5 +1,9 @@
 'use client';
 
+import SignInLink from '@/app/components/SignInLink';
+
+import {useCopy} from '@/i18n/copy';
+
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 
 import { notifyIdentityChanged } from '../lib/ownerStorage';
@@ -38,6 +42,9 @@ function GoogleIcon({ className = 'w-4 h-4' }: { className?: string }) {
 }
 
 const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
+  const copy = useCopy();
+
+
   const [user, setUser] = useState<DbUser | null>(null);
   const [quota, setQuota] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,25 +122,25 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
     return (
       <div
         className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-white/90 text-emerald-800 border border-emerald-200 shadow-sm backdrop-blur-xs"
-        title="Running 100% locally with offline IndexedDB history storage"
+        title={copy("Running 100% locally with offline IndexedDB history storage")}
       >
         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
         <FaLaptopCode className="text-emerald-600 text-sm" />
-        <span>Local / Offline Mode</span>
+        <span>{copy("Local / Offline Mode")}</span>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <a
-        href="/api/auth/google"
+      <SignInLink
+
         className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-semibold bg-white text-slate-700 border border-slate-200 hover:border-[#ff9b8f]/60 hover:bg-orange-50/50 shadow-2xs transition-all duration-200 cursor-pointer"
-        title="Sign in with Google"
+        title={copy("Sign in with Google")}
       >
         <GoogleIcon className="w-4 h-4" />
-        <span>Sign in with Google</span>
-      </a>
+        <span>{copy("Sign in with Google")}</span>
+      </SignInLink>
     );
   }
 
@@ -147,7 +154,7 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
         {user.image ? (
           <img
             src={user.image}
-            alt={user.name || 'User'}
+            alt={user.name || copy("User")}
             className="w-6 h-6 rounded-full object-cover ring-2 ring-[#ff9b8f]/50"
           />
         ) : (
@@ -168,18 +175,17 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
         <div className="absolute right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/80 py-2 z-50 animate-fadeIn text-left">
           {/* User Info Header */}
           <div className="px-4 py-2.5 border-b border-slate-100">
-            <p className="text-xs font-bold text-slate-900 truncate">{user.name || 'Account'}</p>
+            <p className="text-xs font-bold text-slate-900 truncate">{user.name || copy("Account")}</p>
             <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
-            
+
             {quota && (
               <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
                 <span className="flex items-center gap-1">
                   <FaBolt className="text-[#ff7d6e] text-[10px]" />
-                  <span>Today's Limit:</span>
+                  <span>{copy("Today's Limit:")}</span>
                 </span>
                 <span className="font-bold text-slate-800">
-                  {Math.max(0, (quota.max_daily_generations || 5) - (quota.generations_used || 0))} / {quota.max_daily_generations || 5} left
-                </span>
+                  {Math.max(0, (quota.max_daily_generations || 5) - (quota.generations_used || 0))} / {quota.max_daily_generations || 5} {copy(" left")}</span>
               </div>
             )}
           </div>
@@ -191,7 +197,7 @@ const AuthButton = memo(function AuthButton({ onAuthChange }: AuthButtonProps) {
             className="w-full px-4 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors cursor-pointer"
           >
             <FaSignOutAlt />
-            <span>Sign Out</span>
+            <span>{copy("Sign Out")}</span>
           </button>
         </div>
       )}

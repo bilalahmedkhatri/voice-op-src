@@ -1,5 +1,12 @@
 "use client";
 
+import {useLocale} from 'next-intl';
+import {languageTags, type Locale} from '@/i18n/routing';
+
+import SignInLink from '@/app/components/SignInLink';
+
+import {useCopy} from '@/i18n/copy';
+
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 
 import { notifyIdentityChanged } from '../lib/ownerStorage';
@@ -8,10 +15,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaSignOutAlt, FaUserCircle, FaBolt, FaUser, FaCoins } from "react-icons/fa";
 import { DbUser } from "../lib/db/types";
 import { isDatabaseEnabled } from "../lib/config";
-import Link from "next/link";
+import {Link} from '@/i18n/navigation';
 import TopUpModal from "./TopUpModal";
 import type { WalletBalance } from "./TopUpButton";
-import { usePathname } from "next/navigation";
+import {usePathname} from '@/i18n/navigation';
 
 function GoogleIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -37,6 +44,11 @@ function GoogleIcon({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wallet: WalletBalance | null) => void }) {
+  const copy = useCopy();
+  const language = useLocale();
+  const localeTag = languageTags[language as Locale];
+
+
   const pathname = usePathname();
   const [user, setUser] = useState<DbUser | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
@@ -151,7 +163,7 @@ export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wall
       <div className="p-4 border-t border-slate-200">
         <div className="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl text-center gap-1.5">
           <FaBolt className="text-emerald-500 w-5 h-5" />
-          <span className="text-xs font-semibold text-slate-700">Offline Mode</span>
+          <span className="text-xs font-semibold text-slate-700">{copy("Offline Mode")}</span>
         </div>
       </div>
     );
@@ -160,13 +172,13 @@ export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wall
   if (!user) {
     return (
       <div className="p-4 border-t border-slate-200">
-        <a
-          href="/api/auth/google"
+        <SignInLink
+
           className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white border border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors shadow-xs text-sm"
         >
           <GoogleIcon />
-          <span>Login with Google</span>
-        </a>
+          <span>{copy("Login with Google")}</span>
+        </SignInLink>
       </div>
     );
   }
@@ -179,7 +191,7 @@ export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wall
         <div className="absolute bottom-full left-3.5 right-3.5 mb-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="p-3.5 border-b border-slate-100 bg-slate-50/70">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-bold text-slate-900 truncate">{user.name || "User"}</p>
+              <p className="text-sm font-bold text-slate-900 truncate">{user.name || copy("User")}</p>
               <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-100/90 text-orange-900 border border-orange-200">
                 {tier}
               </span>
@@ -191,14 +203,12 @@ export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wall
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-600 font-medium flex items-center gap-1.5">
                 <FaCoins className="text-amber-500" />
-                Available Credits
-              </span>
-              <span className="font-bold text-slate-900 font-mono">{credits?.toLocaleString() ?? "—"}</span>
+                {copy("Available Credits")}</span>
+              <span className="font-bold text-slate-900 font-mono">{credits?.toLocaleString(localeTag) ?? "—"}</span>
             </div>
 
             <div className="text-[10px] text-slate-500 bg-orange-50/60 p-2 rounded-xl border border-orange-100">
-              ⚡ Pay-As-You-Go: 1 credit / caption, 2 credits / voiceover, 1 credit / social post.
-            </div>
+              {copy("⚡ Pay-As-You-Go: 1 credit / caption, 2 credits / voiceover, 1 credit / social post.")}</div>
 
             <button
               onClick={() => {
@@ -208,7 +218,7 @@ export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wall
               className="w-full py-2 px-3 bg-[#ff7d6e] hover:bg-[#e04836] text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <FaBolt className="text-xs" />
-              <span>Top-Up Balance</span>
+              <span>{copy("Top-Up Balance")}</span>
             </button>
           </div>
 
@@ -219,14 +229,14 @@ export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wall
               className="flex items-center gap-2 w-full px-3 py-2 text-xs text-slate-700 hover:bg-orange-50/60 hover:text-[#c83a2a] rounded-xl transition-colors font-semibold"
             >
               <FaUser className="w-3.5 h-3.5" />
-              <span>View Profile &amp; Billing</span>
+              <span>{copy("View Profile & Billing")}</span>
             </Link>
             <button
               onClick={handleSignOut}
               className="flex items-center gap-2 w-full px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-xl transition-colors font-semibold cursor-pointer"
             >
               <FaSignOutAlt className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
+              <span>{copy("Sign Out")}</span>
             </button>
           </div>
         </div>
@@ -240,7 +250,7 @@ export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wall
         {user.image ? (
           <img
             src={user.image}
-            alt={user.name || "User"}
+            alt={user.name || copy("User")}
             className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-2xs"
           />
         ) : (
@@ -250,7 +260,7 @@ export default function SidebarAuth({ onWalletChange }: { onWalletChange?: (wall
         )}
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-slate-900 truncate">
-            {user.name || "User Account"}
+            {user.name || copy("User Account")}
           </p>
           <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
         </div>

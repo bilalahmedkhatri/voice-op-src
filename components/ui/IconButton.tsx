@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import {Link as LocaleLink} from '@/i18n/navigation';
 import { MdRefresh } from 'react-icons/md';
 
 export type IconButtonVariant = 'primary' | 'secondary' | 'soft' | 'danger' | 'ghost';
@@ -69,10 +70,11 @@ export default function IconButton({
   );
 
   if (href && !disabled && !isLoading) {
+    const NavigationLink = /^\/(api|_next)(\/|$)/.test(href) || !href.startsWith('/') ? Link : LocaleLink;
     return (
-      <Link href={href} title={title} aria-label={title} target={target} rel={rel} className={combinedClasses}>
+      <NavigationLink href={href} title={title} aria-label={title} target={target} rel={rel} className={combinedClasses}>
         {content}
-      </Link>
+      </NavigationLink>
     );
   }
 

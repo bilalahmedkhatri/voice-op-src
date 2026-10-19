@@ -1,4 +1,5 @@
 import React from 'react';
+import {useCopy} from '@/i18n/copy';
 import { FaChevronDown } from 'react-icons/fa';
 import { TTSModel } from '../../hooks/useModels';
 import { getModelIcon, getFormattedModelName, getModelDescription } from './modelUtils';
@@ -16,9 +17,10 @@ export default function ModelTrigger({
   disabled = false,
   onClick,
 }: ModelTriggerProps) {
+  const copy = useCopy();
   const activeIcon = getModelIcon(activeModel.provider);
   const activeTitle = getFormattedModelName(activeModel.name, activeModel.provider);
-  const activeDescription = getModelDescription(activeModel.provider);
+  const activeDescription = getModelDescription(activeModel.provider, copy);
 
   return (
     <button

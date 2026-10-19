@@ -1,5 +1,7 @@
 "use client";
 
+import {useCopy} from '@/i18n/copy';
+
 import React from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
@@ -20,6 +22,9 @@ export default function Pagination({
   pageSize,
   className = "",
 }: PaginationProps) {
+  const copy = useCopy();
+
+
   if (totalPages <= 1 && !totalItems) {
     return null;
   }
@@ -62,13 +67,12 @@ export default function Pagination({
       <div className="text-xs text-slate-500 font-medium">
         {totalItems !== undefined && startItem && endItem ? (
           <span>
-            Showing <strong className="text-slate-800">{startItem}</strong> to{" "}
-            <strong className="text-slate-800">{endItem}</strong> of{" "}
-            <strong className="text-slate-800">{totalItems}</strong> items
-          </span>
+            {copy("Showing ")}<strong className="text-slate-800">{startItem}</strong> {copy(" to")}{" "}
+            <strong className="text-slate-800">{endItem}</strong> {copy(" of")}{" "}
+            <strong className="text-slate-800">{totalItems}</strong> {copy(" items")}</span>
         ) : (
           <span>
-            Page <strong className="text-slate-800">{currentPage}</strong> of{" "}
+            {copy("Page ")}<strong className="text-slate-800">{currentPage}</strong> {copy(" of")}{" "}
             <strong className="text-slate-800">{totalPages}</strong>
           </span>
         )}
@@ -82,7 +86,7 @@ export default function Pagination({
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage <= 1}
             className="inline-flex items-center justify-center p-2 rounded-xl text-slate-600 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-orange-200 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors cursor-pointer"
-            title="Previous Page"
+            title={copy("Previous Page")}
           >
             <FiChevronLeft className="w-4 h-4" />
           </button>
@@ -123,7 +127,7 @@ export default function Pagination({
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage >= totalPages}
             className="inline-flex items-center justify-center p-2 rounded-xl text-slate-600 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-orange-200 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors cursor-pointer"
-            title="Next Page"
+            title={copy("Next Page")}
           >
             <FiChevronRight className="w-4 h-4" />
           </button>

@@ -50,6 +50,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (targetModelId.trim().toLowerCase() === 'kokoro-v1.0-local') {
+      return NextResponse.json(
+        { error: 'This voice model is currently unavailable.' },
+        { status: 400 }
+      );
+    }
+
     // Check DB User & Quota if logged in
     const context = isDatabaseEnabled() ? await requireUser() : null;
     const user = context?.user ?? null;

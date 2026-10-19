@@ -1,5 +1,7 @@
 "use client";
 
+import {useCopy} from '@/i18n/copy';
+
 import React from "react";
 import { FiExternalLink } from "react-icons/fi";
 import TemplateRenderer, {
@@ -18,6 +20,9 @@ interface Props {
 }
 
 export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Props) {
+  const copy = useCopy();
+
+
   if (!data || typeof data !== "object") return null;
 
   const handleFieldChange = (keyPath: string[], newValue: any) => {
@@ -34,7 +39,7 @@ export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Prop
 
   const renderField = (label: string, value: any, keyPath: string[]) => {
     const isUrl = typeof value === "string" && checkIsUrl(value);
-    
+
     return (
       <div className="space-y-1 min-w-0" key={keyPath.join(".")}>
         <label className="block text-sm font-semibold text-slate-700">{label}</label>
@@ -80,10 +85,10 @@ export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Prop
 
   return (
     <div className="space-y-8">
-      
+
       {/* 1. General Information */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-6">
-        <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">General Information</h2>
+        <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">{copy("General Information")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {data.general_information?.channel_name !== undefined && renderField("Channel Name", data.general_information.channel_name, ["general_information", "channel_name"])}
           {data.general_information?.general_name !== undefined && renderField("Channel Name", data.general_information.general_name, ["general_information", "general_name"])}
@@ -106,15 +111,15 @@ export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Prop
       {/* 2. Content Strategy */}
       {data.content_strategy && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-8">
-          <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Content Strategy</h2>
-          
+          <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">{copy("Content Strategy")}</h2>
+
           {(() => {
             const keys = Object.keys(data.content_strategy);
-            
+
             // Extract long videos to merge them into a single table
             const longVideoKeys = keys.filter(k => k.startsWith('long_video') || k.includes('long_video'));
             const otherKeys = keys.filter(k => !longVideoKeys.includes(k));
-            
+
             const longVideos = longVideoKeys.map(k => {
               const item = data.content_strategy[k];
               return Array.isArray(item) ? item[0] : item; // assuming single object per long_video_X key
@@ -137,10 +142,10 @@ export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Prop
                     </div>
                   );
                 })}
-                
+
                 {longVideos.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-slate-800">Long Videos</h3>
+                    <h3 className="text-lg font-semibold text-slate-800">{copy("Long Videos")}</h3>
                     <div className="overflow-x-auto w-full">
                       <SceneTable items={longVideos} />
                     </div>
@@ -155,7 +160,7 @@ export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Prop
       {/* 3. Media & Algorithm */}
       {(data.media_download_instructions || data.algorithm_reasoning) && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-4">
-          <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Media Download Instructions</h2>
+          <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">{copy("Media Download Instructions")}</h2>
           <div className="flex flex-col lg:flex-row gap-6">
             {data.media_download_instructions && typeof data.media_download_instructions === 'object' && (
               <>
@@ -180,7 +185,7 @@ export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Prop
 
             {data.algorithm_reasoning && (
               <div className="flex-[2] min-w-[250px] space-y-1">
-                <label className="block text-sm font-semibold text-slate-700">Algorithm Reasoning</label>
+                <label className="block text-sm font-semibold text-slate-700">{copy("Algorithm Reasoning")}</label>
                 <PromptTextarea 
                   initialValue={sanitizeText(String(data.algorithm_reasoning))}
                   onValueChange={(val) => handleFieldChange(["algorithm_reasoning"], val)}
@@ -194,7 +199,7 @@ export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Prop
       {/* 4. Research Resources */}
       {data.research_resources && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-4">
-          <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Research Resources</h2>
+          <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">{copy("Research Resources")}</h2>
           <SceneTable items={Array.isArray(data.research_resources) ? data.research_resources : [data.research_resources]} />
         </div>
       )}
@@ -202,7 +207,7 @@ export default function JsonGenerator2UI({ data, isEditing, onDataChange }: Prop
       {/* 5. Unhandled Remaining Fields */}
       {Object.keys(data).filter(k => !customHandledKeys.has(k)).length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-6">
-          <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Additional Details</h2>
+          <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">{copy("Additional Details")}</h2>
           <div className="grid grid-cols-1 gap-6">
             {Object.keys(data)
               .filter(k => !customHandledKeys.has(k))

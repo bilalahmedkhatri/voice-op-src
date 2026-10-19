@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import { designSystem as ds } from '../lib/designSystem';
 
 interface LoadingSkeletonProps {
@@ -5,6 +7,9 @@ interface LoadingSkeletonProps {
 }
 
 export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonProps) {
+  const copy = useCopy();
+
+
   const shimmerStyle = {
     position: 'relative' as const,
     overflow: 'hidden',
@@ -56,9 +61,9 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
         <ShimmerBox width="24px" height="24px" borderRadius={ds.borderRadius.md} />
         <ShimmerBox width="180px" height="28px" />
       </div>
-      
+
       <VoiceDropdownSkeleton />
-      
+
       <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6">
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex flex-col gap-4">
@@ -188,15 +193,7 @@ export default function LoadingSkeleton({ variant = 'full' }: LoadingSkeletonPro
 
   return (
     <>
-      <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-shimmer {
-          animation: shimmer 1.5s infinite;
-        }
-      `}</style>
+      <style>{copy("\n        @keyframes shimmer {\n          0% { transform: translateX(-100%); }\n          100% { transform: translateX(100%); }\n        }\n        .animate-shimmer {\n          animation: shimmer 1.5s infinite;\n        }\n      ")}</style>
       {renderSkeleton()}
     </>
   );

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -21,6 +22,11 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   async redirects() {
     return [
+      {
+        source: '/:locale(en|ru|pt|fr|es|nl)/dashboard/:path*',
+        destination: '/:locale/admin/:path*',
+        permanent: true,
+      },
       {
         source: '/dashboard',
         destination: '/admin',
@@ -45,4 +51,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default createNextIntlPlugin('./i18n/request.ts')(nextConfig);

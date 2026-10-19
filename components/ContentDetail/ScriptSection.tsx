@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import React, { useRef, useEffect } from 'react';
 import { FiMic, FiCheck, FiCopy, FiSave, FiRefreshCw } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
@@ -28,6 +30,9 @@ export default function ScriptSection({
   isSaving,
   saveSuccess
 }: ScriptSectionProps) {
+  const copy = useCopy();
+
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const autoResize = () => {
@@ -46,16 +51,16 @@ export default function ScriptSection({
 
   return (
     <Card>
-      <SectionHeader title="Full Script">
+      <SectionHeader title={copy("Full Script")}>
         {item.script && (
           <Button
             onClick={() => handleSendToVoice(item.script, itemType, item.title)}
             variant="primary"
             size="sm"
             icon={<FiMic className="w-3.5 h-3.5" />}
-            title="Send script to AI Voice Generator"
+            title={copy("Send script to AI Voice Generator")}
           >
-            <span className="hidden sm:inline">Generate Voiceover</span>
+            <span className="hidden sm:inline">{copy("Generate Voiceover")}</span>
           </Button>
         )}
         <Button
@@ -67,11 +72,11 @@ export default function ScriptSection({
           icon={saveSuccess ? <FiCheck className="w-3.5 h-3.5" /> : <FiSave className="w-3.5 h-3.5" />}
           className={saveSuccess ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : ''}
         >
-          <span className="hidden sm:inline">{isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Changes'}</span>
+          <span className="hidden sm:inline">{isSaving ? copy("Saving...") : saveSuccess ? copy("Saved!") : copy("Save Changes")}</span>
         </Button>
         <IconButton
           icon={copiedId === 'script' ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />}
-          title="Copy Script"
+          title={copy("Copy Script")}
           variant="ghost"
           size="xs"
           onClick={() => handleCopy(item.script, 'script')}
@@ -90,7 +95,7 @@ export default function ScriptSection({
           style={{ minHeight: '150px' }}
         />
       ) : (
-        <p className="italic text-slate-400 text-sm">No script available</p>
+        <p className="italic text-slate-400 text-sm">{copy("No script available")}</p>
       )}
     </Card>
   );

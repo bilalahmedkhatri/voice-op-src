@@ -1,16 +1,21 @@
+
+import {useCopy} from '@/i18n/copy';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { VoiceSample } from '../lib/voiceoverApi';
 
 export function useVoiceSamples(modelId?: string) {
+  const copy = useCopy();
+
+
   const [voices, setVoices] = useState<VoiceSample[]>([]);
   const [loading, setLoading] = useState(Boolean(modelId));
   const [loadingMore, setLoadingMore] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [totalCount, setTotalCount] = useState(0);
-  
+
   const isFirstLoadRef = useRef(true);
   const lastSearchQuery = useRef('');
   const lastModelId = useRef('');
@@ -40,12 +45,12 @@ export function useVoiceSamples(modelId?: string) {
 
       const res = await fetch(url, { signal: controller.signal });
       clearTimeout(timeoutId);
-      
+
       if (!res.ok) {
-        throw new Error('Failed to load voices');
+        throw new Error(copy("Failed to load voices"));
       }
       const data = await res.json();
-      
+
       if (data.voices && Array.isArray(data.voices)) {
         const mappedVoices: VoiceSample[] = data.voices.map((v: any) => {
           const backendUrl = v.sample_audio_url || '';
@@ -63,7 +68,7 @@ export function useVoiceSamples(modelId?: string) {
             sample_url: sampleUrl
           };
         });
-        
+
         setVoices(prev => reset ? mappedVoices : [...prev, ...mappedVoices]);
         setTotalCount(data.total_count || 0);
       } else {
@@ -72,12 +77,12 @@ export function useVoiceSamples(modelId?: string) {
           setTotalCount(0);
         }
       }
-      
+
       isFirstLoadRef.current = false;
     } catch (err) {
       clearTimeout(timeoutId);
       if (err instanceof Error && err.name === 'AbortError') {
-        setError('Request timeout - please try again');
+        setError(copy("Request timeout - please try again"));
       } else {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load voices';
         setError(errorMessage);
@@ -90,7 +95,7 @@ export function useVoiceSamples(modelId?: string) {
         setLoadingMore(false);
       }
     }
-  }, [modelId]);
+  }, [copy, modelId]);
 
   useEffect(() => {
     if (!modelId) {

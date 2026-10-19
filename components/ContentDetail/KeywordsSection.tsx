@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import React from 'react';
 import { FiCheck, FiCopy, FiSearch } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
@@ -21,12 +23,15 @@ export default function KeywordsSection({
   handleFetchByKeywords,
   isDownloading
 }: KeywordsSectionProps) {
+  const copy = useCopy();
+
+
   return (
     <Card>
-      <SectionHeader title="Search Keywords">
+      <SectionHeader title={copy("Search Keywords")}>
         <IconButton
           icon={copiedId === 'keywords' ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />}
-          title="Copy Keywords"
+          title={copy("Copy Keywords")}
           size="xs"
           variant="ghost"
           onClick={() => handleCopy(rawKeywordsData, 'keywords')}
@@ -54,15 +59,14 @@ export default function KeywordsSection({
               disabled={isDownloading}
               isLoading={isDownloading}
               icon={<FiSearch />}
-              title="Generate media from keywords"
+              title={copy("Generate media from keywords")}
               className="w-full sm:w-auto"
             >
-              Generate Content
-            </Button>
+              {copy("Generate Content")}</Button>
           </div>
         </div>
       ) : (
-        <p className="italic text-slate-400 text-sm">No search keywords provided</p>
+        <p className="italic text-slate-400 text-sm">{copy("No search keywords provided")}</p>
       )}
     </Card>
   );

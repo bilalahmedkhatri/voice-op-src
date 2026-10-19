@@ -1,10 +1,15 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { useEffect, useRef, useState } from 'react';
 import { resolveOwnerScope, setOwnerScope } from '../lib/ownerStorage';
 import WorkspaceLoading from './WorkspaceLoading';
 
 export default function IdentityBoundary({ children }: { children: React.ReactNode }) {
+  const copy = useCopy();
+
+
   const [scope, setScope] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const current = useRef<string | null>(null);
@@ -46,7 +51,7 @@ export default function IdentityBoundary({ children }: { children: React.ReactNo
     };
   }, []);
   if (!scope) {
-    if (failed) return <div role="alert" className="p-8 text-sm text-slate-600">Unable to verify your account. Please refresh to try again.</div>;
+    if (failed) return <div role="alert" className="p-8 text-sm text-slate-600">{copy("Unable to verify your account. Please refresh to try again.")}</div>;
     return <WorkspaceLoading fullScreen />;
   }
   return <div key={scope} className="contents">{children}</div>;

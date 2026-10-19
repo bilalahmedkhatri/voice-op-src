@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGoogleOAuthURL } from '@/app/lib/auth/googleAuth';
 import crypto from 'crypto';
+import {isLocale, localizePath} from '@/i18n/routing';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const returnTo = searchParams.get('returnTo') || '/admin';
+  const requested = searchParams.get('returnTo') || '/en/admin';
+  const segment = requested.split('/')[1];
+  const returnTo = localizePath(requested, isLocale(segment) ? segment : 'en');
 
   // Generate cryptographically secure random nonce for CSRF protection
   const nonce = crypto.randomBytes(16).toString('hex');

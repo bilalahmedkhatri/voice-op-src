@@ -1,5 +1,7 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { memo, useState, useEffect, useRef } from 'react';
 import {
   FaPlay,
@@ -66,7 +68,7 @@ const LANGUAGE_META: Record<string, { country: string; code: string }> = {
 };
 
 // Deterministic tone and stats generator based on voice ID
-function getVoiceCardMeta(voice: VoiceSample) {
+function getVoiceCardMeta(voice: VoiceSample, copy: (source: string) => string) {
   const id = voice.voice_id.toLowerCase();
 
   // Country & Lang Code Resolution
@@ -92,17 +94,17 @@ function getVoiceCardMeta(voice: VoiceSample) {
   }
 
   // Tone / Style Tag
-  let tone = 'Conversational';
-  if (id.includes('bella') || id.includes('heart')) tone = 'Warm';
-  else if (id.includes('adam') || id.includes('michael')) tone = 'Deep';
+  let tone = copy('Conversational');
+  if (id.includes('bella') || id.includes('heart')) tone = copy('Warm');
+  else if (id.includes('adam') || id.includes('michael')) tone = copy('Deep');
   else if (id.includes('sky') || id.includes('alex') || id.includes('puck'))
-    tone = 'Young';
-  else if (id.includes('nicole') || id.includes('sarah')) tone = 'Professional';
-  else if (id.includes('george') || id.includes('fable')) tone = 'Authoritative';
-  else if (id.includes('emma') || id.includes('isabella')) tone = 'Refined';
-  else if (id.includes('santa')) tone = 'Festive';
-  else if (id.includes('river') || id.includes('kore')) tone = 'Smooth';
-  else if (id.includes('fenrir') || id.includes('onyx')) tone = 'Energetic';
+    tone = copy('Young');
+  else if (id.includes('nicole') || id.includes('sarah')) tone = copy('Professional');
+  else if (id.includes('george') || id.includes('fable')) tone = copy('Authoritative');
+  else if (id.includes('emma') || id.includes('isabella')) tone = copy('Refined');
+  else if (id.includes('santa')) tone = copy('Festive');
+  else if (id.includes('river') || id.includes('kore')) tone = copy('Smooth');
+  else if (id.includes('fenrir') || id.includes('onyx')) tone = copy('Energetic');
 
   // Deterministic realistic usage & likes based on character code sum
   let hash = 0;
@@ -158,6 +160,9 @@ const VoiceControls = memo(function VoiceControls({
   onApplyPreset,
   onDeletePreset,
 }: VoiceControlsProps) {
+  const copy = useCopy();
+
+
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
   const [loadingVoiceId, setLoadingVoiceId] = useState<string | null>(null);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
@@ -307,7 +312,7 @@ const VoiceControls = memo(function VoiceControls({
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
                 <FaBookmark className="text-amber-500 text-[10px]" />
-                Saved Voice Presets ({presets.length})
+                {copy("Saved Voice Presets (")}{presets.length})
               </span>
             </div>
             <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
@@ -331,8 +336,7 @@ const VoiceControls = memo(function VoiceControls({
                         className={`text-[9px] px-1 rounded font-mono ${isActive ? 'bg-amber-600 text-amber-100' : 'bg-gray-100 text-gray-600'
                           }`}
                       >
-                        {speedVal}x
-                      </span>
+                        {speedVal}{copy("x")}</span>
                     )}
                     {onDeletePreset && (
                       <button
@@ -343,7 +347,7 @@ const VoiceControls = memo(function VoiceControls({
                         }}
                         className={`p-0.5 rounded hover:bg-black/10 transition-colors ml-0.5 ${isActive ? 'text-white' : 'text-gray-400 hover:text-red-500'
                           }`}
-                        title="Delete preset"
+                        title={copy("Delete preset")}
                       >
                         <FaTimes className="text-center" />
                       </button>
@@ -360,11 +364,9 @@ const VoiceControls = memo(function VoiceControls({
           <div className="flex justify-between items-center">
             <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 uppercase tracking-wider">
               <FaMicrophone className="text-[#ff9b8f]" />
-              Select Voice
-            </label>
+              {copy("Select Voice")}</label>
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-orange-50 text-[#c83a2a]">
-              {apiVoices.length} {apiVoices.length === 1 ? 'voice' : 'voices'} loaded
-            </span>
+              {copy('{v0, plural, one {# voice loaded} other {# voices loaded}}', {v0: apiVoices.length})}</span>
           </div>
 
           {/* Search Bar */}
@@ -372,7 +374,7 @@ const VoiceControls = memo(function VoiceControls({
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
             <input
               type="text"
-              placeholder="Search voices by name, accent, gender..."
+              placeholder={copy("Search voices by name, accent, gender...")}
               value={apiVoicesSearch}
               onChange={(e) => setApiVoicesSearch?.(e.target.value)}
               className="w-full pl-8 pr-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl outline-none focus:border-[#ff9b8f] focus:ring-2 focus:ring-[#ff9b8f]/20 transition-all text-slate-800 placeholder-slate-400 shadow-2xs"
@@ -394,22 +396,22 @@ const VoiceControls = memo(function VoiceControls({
           </div>
         ) : apiVoices.length === 0 ? (
           <div className="p-5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-center text-xs text-gray-500">
-            No voices match &quot;{apiVoicesSearch}&quot;
+            {copy("No voices match \"")}{apiVoicesSearch}&quot;
           </div>
         ) : (
           <div
             className="max-h-[300px] sm:max-h-[320px] overflow-y-auto space-y-1.5 pr-1.5 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent rounded-xl transition-all duration-200"
             tabIndex={0}
-            aria-label="Scrollable voices list"
+            aria-label={copy("Scrollable voices list")}
           >
             {apiVoices.map((voice) => {
               const isSelected = voice.voice_id === selectedApiVoice;
               const isPlayingThis = playingVoiceId === voice.voice_id;
               const isLoadingThis = loadingVoiceId === voice.voice_id;
               const isLiked = !!likedVoices[voice.voice_id];
-              const meta = getVoiceCardMeta(voice);
+              const meta = getVoiceCardMeta(voice, copy);
               const genderLabel =
-                voice.gender?.toLowerCase() === 'male' ? 'Male' : 'Female';
+                voice.gender?.toLowerCase() === 'male' ? copy('Male') : copy('Female');
 
               return (
                 <div
@@ -453,9 +455,9 @@ const VoiceControls = memo(function VoiceControls({
                       <div className="flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[11px] text-gray-500 mt-0.5 flex-wrap">
                         <span className="flex-shrink-0">{genderLabel}</span>
                         <span className="text-gray-300 flex-shrink-0">•</span>
-                        <span className="truncate max-w-[80px] sm:max-w-none">{voice.accent || 'Natural'}</span>
+                        <span className="truncate max-w-[80px] sm:max-w-none">{voice.accent ? copy(voice.accent) : copy("Natural")}</span>
                         <span className="text-gray-300 flex-shrink-0">•</span>
-                        <span className="text-gray-400 font-medium flex-shrink-0">{meta.usageCount} uses</span>
+                        <span className="text-gray-400 font-medium flex-shrink-0">{meta.usageCount} {copy(" uses")}</span>
                       </div>
                     </div>
                   </div>
@@ -468,10 +470,10 @@ const VoiceControls = memo(function VoiceControls({
                         onClick={(e) => handleTogglePlaySample(e, voice)}
                         aria-label={
                           isLoadingThis
-                            ? 'Loading sample...'
+                            ? copy("Loading sample...")
                             : isPlayingThis
-                              ? 'Pause sample'
-                              : 'Play sample'
+                              ? copy("Pause sample")
+                              : copy("Play sample")
                         }
                         className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all cursor-pointer flex-shrink-0 ${isLoadingThis
                           ? 'bg-amber-50 text-amber-600 border border-amber-300/80 ring-1 sm:ring-2 ring-amber-300/30'
@@ -493,7 +495,7 @@ const VoiceControls = memo(function VoiceControls({
                     <button
                       type="button"
                       onClick={(e) => handleToggleLike(e, voice.voice_id)}
-                      aria-label={isLiked ? 'Unlike' : 'Like'}
+                      aria-label={isLiked ? copy("Unlike") : copy("Like")}
                       className="flex items-center gap-0.5 sm:gap-1 px-1 sm:px-1.5 py-1 rounded-full text-gray-400 hover:text-red-500 transition-colors cursor-pointer flex-shrink-0"
                     >
                       {isLiked ? (
@@ -524,9 +526,9 @@ const VoiceControls = memo(function VoiceControls({
                   className="px-4 py-1.5 rounded-xl text-xs font-bold text-[#c83a2a] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer shadow-2xs"
                 >
                   {apiVoicesLoadingMore ? (
-                    <><FaSync className="animate-spin text-xs" /> Loading...</>
+                    <><FaSync className="animate-spin text-xs" /> {copy(" Loading...")}</>
                   ) : (
-                    'Load More Voices'
+                    copy("Load More Voices")
                   )}
                 </button>
               </div>

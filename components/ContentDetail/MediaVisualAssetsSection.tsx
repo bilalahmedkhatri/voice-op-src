@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import React from 'react';
 import { FiExternalLink } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
@@ -8,6 +10,9 @@ interface MediaVisualAssetsSectionProps {
 }
 
 export default function MediaVisualAssetsSection({ extraDataMedia }: MediaVisualAssetsSectionProps) {
+  const copy = useCopy();
+
+
   const renderValue = (val: any, keyPath: string): React.ReactNode => {
     if (typeof val === 'string' && val.match(/^https?:\/\//)) {
       return (
@@ -20,7 +25,7 @@ export default function MediaVisualAssetsSection({ extraDataMedia }: MediaVisual
       return (
         <div className="p-3 bg-white border-t border-slate-200 flex-1 flex flex-col justify-between">
           <a href={val.source_url || '#'} target={val.source_url ? "_blank" : "_self"} rel="noopener noreferrer" className={`text-[11px] ${val.source_url ? 'text-[#c83a2a] hover:underline font-medium' : 'text-slate-600 font-medium'} truncate w-full block mb-2`} title={val.source_url || val.keyword}>
-            {val.source_url || `Search: ${val.keyword}` || 'Downloaded Media'}
+            {val.source_url || copy("Search: {v0}", {v0: val.keyword}) || copy("Downloaded Media")}
           </a>
         </div>
       );
@@ -57,7 +62,7 @@ export default function MediaVisualAssetsSection({ extraDataMedia }: MediaVisual
 
   return (
     <Card>
-      <SectionHeader title="Media & Visual Assets" />
+      <SectionHeader title={copy("Media & Visual Assets")} />
       <div className="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200/80 max-h-96 overflow-y-auto overflow-x-auto text-sm text-slate-700 w-full">
         {extraDataMedia.map((data, idx) => (
           <div key={idx} className="mb-4 last:mb-0">

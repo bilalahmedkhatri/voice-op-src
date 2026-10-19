@@ -1,5 +1,7 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { memo, useMemo } from 'react';
 import { FaSlidersH, FaInfoCircle } from 'react-icons/fa';
 import { TTSModel } from '../hooks/useModels';
@@ -30,16 +32,19 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
   onParamChange,
   disabled = false,
 }: DynamicParameterControlsProps) {
+  const copy = useCopy();
+
+
   const parameters = useMemo<ParamConfig[]>(() => {
     if (!model) return [];
-    
+
     // Provide hardcoded UI schemas based on the backend provider
     if (model.provider === 'gemini') {
       return [
         {
           id: 'speed',
           type: 'slider',
-          label: 'Speed',
+          label: copy("Speed"),
           min: 0.5,
           max: 4.0,
           step: 0.1,
@@ -49,7 +54,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
         {
           id: 'pitch',
           type: 'slider',
-          label: 'Pitch',
+          label: copy("Pitch"),
           min: -20.0,
           max: 20.0,
           step: 1.0,
@@ -59,7 +64,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
         {
           id: 'volume',
           type: 'slider',
-          label: 'Volume Gain',
+          label: copy("Volume Gain"),
           min: -10.0,
           max: 10.0,
           step: 1.0,
@@ -68,13 +73,13 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
         }
       ];
     }
-    
+
     if (model.provider === 'kokoro') {
       return [
         {
           id: 'speed',
           type: 'slider',
-          label: 'Speed',
+          label: copy("Speed"),
           min: 0.5,
           max: 2.0,
           step: 0.1,
@@ -83,13 +88,13 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
         }
       ];
     }
-    
+
     // Default fallback
     return [
       {
         id: 'speed',
         type: 'slider',
-        label: 'Speed',
+        label: copy("Speed"),
         min: 0.5,
         max: 2.0,
         step: 0.1,
@@ -97,7 +102,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
         unit: 'x',
       }
     ];
-  }, [model]);
+  }, [copy, model]);
 
   if (!parameters || parameters.length === 0) {
     return null;
@@ -108,7 +113,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
       <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-800">
         <div className="flex items-center gap-1.5">
           <FaSlidersH className="text-slate-400" />
-          <span>Model Parameters</span>
+          <span>{copy("Model Parameters")}</span>
         </div>
         <span className="text-[11px] font-normal text-slate-500 font-mono">
           {model.name}
@@ -161,7 +166,7 @@ const DynamicParameterControls = memo(function DynamicParameterControls({
                         }
                       }}
                       className="w-10 text-center bg-transparent text-xs font-bold text-[#c83a2a] font-mono outline-none border-none p-0 cursor-text"
-                      title="Type value or use up/down arrow keys"
+                      title={copy("Type value or use up/down arrow keys")}
                     />
                     {unit && (
                       <span className="text-[11px] font-bold text-[#c83a2a] font-mono select-none">

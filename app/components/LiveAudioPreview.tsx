@@ -1,5 +1,7 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ownerFetch, currentOwnerScope } from '@/app/lib/ownerStorage';
 import Button from '@/components/ui/Button';
@@ -8,6 +10,9 @@ import { FiHeadphones, FiPause } from 'react-icons/fi';
 export type LiveJob = { jobId: string; jobToken?: string; ownerScope: string; attempt: number };
 
 export default function LiveAudioPreview({ job }: { job: LiveJob | null }) {
+  const copy = useCopy();
+
+
   const audio = useRef<HTMLAudioElement>(null);
   const queue = useRef<{ index: number; url: string }[]>([]);
   const nextIndex = useRef(0);
@@ -52,7 +57,7 @@ export default function LiveAudioPreview({ job }: { job: LiveJob | null }) {
             headers: job.jobToken ? { 'X-Voice-Job-Token': job.jobToken } : {}, signal: controller.signal,
           });
           if ([401, 403, 404].includes(response.status)) { setUnavailable(true); return; }
-          if (!response.ok || !response.body) throw new Error('Preview unavailable');
+          if (!response.ok || !response.body) throw new Error(copy("Preview unavailable"));
           const reader = response.body.getReader();
           const decoder = new TextDecoder();
           let buffered = '';
@@ -66,10 +71,10 @@ export default function LiveAudioPreview({ job }: { job: LiveJob | null }) {
               for (const line of lines) {
                 if (!line.trim()) continue;
                 const event = JSON.parse(line);
-                if (event.event === 'error') throw new Error('Preview unavailable');
+                if (event.event === 'error') throw new Error(copy("Preview unavailable"));
                 if (['completed', 'failed'].includes(event.event)) terminal = true;
                 if (event.event !== 'chunk') continue;
-                if (event.index !== nextIndex.current) throw new Error('Preview order mismatch');
+                if (event.index !== nextIndex.current) throw new Error(copy("Preview order mismatch"));
                 const bytes = Uint8Array.from(atob(event.audio), character => character.charCodeAt(0));
                 queue.current.push({ index: event.index, url: URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' })) });
                 nextIndex.current++;
@@ -81,7 +86,7 @@ export default function LiveAudioPreview({ job }: { job: LiveJob | null }) {
             }
           } finally { await reader.cancel().catch(() => {}); }
           if (terminal) return;
-          throw new Error('Preview connection ended');
+          throw new Error(copy("Preview connection ended"));
         } catch {
           if (controller.signal.aborted) return;
           setUnavailable(true);
@@ -92,7 +97,7 @@ export default function LiveAudioPreview({ job }: { job: LiveJob | null }) {
     };
     void receive();
     return () => controller.abort();
-  }, [job, playNext]);
+  }, [copy, job, playNext]);
 
   if (!job) return null;
   return <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
@@ -106,8 +111,8 @@ export default function LiveAudioPreview({ job }: { job: LiveJob | null }) {
       if (!listening.current) audio.current?.pause();
       else if (playing.current) void audio.current?.play().catch(() => { listening.current = false; setListening(false); });
       else playNext();
-    }}>{isListening ? 'Pause live preview' : 'Listen live'}</Button>}
-    {part !== null && <span role="status">Live preview: part {part}</span>}
-    {unavailable && <span>Live preview paused. Your final audio will still be available.</span>}
+    }}>{isListening ? copy("Pause live preview") : copy("Listen live")}</Button>}
+    {part !== null && <span role="status">{copy("Live preview: part ")}{part}</span>}
+    {unavailable && <span>{copy("Live preview paused. Your final audio will still be available.")}</span>}
   </div>;
 }

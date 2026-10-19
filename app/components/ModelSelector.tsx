@@ -1,5 +1,7 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { memo, useState, useRef, useEffect } from 'react';
 import { FaMicrochip } from 'react-icons/fa';
 import { TTSModel } from '../hooks/useModels';
@@ -20,6 +22,9 @@ const ModelSelector = memo(function ModelSelector({
   apiModelsLoading = false,
   disabled = false,
 }: ModelSelectorProps) {
+  const copy = useCopy();
+
+
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,8 +62,7 @@ const ModelSelector = memo(function ModelSelector({
     <div className="relative flex flex-col gap-1.5" ref={dropdownRef}>
       <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 uppercase tracking-wider">
         <FaMicrochip className="text-[#ff9b8f]" />
-        Select AI Voice Model
-      </label>
+        {copy("Select AI Voice Model")}</label>
 
       {/* Dropdown Trigger Button */}
       <ModelTrigger

@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 import React from "react";
 import { FiVideo, FiDownloadCloud, FiX } from "react-icons/fi";
@@ -11,15 +13,18 @@ interface PreviewModalProps {
 }
 
 export default function PreviewModal({ templateId, itemId, previewMediaUrl, setPreviewMediaUrl }: PreviewModalProps) {
+  const copy = useCopy();
+
+
   if (!previewMediaUrl) return null;
 
   const handleSingleDownload = async (url: string) => {
     try {
       // Use the proxy instead of direct fetching
       const response = await fetch(`/api/media/download?${new URLSearchParams({ url, templateId: templateId || '', itemId: itemId || '' })}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) throw new Error(copy("HTTP {v0}", {v0: response.status}));
       const blob = await response.blob();
-      
+
       const isVideo = url.toLowerCase().includes('.mp4') || url.toLowerCase().includes('.webm');
       const ext = isVideo ? 'mp4' : 'jpg';
       const defaultFilename = `extracted_media_${Date.now()}.${ext}`;
@@ -42,7 +47,7 @@ export default function PreviewModal({ templateId, itemId, previewMediaUrl, setP
           console.warn("Save file picker failed, falling back to traditional download:", err);
         }
       }
-      
+
       // Fallback
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -52,10 +57,10 @@ export default function PreviewModal({ templateId, itemId, previewMediaUrl, setP
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-      
+
     } catch (err) {
       console.error(`Failed to download ${url}:`, err);
-      alert("Failed to download the file. It might be due to a network error.");
+      alert(copy("Failed to download the file. It might be due to a network error."));
     }
   };
 
@@ -74,20 +79,19 @@ export default function PreviewModal({ templateId, itemId, previewMediaUrl, setP
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
           <div className="flex items-center gap-2">
             <span className="text-slate-700 text-sm font-semibold flex items-center gap-2">
-              <FiVideo className="w-4 h-4 text-[#ff7d6e]" /> Media Preview
-            </span>
+              <FiVideo className="w-4 h-4 text-[#ff7d6e]" /> {copy(" Media Preview")}</span>
           </div>
           <div className="flex items-center gap-2">
             <IconButton
               icon={<FiDownloadCloud className="w-4 h-4" />}
-              title="Download File"
+              title={copy("Download File")}
               size="sm"
               variant="ghost"
               onClick={() => handleSingleDownload(previewMediaUrl)}
             />
             <IconButton
               icon={<FiX className="w-4 h-4" />}
-              title="Close (Esc)"
+              title={copy("Close (Esc)")}
               size="sm"
               variant="ghost"
               onClick={() => setPreviewMediaUrl(null)}
@@ -109,7 +113,7 @@ export default function PreviewModal({ templateId, itemId, previewMediaUrl, setP
           ) : (
             <img
               src={previewMediaUrl}
-              alt="Preview"
+              alt={copy("Preview")}
               className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-sm"
             />
           )}

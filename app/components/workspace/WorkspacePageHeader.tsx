@@ -1,7 +1,9 @@
 "use client";
 
+import {useCopy} from '@/i18n/copy';
+
 import { useContext, useEffect, type ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import {usePathname} from '@/i18n/navigation';
 import { WorkspaceTitleContext } from "./WorkspaceTitleContext";
 
 export default function WorkspacePageHeader({ title, description, icon, actions, breadcrumbs }: {
@@ -11,6 +13,9 @@ export default function WorkspacePageHeader({ title, description, icon, actions,
   actions?: ReactNode;
   breadcrumbs?: ReactNode;
 }) {
+  const copy = useCopy();
+
+
   const setPageTitle = useContext(WorkspaceTitleContext);
   const pathname = usePathname();
   useEffect(() => {

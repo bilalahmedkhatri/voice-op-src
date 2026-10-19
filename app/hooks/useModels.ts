@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import { useState, useEffect, useCallback } from 'react';
 
 export interface TTSModel {
@@ -7,6 +9,9 @@ export interface TTSModel {
 }
 
 export function useModels() {
+  const copy = useCopy();
+
+
   const [models, setModels] = useState<TTSModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +22,7 @@ export function useModels() {
       setError(null);
       const res = await fetch('/api/voiceover/models');
       if (!res.ok) {
-        throw new Error('Failed to load TTS models');
+        throw new Error(copy("Failed to load TTS models"));
       }
       const data = await res.json();
       if (data.models && Array.isArray(data.models)) {
@@ -30,7 +35,7 @@ export function useModels() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [copy]);
 
   useEffect(() => {
     fetchModels();

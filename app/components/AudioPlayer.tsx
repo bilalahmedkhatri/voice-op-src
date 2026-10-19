@@ -1,5 +1,7 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
@@ -50,6 +52,9 @@ const AudioPlayer = memo(function AudioPlayer({
   activeParameters,
   onSavePreset,
 }: AudioPlayerProps) {
+  const copy = useCopy();
+
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -269,7 +274,7 @@ const AudioPlayer = memo(function AudioPlayer({
       }
 
       if (!response.ok) {
-        throw new Error(`Failed to download audio file: ${response.status}`);
+        throw new Error(copy("Failed to download audio file: {v0}", {v0: response.status}));
       }
 
       const blob = await response.blob();
@@ -345,7 +350,7 @@ const AudioPlayer = memo(function AudioPlayer({
             {generationTime !== undefined && generationTime !== null && (
               <span className="inline-flex items-center gap-1 px-1 py-0.5 rounded text-[9px] font-sans font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
                 <FaBolt className="text-[8px]" />
-                <span>{generationTime}s</span>
+                <span>{generationTime}{copy("s")}</span>
               </span>
             )}
             <span className="text-slate-500">{formatTime(duration)}</span>
@@ -356,7 +361,7 @@ const AudioPlayer = memo(function AudioPlayer({
           ref={progressBarRef}
           onClick={handleSeek}
           className="w-full h-1.5 bg-slate-200 hover:bg-slate-300 rounded-full relative cursor-pointer overflow-hidden transition-colors mb-0.5"
-          title="Click or drag to seek"
+          title={copy("Click or drag to seek")}
         >
           <div 
             className="absolute top-0 left-0 h-full bg-[#ff7d6e] rounded-full pointer-events-none transition-all duration-100" 
@@ -370,7 +375,7 @@ const AudioPlayer = memo(function AudioPlayer({
         <button
           type="button"
           onClick={handleReplay}
-          title="Replay from start"
+          title={copy("Replay from start")}
           className="w-5 h-5 text-slate-600 transition-opacity hover:opacity-70 cursor-pointer flex items-center justify-center flex-shrink-0 bg-transparent border-none"
         >
           <FaRedoAlt className="text-[11px] sm:text-xs" />
@@ -380,7 +385,7 @@ const AudioPlayer = memo(function AudioPlayer({
           type="button"
           onClick={handlePlayPause}
           disabled={isProcessing}
-          aria-label={isProcessing ? 'Loading voiceover' : isPlaying ? 'Pause voiceover' : 'Play voiceover'}
+          aria-label={isProcessing ? copy("Loading voiceover") : isPlaying ? copy("Pause voiceover") : copy("Play voiceover")}
           className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer transition-all duration-200 shadow-sm ${
             isProcessing
               ? 'bg-gradient-to-br from-amber-500 to-[#ff7d6e] text-white opacity-90 cursor-wait'
@@ -402,7 +407,7 @@ const AudioPlayer = memo(function AudioPlayer({
           type="button"
           onClick={handleDownload}
           disabled={isDownloading}
-          title="Download audio WAV"
+          title={copy("Download audio WAV")}
           className="w-5 h-5 text-slate-600 transition-opacity hover:opacity-70 cursor-pointer flex items-center justify-center flex-shrink-0 bg-transparent border-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isDownloading ? (
@@ -427,7 +432,7 @@ const AudioPlayer = memo(function AudioPlayer({
                     : 'bg-amber-50 text-amber-900 border-amber-200/80'
                 }`}
               >
-                {videoFormat === 'short' ? '⚡ Short Format (9:16)' : '🎬 Long Format (16:9)'}
+                {videoFormat === 'short' ? copy("⚡ Short Format (9:16)") : copy("🎬 Long Format (16:9)")}
               </span>
             )}
 
@@ -483,12 +488,12 @@ const AudioPlayer = memo(function AudioPlayer({
               {isSaved ? (
                 <>
                   <FaCheck className="text-[10px]" />
-                  <span>Saved!</span>
+                  <span>{copy("Saved!")}</span>
                 </>
               ) : (
                 <>
                   <FaBookmark className="text-[10px] text-[#ff7d6e]" />
-                  <span>Save Preset</span>
+                  <span>{copy("Save Preset")}</span>
                 </>
               )}
             </button>

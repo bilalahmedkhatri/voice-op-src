@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import { useState } from 'react';
 import { FaEdit, FaSave, FaTrash, FaSearch, FaDownload, FaFont } from 'react-icons/fa';
 import ConfirmModal from '@/components/ui/ConfirmModal';
@@ -9,6 +11,9 @@ interface SavedPromptsProps {
 }
 
 export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPromptsProps) {
+  const copy = useCopy();
+
+
   const [searchQuery, setSearchQuery] = useState('');
   const [promptToDelete, setPromptToDelete] = useState<number | null>(null);
 
@@ -25,11 +30,9 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
           </div>
         </div>
         <h3 className="text-lg font-bold text-slate-800 mb-1">
-          No Saved Prompts Yet
-        </h3>
+          {copy("No Saved Prompts Yet")}</h3>
         <p className="text-sm text-slate-500 max-w-sm mx-auto">
-          Your saved prompts will appear here. Start by entering text in the editor and clicking Save!
-        </p>
+          {copy("Your saved prompts will appear here. Start by entering text in the editor and clicking Save!")}</p>
       </div>
     );
   }
@@ -41,10 +44,10 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
         <div className="flex justify-between items-center flex-wrap gap-3">
           <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <FaSave className="text-[#ff7d6e]" />
-            <span>Saved Prompts</span>
+            <span>{copy("Saved Prompts")}</span>
           </h3>
           <span className="px-3 py-1 bg-[#ff7d6e] text-white rounded-full text-xs font-semibold shadow-2xs font-mono">
-            {prompts.length} {prompts.length === 1 ? 'prompt' : 'prompts'}
+            {copy('{v0, plural, one {# prompt} other {# prompts}}', {v0: prompts.length})}
           </span>
         </div>
 
@@ -53,7 +56,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
           <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" />
           <input
             type="text"
-            placeholder="Search prompts..."
+            placeholder={copy("Search prompts...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-[#ff9b8f] focus:ring-2 focus:ring-[#ff9b8f]/25 transition-all shadow-2xs"
@@ -65,7 +68,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
       {filteredPrompts.length === 0 ? (
         <div className="text-center py-10 px-4 bg-slate-50 rounded-2xl border border-slate-200/80 text-slate-500">
           <p className="text-sm">
-            No prompts match &quot;{searchQuery}&quot;
+            {copy("No prompts match \"")}{searchQuery}&quot;
           </p>
         </div>
       ) : (
@@ -77,7 +80,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
                 key={index}
                 role="button"
                 tabIndex={0}
-                aria-label={`Load prompt: ${prompt.substring(0, 60)}${prompt.length > 60 ? '...' : ''}`}
+                aria-label={copy("Load prompt: {v0}{v1}", {v0: prompt.substring(0, 60), v1: prompt.length > 60 ? '...' : ''})}
                 title={prompt.substring(0, 120)}
                 onClick={() => onLoad(prompt)}
                 onKeyDown={(e) => {
@@ -100,7 +103,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
                 {/* Metadata */}
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
                   <FaFont className="text-slate-400" />
-                  <span>{prompt.length} characters</span>
+                  <span>{prompt.length} {copy(" characters")}</span>
                 </div>
 
                 {/* Action Buttons */}
@@ -114,7 +117,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
                     className="flex-1 py-2 px-3 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <FaDownload className="text-xs" />
-                    <span>Load</span>
+                    <span>{copy("Load")}</span>
                   </button>
                   <button
                     type="button"
@@ -123,7 +126,7 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
                       setPromptToDelete(originalIndex);
                     }}
                     className="py-2 px-3 bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 hover:border-rose-200 rounded-xl text-xs font-semibold transition-all shadow-2xs flex items-center justify-center cursor-pointer"
-                    title="Delete Prompt"
+                    title={copy("Delete Prompt")}
                   >
                     <FaTrash className="text-xs" />
                   </button>
@@ -143,8 +146,8 @@ export default function SavedPrompts({ prompts, onLoad, onDelete }: SavedPrompts
             setPromptToDelete(null);
           }
         }}
-        title="Delete Saved Prompt"
-        message="Are you sure you want to delete this prompt?"
+        title={copy("Delete Saved Prompt")}
+        message={copy("Are you sure you want to delete this prompt?")}
       />
     </div>
   );

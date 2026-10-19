@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import React from 'react';
 import { FiCheck, FiRefreshCw } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
@@ -12,9 +14,12 @@ interface StatusSectionProps {
 }
 
 export default function StatusSection({ item, itemType, handleStatusChange, isSaving, saveSuccess }: StatusSectionProps) {
+  const copy = useCopy();
+
+
   return (
     <Card>
-      <SectionHeader title="Status" />
+      <SectionHeader title={copy("Status")} />
       <div className="flex flex-col gap-3">
         <select
           value={item.status || "pending"}
@@ -22,13 +27,13 @@ export default function StatusSection({ item, itemType, handleStatusChange, isSa
           disabled={isSaving}
           className="text-sm font-medium border border-slate-200 rounded-xl px-3 py-2 text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] w-full cursor-pointer shadow-xs disabled:opacity-50"
         >
-          <option value="pending">Pending</option>
-          <option value="draft">Draft</option>
-          <option value="completed">Completed</option>
-          <option value="published">Published</option>
+          <option value="pending">{copy("Pending")}</option>
+          <option value="draft">{copy("Draft")}</option>
+          <option value="completed">{copy("Completed")}</option>
+          <option value="published">{copy("Published")}</option>
         </select>
-        {isSaving && <span className="text-xs text-[#c83a2a] flex items-center gap-1"><FiRefreshCw className="w-3 h-3 animate-spin" /> Updating status...</span>}
-        {saveSuccess && <span className="text-xs text-emerald-600 flex items-center gap-1"><FiCheck className="w-3 h-3" /> Status updated!</span>}
+        {isSaving && <span className="text-xs text-[#c83a2a] flex items-center gap-1"><FiRefreshCw className="w-3 h-3 animate-spin" /> {copy(" Updating status...")}</span>}
+        {saveSuccess && <span className="text-xs text-emerald-600 flex items-center gap-1"><FiCheck className="w-3 h-3" /> {copy(" Status updated!")}</span>}
       </div>
     </Card>
   );

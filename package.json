@@ -10,6 +10,9 @@
     "db:init": "tsx scripts/initDb.ts",
     "generate-samples": "tsx scripts/generateVoiceSamples.ts",
     "test:ownership": "node tests/ownership.test.cjs",
+    "test:i18n": "node --import tsx --test tests/localization.test.ts",
+    "i18n:compile": "node scripts/compile-messages.cjs",
+    "i18n:audit": "node scripts/audit-translations.cjs",
     "test:audio-json": "node tests/audio-json-postgres.cjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
@@ -23,6 +26,7 @@
     "cn": "^0.4.0",
     "lucide-react": "^1.48.0",
     "next": "16.1.2",
+    "next-intl": "^4.14.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-icons": "^5.5.0",

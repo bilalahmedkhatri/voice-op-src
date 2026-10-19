@@ -1,7 +1,9 @@
 'use client';
 
+import {useCopy, copyData} from '@/i18n/copy';
+
 import React from 'react';
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import { FaHeart } from 'react-icons/fa';
 
 const footerLinks = [
@@ -14,12 +16,15 @@ const footerLinks = [
 ];
 
 export default function Footer() {
+  const copy = useCopy();
+  const localized_footerLinks = copyData(footerLinks, copy);
+
   return (
     <footer className="w-full text-center py-8 px-4 text-xs sm:text-sm text-slate-500 bg-white/60 border-t border-slate-200/80 backdrop-blur-xs">
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
         {/* Navigation links */}
         <nav className="flex justify-center gap-4 sm:gap-6 flex-wrap">
-          {footerLinks.map((link) => (
+          {localized_footerLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -33,19 +38,18 @@ export default function Footer() {
         {/* Branding & credits */}
         <div className="flex flex-col items-center gap-1.5 text-xs text-slate-400">
           <p className="flex items-center gap-1.5 justify-center">
-            <span>Made with</span>
+            <span>{copy("Made with")}</span>
             <FaHeart className="text-[#ff7d6e] text-xs" />
-            <span>using</span>
+            <span>{copy("using")}</span>
             <a
               href="https://www.azeemlab.com"
               target="_blank"
               rel="noopener noreferrer"
               className="font-bold text-slate-700 hover:text-[#c83a2a] transition-colors"
             >
-              AzeemLAB API
-            </a>
+              {copy("AzeemLAB API")}</a>
           </p>
-          <p>&copy; {new Date().getFullYear()} GenZee Video (<a href="https://www.genzee.video" className="hover:text-slate-600 transition-colors">genzee.video</a>). All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {copy(" GenZee Video (")}<a href="https://www.genzee.video" className="hover:text-slate-600 transition-colors">{copy("genzee.video")}</a>{copy("). All rights reserved.")}</p>
         </div>
       </div>
     </footer>

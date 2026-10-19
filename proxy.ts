@@ -3,8 +3,13 @@ import { isSameOriginMutation } from './app/lib/requestSecurity';
 import { getCurrentUser } from './app/lib/auth/googleAuth';
 import { getGuestOwner } from './app/lib/auth/guestOwner';
 import { createHash } from 'node:crypto';
+import createMiddleware from 'next-intl/middleware';
+import {routing} from './i18n/routing';
+
+const localeMiddleware = createMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
+  if (!/^\/api(?:\/|$)/.test(request.nextUrl.pathname)) return localeMiddleware(request);
   // Disabled payment callbacks cannot mutate balances; future callbacks need provider verification.
   if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.nextUrl.pathname !== '/api/billing/webhook' && !isSameOriginMutation(request)) {
     return NextResponse.json({ error: 'Request origin is not allowed.' }, { status: 403 });
@@ -32,4 +37,4 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: '/api/:path*' };
+export const config = {matcher: ['/api/:path*', '/((?!api|_next|_vercel|.*\\..*).*)']};

@@ -1,5 +1,9 @@
 "use client";
 
+import {browserPath} from '@/i18n/browserNavigation';
+
+import {useCopy} from '@/i18n/copy';
+
 import { ownerDrafts } from '@/app/lib/ownerStorage';
 
 import React, { useState, useEffect } from "react";
@@ -53,6 +57,9 @@ export const formatKey = (key: string) => {
 };
 
 export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: string, onValueChange?: (val: string) => void }) => {
+  const copy = useCopy();
+
+
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(sanitizeText(initialValue));
   const [copied, setCopied] = useState(false);
@@ -73,7 +80,7 @@ export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: 
       ownerDrafts.removeItem("pending_voice_template_id");
       ownerDrafts.removeItem("pending_voice_item_id");
       ownerDrafts.setItem("pending_voice_script", value);
-      window.location.href = "/admin?from=json";
+      window.location.href = browserPath('/admin?from=json');
     }
   };
 
@@ -82,7 +89,7 @@ export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: 
       <div className="absolute top-2 right-2 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         <IconButton
           onClick={handleSendToVoiceStudio}
-          title="Send to Voice Studio"
+          title={copy("Send to Voice Studio")}
           icon={<FiMic className="w-4 h-4 text-[#ff7d6e]" />}
           variant="secondary"
           size="md"
@@ -93,7 +100,7 @@ export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: 
               setIsEditing(false);
               if (onValueChange) onValueChange(value);
             }}
-            title="Save changes"
+            title={copy("Save changes")}
             icon={<FiSave className="w-4 h-4" />}
             variant="primary"
             size="md"
@@ -101,7 +108,7 @@ export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: 
         ) : (
           <IconButton
             onClick={() => setIsEditing(true)}
-            title="Edit text"
+            title={copy("Edit text")}
             icon={<FiEdit2 className="w-4 h-4" />}
             variant="secondary"
             size="md"
@@ -109,7 +116,7 @@ export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: 
         )}
         <IconButton
           onClick={handleCopy}
-          title="Copy text"
+          title={copy("Copy text")}
           icon={copied ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />}
           variant="secondary"
           size="md"
@@ -128,6 +135,9 @@ export const PromptTextarea = ({ initialValue, onValueChange }: { initialValue: 
 };
 
 const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: string, isUrl?: boolean }) => {
+  const copy = useCopy();
+
+
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(sanitizeText(initialValue));
   const [copied, setCopied] = useState(false);
@@ -158,17 +168,20 @@ const EditableListItem = ({ initialValue, isUrl = false }: { initialValue: strin
 
       <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
-          <IconButton onClick={() => setIsEditing(false)} title="Save" variant="primary" size="xs" icon={<FiSave className="w-3.5 h-3.5" />} />
+          <IconButton onClick={() => setIsEditing(false)} title={copy("Save")} variant="primary" size="xs" icon={<FiSave className="w-3.5 h-3.5" />} />
         ) : (
-          <IconButton onClick={() => setIsEditing(true)} title="Edit" variant="ghost" size="xs" icon={<FiEdit2 className="w-3.5 h-3.5" />} />
+          <IconButton onClick={() => setIsEditing(true)} title={copy("Edit")} variant="ghost" size="xs" icon={<FiEdit2 className="w-3.5 h-3.5" />} />
         )}
-        <IconButton onClick={handleCopy} title="Copy" variant="ghost" size="xs" icon={copied ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />} />
+        <IconButton onClick={handleCopy} title={copy("Copy")} variant="ghost" size="xs" icon={copied ? <FiCheck className="w-3.5 h-3.5 text-emerald-500" /> : <FiCopy className="w-3.5 h-3.5" />} />
       </div>
     </li>
   );
 }
 
 export const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
+  const copy = useCopy();
+
+
   const formattedTags = initialTags.map(t => {
     let tag = t.trim();
     if (tag && !tag.startsWith("#")) tag = "#" + tag;
@@ -193,11 +206,11 @@ export const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
     <div className="p-4 bg-white border border-slate-200/80 shadow-xs rounded-xl relative group">
       <div className="absolute top-2 right-2 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         {isEditing ? (
-          <IconButton onClick={() => setIsEditing(false)} title="Save" variant="primary" size="sm" icon={<FiSave className="w-4 h-4" />} />
+          <IconButton onClick={() => setIsEditing(false)} title={copy("Save")} variant="primary" size="sm" icon={<FiSave className="w-4 h-4" />} />
         ) : (
-          <IconButton onClick={() => setIsEditing(true)} title="Edit" variant="secondary" size="sm" icon={<FiEdit2 className="w-4 h-4" />} />
+          <IconButton onClick={() => setIsEditing(true)} title={copy("Edit")} variant="secondary" size="sm" icon={<FiEdit2 className="w-4 h-4" />} />
         )}
-        <IconButton onClick={handleCopy} title="Copy" variant="secondary" size="sm" icon={copied ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />} />
+        <IconButton onClick={handleCopy} title={copy("Copy")} variant="secondary" size="sm" icon={copied ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />} />
       </div>
 
       {isEditing ? (
@@ -220,6 +233,9 @@ export const TagsEditor = ({ initialTags }: { initialTags: string[] }) => {
 };
 
 export const SceneTable = ({ items }: { items: any[] }) => {
+  const copy = useCopy();
+
+
   if (!items.length) return null;
   const keys = Array.from(new Set(items.flatMap(item => Object.keys(item))));
 
@@ -253,7 +269,7 @@ export const SceneTable = ({ items }: { items: any[] }) => {
           {value.map((item: any, idx: number) => (
             <div key={idx} className="p-3 bg-white border border-slate-200 shadow-sm rounded-lg text-xs space-y-2">
               <div className="font-semibold text-slate-800 border-b border-slate-100 pb-1 mb-1">
-                {item.post_number ? `Post #${item.post_number}` : `Item #${idx + 1}`}
+                {item.post_number ? copy("Post #{v0}", {v0: item.post_number}) : copy("Item #{v0}", {v0: idx + 1})}
               </div>
               {Object.entries(item).map(([k, v]) => {
                 if (k === 'post_number' || typeof v === 'object') return null;
@@ -357,7 +373,7 @@ export const SceneTable = ({ items }: { items: any[] }) => {
             return <li key={idx} className="p-0 m-0 leading-[1.2] line-clamp-2">{sanitized}</li>;
           })}
           {hasMore && (
-            <li className="text-xs text-slate-500 italic mt-1 font-medium">+{itemsToRender.length - 3} more items</li>
+            <li className="text-xs text-slate-500 italic mt-1 font-medium">+{itemsToRender.length - 3} {copy(" more items")}</li>
           )}
         </ul>
       );
@@ -445,6 +461,9 @@ const ContentPlanPostCard = ({
   onCopy,
   onPostChange,
 }: ContentPlanPostCardProps) => {
+  const copy = useCopy();
+
+
   const postNum = post.post_number ?? postIdx + 1;
   const isVideo = post.format?.toLowerCase() === "video";
   const captionId = `caption-${dayIdx}-${postIdx}`;
@@ -467,7 +486,7 @@ const ContentPlanPostCard = ({
       <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 sm:pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-900 text-white">
-            Post #{postNum}
+            {copy("Post #")}{postNum}
           </span>
           {isEditing ? (
             <div className="flex items-center gap-1.5 bg-white border border-slate-200 focus-within:border-[#ff9b8f] focus-within:ring-2 focus-within:ring-[#ff9b8f]/25 rounded-lg px-2 py-0.5 shadow-2xs">
@@ -476,7 +495,7 @@ const ContentPlanPostCard = ({
                 type="text"
                 value={post.time || ""}
                 onChange={(e) => onPostChange(dayIdx, postIdx, "time", e.target.value)}
-                placeholder="12:00 PM"
+                placeholder={copy("12:00 PM")}
                 className="w-24 text-xs font-medium text-slate-800 focus:outline-none bg-transparent"
               />
             </div>
@@ -509,23 +528,22 @@ const ContentPlanPostCard = ({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            Caption
-          </span>
+            {copy("Caption")}</span>
           {!isEditing && post.caption && (
             <button
               onClick={() => post.caption && onCopy(post.caption, captionId)}
               className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
-              title="Copy Caption"
+              title={copy("Copy Caption")}
             >
               {copiedId === captionId ? (
                 <>
                   <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-emerald-600">Copied</span>
+                  <span className="text-emerald-600">{copy("Copied")}</span>
                 </>
               ) : (
                 <>
                   <FiCopy className="w-3.5 h-3.5" />
-                  <span>Copy Caption</span>
+                  <span>{copy("Copy Caption")}</span>
                 </>
               )}
             </button>
@@ -536,7 +554,7 @@ const ContentPlanPostCard = ({
             rows={4}
             value={post.caption || ""}
             onChange={(e) => onPostChange(dayIdx, postIdx, "caption", e.target.value)}
-            placeholder="Enter post caption..."
+            placeholder={copy("Enter post caption...")}
             className="w-full p-3 bg-white rounded-xl border border-slate-200 text-sm text-slate-800 leading-relaxed shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] resize-y"
           />
         ) : post.caption ? (
@@ -550,8 +568,7 @@ const ContentPlanPostCard = ({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
-            <FiTag className="w-3 h-3 text-slate-400" /> Hashtags
-          </span>
+            <FiTag className="w-3 h-3 text-slate-400" /> {copy(" Hashtags")}</span>
           {!isEditing && Array.isArray(post.tags) && post.tags.length > 0 && (
             <button
               onClick={() => {
@@ -565,17 +582,17 @@ const ContentPlanPostCard = ({
                 onCopy(allTags, tagsId);
               }}
               className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
-              title="Copy All Tags"
+              title={copy("Copy All Tags")}
             >
               {copiedId === tagsId ? (
                 <>
                   <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-emerald-600">Copied</span>
+                  <span className="text-emerald-600">{copy("Copied")}</span>
                 </>
               ) : (
                 <>
                   <FiCopy className="w-3.5 h-3.5" />
-                  <span>Copy All Tags</span>
+                  <span>{copy("Copy All Tags")}</span>
                 </>
               )}
             </button>
@@ -591,7 +608,7 @@ const ContentPlanPostCard = ({
               const arr = val.split(",").map(t => t.trim()).filter(Boolean);
               onPostChange(dayIdx, postIdx, "tags", arr);
             }}
-            placeholder="#Fashion, #Shopping (comma-separated)"
+            placeholder={copy("#Fashion, #Shopping (comma-separated)")}
             className="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
           />
         ) : Array.isArray(post.tags) && post.tags.length > 0 ? (
@@ -617,23 +634,22 @@ const ContentPlanPostCard = ({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            AI Generation Prompt
-          </span>
+            {copy("AI Generation Prompt")}</span>
           {!isEditing && post.generation_prompt && (
             <button
               onClick={() => post.generation_prompt && onCopy(post.generation_prompt, promptId)}
               className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-[#c83a2a] font-medium px-2 py-0.5 rounded-lg hover:bg-orange-50/50 transition-colors cursor-pointer"
-              title="Copy Generation Prompt"
+              title={copy("Copy Generation Prompt")}
             >
               {copiedId === promptId ? (
                 <>
                   <FiCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-emerald-600">Copied Prompt</span>
+                  <span className="text-emerald-600">{copy("Copied Prompt")}</span>
                 </>
               ) : (
                 <>
                   <FiCopy className="w-3.5 h-3.5" />
-                  <span>Copy Prompt</span>
+                  <span>{copy("Copy Prompt")}</span>
                 </>
               )}
             </button>
@@ -644,7 +660,7 @@ const ContentPlanPostCard = ({
             rows={3}
             value={post.generation_prompt || ""}
             onChange={(e) => onPostChange(dayIdx, postIdx, "generation_prompt", e.target.value)}
-            placeholder="Enter AI prompt for image/video generation..."
+            placeholder={copy("Enter AI prompt for image/video generation...")}
             className="w-full p-3 bg-white rounded-xl border border-slate-200 text-xs font-mono text-slate-800 leading-relaxed shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] resize-y"
           />
         ) : post.generation_prompt ? (
@@ -664,6 +680,9 @@ const ContentPlanView = ({
   isEditing = false,
   onDataChange,
 }: ContentPlanViewProps) => {
+  const copy = useCopy();
+
+
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = async (text: string, id: string) => {
@@ -735,7 +754,7 @@ const ContentPlanView = ({
               <FiLayers className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Page / Brand</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">{copy("Page / Brand")}</span>
               <h3 className="text-xl font-bold text-slate-900 tracking-tight">
                 {pageName}
               </h3>
@@ -744,18 +763,18 @@ const ContentPlanView = ({
 
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-3 py-1 bg-orange-50 text-orange-900 rounded-full text-xs font-semibold border border-orange-200/80 flex items-center gap-1.5">
-              {totalPosts} {totalPosts === 1 ? "Post" : "Posts"}
+              {totalPosts} {totalPosts === 1 ? copy("Post") : copy("Posts")}
             </span>
             {imagesCount > 0 && (
               <span className="px-3 py-1 bg-sky-50 text-sky-700 rounded-full text-xs font-semibold border border-sky-200 flex items-center gap-1.5">
                 <FiImage className="w-3.5 h-3.5 text-sky-600" />
-                {imagesCount} {imagesCount === 1 ? "Image" : "Images"}
+                {imagesCount} {imagesCount === 1 ? copy("Image") : copy("Images")}
               </span>
             )}
             {videosCount > 0 && (
               <span className="px-3 py-1 bg-orange-50 text-[#c83a2a] rounded-full text-xs font-semibold border border-orange-200/80 flex items-center gap-1.5">
                 <FiVideo className="w-3.5 h-3.5 text-[#ff7d6e]" />
-                {videosCount} {videosCount === 1 ? "Video" : "Videos"}
+                {videosCount} {videosCount === 1 ? copy("Video") : copy("Videos")}
               </span>
             )}
           </div>
@@ -790,12 +809,12 @@ const ContentPlanView = ({
                 <div className="flex items-center gap-3 flex-1">
                   {isEditing ? (
                     <div className="flex items-center gap-2 flex-1 max-w-xl">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">Title:</span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">{copy("Title:")}</span>
                       <input
                         type="text"
                         value={dayPlan.theme || dayPlan.title || ""}
                         onChange={(e) => handleThemeChange(dayIdx, e.target.value)}
-                        placeholder="Content Title / Theme..."
+                        placeholder={copy("Content Title / Theme...")}
                         className="w-full text-sm sm:text-base font-semibold text-slate-900 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f]"
                       />
                     </div>
@@ -806,14 +825,14 @@ const ContentPlanView = ({
                   ) : null}
                 </div>
                 <span className="text-xs font-medium text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full w-max shadow-xs">
-                  {posts.length} {posts.length === 1 ? "Scheduled Post" : "Scheduled Posts"}
+                  {posts.length} {posts.length === 1 ? copy("Scheduled Post") : copy("Scheduled Posts")}
                 </span>
               </div>
 
               {/* Posts List */}
               <div className="py-3.5 sm:py-5">
                 {posts.length === 0 ? (
-                  <p className="text-sm text-slate-400 italic">No posts scheduled.</p>
+                  <p className="text-sm text-slate-400 italic">{copy("No posts scheduled.")}</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {posts.map((post, postIdx) => (
@@ -845,6 +864,9 @@ export default function TemplateRenderer({
   isEditing = false,
   onDataChange,
 }: TemplateRendererProps) {
+  const copy = useCopy();
+
+
   if (data === null || data === undefined) {
     return null;
   }
@@ -940,7 +962,6 @@ export default function TemplateRenderer({
       />
     );
   }
-
 
 
   if (Array.isArray(data)) {
@@ -1130,7 +1151,7 @@ export default function TemplateRenderer({
 
               {data.algorithm_reasoning && (
                 <div className="flex-[2] min-w-[250px] space-y-2">
-                  <label className="block text-sm font-semibold text-slate-900 mb-1">Algorithm Reasoning</label>
+                  <label className="block text-sm font-semibold text-slate-900 mb-1">{copy("Algorithm Reasoning")}</label>
                   <PromptTextarea 
                     initialValue={sanitizeText(String(data.algorithm_reasoning))} 
                     onValueChange={(val) => {

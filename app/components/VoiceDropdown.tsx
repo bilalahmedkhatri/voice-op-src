@@ -1,3 +1,7 @@
+
+import {errorCopy} from '@/i18n/errors';
+
+import {useCopy} from '@/i18n/copy';
 import { useState, useRef } from 'react';
 import { FaPlay, FaPause, FaMicrophone } from 'react-icons/fa';
 import { designSystem as ds } from '../lib/designSystem';
@@ -19,6 +23,9 @@ export default function VoiceDropdown({
   loading = false,
   error = null,
 }: VoiceDropdownProps) {
+  const copy = useCopy();
+
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
@@ -92,8 +99,7 @@ export default function VoiceDropdown({
           gap: ds.spacing.xs,
         }}
       >
-        <FaMicrophone /> Voice
-      </label>
+        <FaMicrophone /> {copy(" Voice")}</label>
 
       {playbackError && (
         <div style={{
@@ -104,7 +110,7 @@ export default function VoiceDropdown({
           fontSize: ds.typography.sizes.sm,
           color: '#c33',
         }}>
-          {playbackError}
+          {errorCopy(playbackError, copy)}
         </div>
       )}
 
@@ -170,17 +176,17 @@ export default function VoiceDropdown({
               }
             }}
           >
-            {loading && <option value="">Loading voices...</option>}
-            {error && <option value="">Error loading voices</option>}
-            {!loading && !error && voices.length === 0 && <option value="">No voices available</option>}
+            {loading && <option value="">{copy("Loading voices...")}</option>}
+            {error && <option value="">{copy("Error loading voices")}</option>}
+            {!loading && !error && voices.length === 0 && <option value="">{copy("No voices available")}</option>}
             {!loading && !error && voices.length > 0 && (
               <>
-                <option value="">Select a voice</option>
+                <option value="">{copy("Select a voice")}</option>
                 {voices.map((voice) => (
                   <option key={voice.voice_id} value={voice.voice_id}>
                     {voice.voice_name}
-                    {voice.accent && ` - ${voice.accent}`}
-                    {voice.language && ` (${voice.language})`}
+                    {voice.accent && copy(" - {v0}", {v0: voice.accent})}
+                    {voice.language && copy(" ({v0})", {v0: voice.language})}
                   </option>
                 ))}
               </>
@@ -222,7 +228,7 @@ export default function VoiceDropdown({
                 ? '0 4px 14px rgba(245, 158, 11, 0.5)'
                 : '0 4px 14px rgba(255, 125, 110, 0.4)';
             }}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
+            aria-label={isPlaying ? copy("Pause") : copy("Play")}
           >
             {isPlaying ? (
               <FaPause size={32} color="white" />
@@ -274,10 +280,9 @@ export default function VoiceDropdown({
                   e.currentTarget.style.color = '#c83a2a';
                 }}
               >
-                Change
-              </button>
+                {copy("Change")}</button>
             </div>
-            
+
             {selectedVoiceData?.description && (
               <p style={{
                 fontSize: 'clamp(0.7rem, 1.8vw, 0.75rem)',
@@ -339,7 +344,7 @@ export default function VoiceDropdown({
             fontFamily: ds.typography.fonts.body,
           }}
         >
-          ⚠️ {error}
+          ⚠️ {errorCopy(error, copy)}
         </span>
       )}
     </div>

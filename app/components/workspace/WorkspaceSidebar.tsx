@@ -1,8 +1,10 @@
 "use client";
 
+import {useCopy, copyData} from '@/i18n/copy';
+
 import type { ComponentType } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import {Link} from '@/i18n/navigation';
+import {usePathname} from '@/i18n/navigation';
 import { FiFileText, FiDatabase, FiSettings, FiX, FiMic, FiVideo, FiShare2, FiLink2, FiCreditCard, FiVolume2 } from "react-icons/fi";
 import SidebarAuth from "../SidebarAuth";
 import type { WalletBalance } from "../TopUpButton";
@@ -57,6 +59,9 @@ const navSections: NavSection[] = [
 ];
 
 export default function WorkspaceSidebar({ isOpen, onClose, onWalletChange }: { isOpen: boolean; onClose: () => void; onWalletChange: (wallet: WalletBalance | null) => void }) {
+  const copy = useCopy();
+  const localized_navSections = copyData(navSections, copy);
+
   const pathname = usePathname();
   return <>
       {/* Mobile Sidebar Overlay */}
@@ -76,16 +81,16 @@ export default function WorkspaceSidebar({ isOpen, onClose, onWalletChange }: { 
           <Link href="/admin" className="flex items-center gap-2.5 text-xl font-bold text-slate-900 group">
             <img
               src="/logo.jpg"
-              alt="GenZee Logo"
+              alt={copy("GenZee Logo")}
               className="w-8 h-8 rounded-lg object-cover shadow-xs group-hover:scale-105 transition-transform border border-slate-200"
             />
             <div className="flex flex-col">
-              <span className="font-extrabold tracking-tight leading-none text-slate-900">GenZee</span>
-              <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase mt-0.5">Studio</span>
+              <span className="font-extrabold tracking-tight leading-none text-slate-900">{copy("GenZee")}</span>
+              <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase mt-0.5">{copy("Studio")}</span>
             </div>
           </Link>
           <button
-            type="button" aria-label="Close sidebar" className="md:hidden text-slate-500 hover:text-slate-800"
+            type="button" aria-label={copy("Close sidebar")} className="md:hidden text-slate-500 hover:text-slate-800"
             onClick={onClose}
           >
             <FiX className="w-6 h-6" />
@@ -94,7 +99,7 @@ export default function WorkspaceSidebar({ isOpen, onClose, onWalletChange }: { 
 
         <div className="p-4 overflow-y-auto h-[calc(100vh-4rem)] flex flex-col justify-between">
           <div className="space-y-5">
-            {navSections.map((section) => (
+            {localized_navSections.map((section) => (
               <div key={section.title} className="space-y-1">
                 <div className="flex items-center justify-between px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   <span>{section.title}</span>

@@ -1,5 +1,7 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 
 import { currentOwnerScope, setOwnerScope, resolveOwnerScope, ownerDrafts } from '@/app/lib/ownerStorage';
@@ -36,6 +38,9 @@ export interface UserQuotaState {
 }
 
 export function useVoiceGenerator() {
+  const copy = useCopy();
+
+
   const [params, setParams] = useState<VoiceParams>({
     text: '',
     voice: '',
@@ -73,7 +78,7 @@ export function useVoiceGenerator() {
 
       const res = await fetch('/api/auth/session');
       const data = await res.json();
-      if (!res.ok || typeof data.owner_scope !== 'string') throw new Error('Account check failed.');
+      if (!res.ok || typeof data.owner_scope !== 'string') throw new Error(copy("Account check failed."));
       if (identityScopeRef.current && identityScopeRef.current !== data.owner_scope) {
         generationControllerRef.current?.abort();
         setAudioBlob(null);
@@ -121,7 +126,7 @@ export function useVoiceGenerator() {
     } catch {
       setUserQuota(null);
     }
-  }, []);
+  }, [copy]);
 
   useEffect(() => {
     refreshQuota();
@@ -161,23 +166,23 @@ export function useVoiceGenerator() {
     if (generationControllerRef.current || isGenerating) return;
     const generationParams = resume?.params || structuredClone(params);
     if (!generationParams.text.trim()) {
-      setErrorMessage('Please enter some text to generate a voiceover.');
+      setErrorMessage(copy("Please enter some text to generate a voiceover."));
       return;
     }
 
     if (!apiVoiceId) {
-      setErrorMessage('Please select a voice from the dropdown before generating.');
+      setErrorMessage(copy("Please select a voice from the dropdown before generating."));
       return;
     }
 
     if (!targetModelId) {
-      setErrorMessage('Please select a model before generating.');
+      setErrorMessage(copy("Please select a model before generating."));
       return;
     }
 
     const isOnlineDb = isDatabaseEnabled();
     if (isOnlineDb && !isAuthenticated) {
-      setErrorMessage('Please sign in with Google above to generate voiceovers.');
+      setErrorMessage(copy("Please sign in with Google above to generate voiceovers."));
       return;
     }
 
@@ -200,7 +205,7 @@ export function useVoiceGenerator() {
       const operationScope = await resolveOwnerScope();
       if (operationScope !== currentOwnerScope() || (resume && resume.ownerScope !== operationScope)) {
         window.location.reload();
-        throw new Error('Account changed before generation.');
+        throw new Error(copy("Account changed before generation."));
       }
       let data;
       if (resume) {
@@ -300,7 +305,7 @@ export function useVoiceGenerator() {
             if ([401, 403, 404].includes(statusRes.status)) {
               setPendingJob(null);
               removePendingAudioJob(jobId);
-              throw new Error('This audio job is no longer accessible for your account.');
+              throw new Error(copy("This audio job is no longer accessible for your account."));
             }
             if (statusRes.ok) {
               const statusData = await statusRes.json();
@@ -345,14 +350,14 @@ export function useVoiceGenerator() {
       } else if (data.audio_url) {
         const audioResponse = await fetch(data.audio_url, { signal: controller.signal });
         if (!audioResponse.ok) {
-          throw new Error(`Failed to download audio file: ${audioResponse.status} ${audioResponse.statusText}`);
+          throw new Error(copy("Failed to download audio file: {v0} {v1}", {v0: audioResponse.status, v1: audioResponse.statusText}));
         }
         downloadedBlob = await audioResponse.blob();
       } else {
-        throw new Error('No audio data received from the server.');
+        throw new Error(copy("No audio data received from the server."));
       }
 
-      if (controller.signal.aborted || await resolveOwnerScope() !== operationScope) throw new Error('Account changed during generation.');
+      if (controller.signal.aborted || await resolveOwnerScope() !== operationScope) throw new Error(copy("Account changed during generation."));
       setAudioBlob(downloadedBlob);
       setChunkProgress(null);
       setLiveJob(null);
@@ -420,7 +425,7 @@ export function useVoiceGenerator() {
       setErrorMessage(uiMessage);
       generationControllerRef.current = null;
     }
-  }, [params, isGenerating, isAuthenticated, retryAvailable, refreshQuota]);
+  }, [copy, params, isGenerating, isAuthenticated, retryAvailable, refreshQuota]);
 
   useEffect(() => {
     if (!pendingJob || restoredJob.current !== pendingJob.jobId || (isDatabaseEnabled() && !isAuthenticated)) return;

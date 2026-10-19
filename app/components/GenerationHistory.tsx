@@ -1,5 +1,9 @@
 'use client';
 
+import SignInLink from '@/app/components/SignInLink';
+
+import {useCopy} from '@/i18n/copy';
+
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 
 import { useState, useEffect, useRef, memo } from 'react';
@@ -50,6 +54,9 @@ const GenerationHistory = memo(function GenerationHistory({
   onHistoryCountChange,
   refreshTrigger = 0,
 }: GenerationHistoryProps) {
+  const copy = useCopy();
+
+
   const [historyItems, setHistoryItems] = useState<UnifiedHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
@@ -238,18 +245,16 @@ const GenerationHistory = memo(function GenerationHistory({
           <FaHistory className="text-xl" />
         </div>
         <h4 className="text-sm font-bold text-slate-900 mb-1">
-          Sign In to Sync History
-        </h4>
+          {copy("Sign In to Sync History")}</h4>
         <p className="text-xs text-slate-500 max-w-xs mb-4">
-          Save your generated voiceovers in the cloud, reuse prompts, and access them across all devices.
-        </p>
-        <a
-          href="/api/auth/google"
+          {copy("Save your generated voiceovers in the cloud, reuse prompts, and access them across all devices.")}</p>
+        <SignInLink
+
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-800 border border-slate-200 hover:border-[#ff9b8f]/60 hover:bg-orange-50/50 shadow-2xs transition-all cursor-pointer"
         >
           <FaGoogle className="text-red-500" />
-          <span>Sign In with Google</span>
-        </a>
+          <span>{copy("Sign In with Google")}</span>
+        </SignInLink>
       </div>
     );
   }
@@ -261,11 +266,9 @@ const GenerationHistory = memo(function GenerationHistory({
           <FaVolumeUp className="text-xl" />
         </div>
         <h4 className="text-sm font-bold text-slate-900 mb-1">
-          No Voiceovers in History Yet
-        </h4>
+          {copy("No Voiceovers in History Yet")}</h4>
         <p className="text-xs text-slate-500 max-w-xs">
-          Generate your first speech audio on the left and it will automatically appear here with playback and download options.
-        </p>
+          {copy("Generate your first speech audio on the left and it will automatically appear here with playback and download options.")}</p>
       </div>
     );
   }
@@ -276,12 +279,11 @@ const GenerationHistory = memo(function GenerationHistory({
       <div className="flex items-center justify-between px-1 pb-1 border-b border-slate-100">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            {historyItems.length} Saved Voiceover{historyItems.length !== 1 ? 's' : ''}
+            {copy('{v0, plural, one {# Saved Voiceover} other {# Saved Voiceovers}}', {v0: historyItems.length})}
           </span>
           {isOfflineMode && (
             <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Offline IndexedDB
-            </span>
+              {copy("Offline IndexedDB")}</span>
           )}
         </div>
         <button
@@ -289,8 +291,7 @@ const GenerationHistory = memo(function GenerationHistory({
           onClick={() => setShowClearAllModal(true)}
           className="text-[11px] font-semibold text-rose-500 hover:text-rose-700 hover:underline cursor-pointer"
         >
-          Clear All
-        </button>
+          {copy("Clear All")}</button>
       </div>
 
       {/* History List */}
@@ -318,7 +319,7 @@ const GenerationHistory = memo(function GenerationHistory({
                             : 'bg-amber-50 text-amber-900 border-amber-200/80'
                         }`}
                       >
-                        {isShort ? '⚡ Short' : '🎬 Long'}
+                        {isShort ? copy("⚡ Short") : copy("🎬 Long")}
                       </span>
                     );
                   })()}
@@ -332,7 +333,7 @@ const GenerationHistory = memo(function GenerationHistory({
                   {item.generation_time_sec && (
                     <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[10px] font-bold border border-emerald-200/60">
                       <FaBolt className="text-[8px]" />
-                      <span>{item.generation_time_sec}s</span>
+                      <span>{item.generation_time_sec}{copy("s")}</span>
                     </span>
                   )}
                 </div>
@@ -343,7 +344,7 @@ const GenerationHistory = memo(function GenerationHistory({
                     type="button"
                     onClick={() => handleDeleteItem(item.id)}
                     disabled={deletingId === item.id}
-                    title="Delete item"
+                    title={copy("Delete item")}
                     className="text-slate-400 hover:text-rose-500 transition-colors p-1 cursor-pointer"
                   >
                     <FaTrash className="text-[10px]" />
@@ -386,13 +387,13 @@ const GenerationHistory = memo(function GenerationHistory({
 
               {/* Short Prompt Snippet */}
               <div className="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100">
-                <span className="text-slate-400 font-serif text-xs">&ldquo;</span>
+                <span className="text-slate-400 font-serif text-xs">{"“"}</span>
                 <span className="truncate font-normal text-slate-700">
                   {item.prompt_text.length > 70
-                    ? `${item.prompt_text.substring(0, 70).trim()}...`
+                    ? copy("{v0}...", {v0: item.prompt_text.substring(0, 70).trim()})
                     : item.prompt_text}
                 </span>
-                <span className="text-slate-400 font-serif text-xs">&rdquo;</span>
+                <span className="text-slate-400 font-serif text-xs">{"”"}</span>
               </div>
 
               {/* Bottom Actions Row */}
@@ -409,12 +410,12 @@ const GenerationHistory = memo(function GenerationHistory({
                   {isPlaying ? (
                     <>
                       <FaPause className="text-[10px]" />
-                      <span>Pause</span>
+                      <span>{copy("Pause")}</span>
                     </>
                   ) : (
                     <>
                       <FaPlay className="text-[10px] ml-0.5" />
-                      <span>Play</span>
+                      <span>{copy("Play")}</span>
                     </>
                   )}
                 </button>
@@ -429,10 +430,10 @@ const GenerationHistory = memo(function GenerationHistory({
                       date: item.created_at,
                     })}
                     className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-orange-50/50 text-slate-700 border border-slate-200 hover:border-[#ff9b8f]/60 flex items-center justify-center gap-1.5 transition-all shadow-2xs cursor-pointer"
-                    title="Download audio"
+                    title={copy("Download audio")}
                   >
                     <FaDownload className="text-[10px] text-slate-500" />
-                    <span>Download</span>
+                    <span>{copy("Download")}</span>
                   </a>
                 )}
               </div>
@@ -440,13 +441,13 @@ const GenerationHistory = memo(function GenerationHistory({
           );
         })}
       </div>
-      
+
       <ConfirmModal 
         isOpen={showClearAllModal} 
         onClose={() => setShowClearAllModal(false)} 
         onConfirm={handleClearAll}
-        title="Clear All History"
-        message="Are you sure you want to clear all generation history? This action cannot be undone."
+        title={copy("Clear All History")}
+        message={copy("Are you sure you want to clear all generation history? This action cannot be undone.")}
       />
     </div>
   );

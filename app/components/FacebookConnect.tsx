@@ -1,5 +1,9 @@
 'use client';
 
+import {errorCopy} from '@/i18n/errors';
+
+import {useCopy} from '@/i18n/copy';
+
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 
 import { useState, useEffect } from 'react';
@@ -17,6 +21,9 @@ declare global {
 }
 
 export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps) {
+  const copy = useCopy();
+
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [statusText, setStatusText] = useState<string | null>(null);
@@ -78,10 +85,10 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
           setStatusText(null);
           if (withInstagram) {
             setError(
-              'Authorization was not completed. If Instagram scopes caused an issue, try connecting Facebook Pages only.'
+              copy("Authorization was not completed. If Instagram scopes caused an issue, try connecting Facebook Pages only.")
             );
           } else {
-            setError('User cancelled login or did not authorize required permissions.');
+            setError(copy("User cancelled login or did not authorize required permissions."));
           }
         }
       },
@@ -114,7 +121,7 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
               setIsConnecting(false);
               setStatusText(null);
               setError(
-                'No Facebook Pages found. Ensure you selected all pages in the Meta permissions dialog.'
+                copy("No Facebook Pages found. Ensure you selected all pages in the Meta permissions dialog.")
               );
             }
           }
@@ -165,7 +172,7 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
       if (isUnauthorized) {
         setIsConnecting(false);
         setStatusText(null);
-        setError('Please sign in with Google first so your connected Facebook Pages can be securely saved to your account.');
+        setError(copy("Please sign in with Google first so your connected Facebook Pages can be securely saved to your account."));
         return;
       }
 
@@ -173,7 +180,7 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
       if (pagesRes.status === 401) {
         setIsConnecting(false);
         setStatusText(null);
-        setError('Please sign in with Google first so your connected Facebook Pages can be securely saved to your account.');
+        setError(copy("Please sign in with Google first so your connected Facebook Pages can be securely saved to your account."));
         return;
       }
 
@@ -184,7 +191,7 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
 
       // If we hit a limit, show it but still load the pages that *were* successfully saved.
       if (limitErrorMsg) {
-        setError(`${limitErrorMsg} (Only ${savedCount} out of ${pages.length} pages were saved).`);
+        setError(copy("{v0} (Only {v1} out of {v2} pages were saved).", {v0: limitErrorMsg, v1: savedCount, v2: pages.length}));
       }
 
       if (pagesData.pages && pagesData.pages.length > 0) {
@@ -203,13 +210,12 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
   return (
     <div className="flex flex-col items-center justify-center p-6 sm:p-8">
       <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold mb-3">
-        f
-      </div>
-      <h3 className="text-lg font-bold mb-1 text-slate-800">Connect Facebook & Instagram</h3>
+        {copy("f")}</div>
+      <h3 className="text-lg font-bold mb-1 text-slate-800">{copy("Connect Facebook & Instagram")}</h3>
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-xs w-full text-center border border-red-200">
-          {error}
+          {errorCopy(error, copy)}
         </div>
       )}
 
@@ -220,14 +226,13 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
       )}
 
       <p className="text-slate-500 mb-5 text-center text-xs max-w-sm">
-        Connect your Facebook Page to directly publish and schedule Reels, videos, photos, and updates.
-      </p>
+        {copy("Connect your Facebook Page to directly publish and schedule Reels, videos, photos, and updates.")}</p>
 
       {/* Permission Options Box */}
       <div className="w-full max-w-sm mb-5 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-left">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
           <FaCheckCircle className="text-emerald-500 text-sm shrink-0" />
-          <span>Facebook Page Permissions (Reels, Posts, Videos)</span>
+          <span>{copy("Facebook Page Permissions (Reels, Posts, Videos)")}</span>
         </div>
 
         <label className="flex items-start gap-2 pt-2 border-t border-slate-200/70 text-xs text-slate-600 cursor-pointer">
@@ -239,11 +244,9 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
           />
           <div>
             <span className="font-semibold text-slate-800 flex items-center gap-1">
-              <FaInstagram className="text-pink-600" /> Also request Instagram publishing
-            </span>
+              <FaInstagram className="text-pink-600" /> {copy(" Also request Instagram publishing")}</span>
             <span className="text-[11px] text-slate-400 block mt-0.5">
-              Requires Instagram Business Account linked to your Page
-            </span>
+              {copy("Requires Instagram Business Account linked to your Page")}</span>
           </div>
         </label>
       </div>
@@ -257,10 +260,10 @@ export default function FacebookConnect({ onPagesFetched }: FacebookConnectProps
           <FaFacebook className="text-base" />
           <span>
             {isConnecting
-              ? 'Authorizing with Meta...'
+              ? copy("Authorizing with Meta...")
               : includeInstagram
-              ? 'Connect Facebook & Instagram'
-              : 'Connect Facebook Page'}
+              ? copy("Connect Facebook & Instagram")
+              : copy("Connect Facebook Page")}
           </span>
         </button>
       </div>

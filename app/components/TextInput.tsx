@@ -1,5 +1,10 @@
 'use client';
 
+import {useLocale} from 'next-intl';
+import {languageTags, type Locale} from '@/i18n/routing';
+
+import {useCopy} from '@/i18n/copy';
+
 import { useState, memo } from 'react';
 import { FaEdit, FaTrash, FaFont, FaExclamationTriangle, FaCoins } from 'react-icons/fa';
 import { calculateVoiceCost } from '../lib/pricing';
@@ -19,12 +24,17 @@ const TextInput = memo(function TextInput({
   selectedModelId = '',
   selectedProvider = '',
 }: TextInputProps) {
+  const copy = useCopy();
+  const language = useLocale();
+  const localeTag = languageTags[language as Locale];
+
+
   const [isFocused, setIsFocused] = useState(false);
 
   const charCount = text.length;
   const wordCount = text.trim() ? text.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
   const isLargeText = charCount > 2500;
-  
+
   const estimatedCost = calculateVoiceCost(charCount, selectedModelId, selectedProvider);
 
   return (
@@ -33,8 +43,7 @@ const TextInput = memo(function TextInput({
       <div className="flex justify-between items-center flex-wrap gap-2">
         <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 uppercase tracking-wider">
           <FaEdit className="text-base text-[#ff7d6e]" />
-          Enter Your Text
-        </label>
+          {copy("Enter Your Text")}</label>
 
         <div className="flex items-center gap-2">
           {/* Compact Clear Button */}
@@ -42,7 +51,7 @@ const TextInput = memo(function TextInput({
             type="button"
             onClick={() => onTextChange('')}
             disabled={!text}
-            title="Clear text"
+            title={copy("Clear text")}
             className={`flex items-center gap-1.5 py-1 px-3 rounded-xl text-xs font-semibold transition-all border ${
               text
                 ? 'bg-white text-slate-700 hover:bg-orange-50/50 hover:text-rose-600 hover:border-[#ff9b8f]/60 border-slate-200 cursor-pointer shadow-2xs'
@@ -50,7 +59,7 @@ const TextInput = memo(function TextInput({
             }`}
           >
             <FaTrash className="text-xs" />
-            <span>Clear</span>
+            <span>{copy("Clear")}</span>
           </button>
         </div>
       </div>
@@ -65,7 +74,7 @@ const TextInput = memo(function TextInput({
           }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder="Type or paste your text here... The AI will convert it into natural-sounding speech."
+          placeholder={copy("Type or paste your text here... The AI will convert it into natural-sounding speech.")}
           disabled={disabled}
           className={`w-full flex-1 min-h-[360px] sm:min-h-[400px] lg:min-h-[440px] p-4 border rounded-xl text-sm sm:text-base leading-relaxed resize-none overflow-auto transition-all duration-200 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 bg-white ${
             isFocused
@@ -77,8 +86,7 @@ const TextInput = memo(function TextInput({
         {!text && (
           <div className="absolute bottom-3 right-3 flex gap-2 pointer-events-none">
             <span className="text-[11px] text-gray-400 bg-gray-50 py-0.5 px-2 rounded-md border border-gray-200/60">
-              Ctrl + V to paste
-            </span>
+              {copy("Ctrl + V to paste")}</span>
           </div>
         )}
       </div>
@@ -88,17 +96,16 @@ const TextInput = memo(function TextInput({
         <div className="flex items-center gap-2">
           {wordCount > 0 && (
             <span className="font-medium text-gray-600">
-              {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
+              {copy('{v0, plural, one {# word} other {# words}}', {v0: wordCount})}
             </span>
           )}
           {isLargeText && (
             <span
               className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md"
-              title="Large text input"
+              title={copy("Large text input")}
             >
               <FaExclamationTriangle className="text-[10px] text-amber-500" />
-              Long text
-            </span>
+              {copy("Long text")}</span>
           )}
         </div>
 
@@ -106,13 +113,12 @@ const TextInput = memo(function TextInput({
           {estimatedCost > 0 && (
             <span className="font-mono text-xs font-bold flex items-center gap-1.5 px-2 py-0.5 text-[#c83a2a]">
               <FaCoins className="text-[#ff7d6e] text-[10px]" />
-              Est. Cost: {estimatedCost} Credit{estimatedCost > 1 ? 's' : ''}
+              {copy("Est. Cost: ")}{copy('{v0, plural, one {# Credit} other {# Credits}}', {v0: estimatedCost})}
             </span>
           )}
           <span className="font-mono text-xs font-semibold flex items-center gap-1 px-2 py-0.5 rounded-md text-slate-600 bg-slate-100">
             <FaFont className="text-[10px]" />
-            {charCount.toLocaleString()} chars
-          </span>
+            {charCount.toLocaleString(localeTag)} {copy(" chars")}</span>
         </div>
       </div>
     </div>

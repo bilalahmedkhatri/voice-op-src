@@ -26,6 +26,8 @@ const sql = async (strings, ...values) => {
   return sqlHandler(query, values);
 };
 Module._load = function (request, parent, isMain) {
+  // API tests must never enter page localization; its ESM Next middleware is verified in browser tests.
+  if (request === 'next-intl/middleware') return () => () => { throw new Error('API request entered locale middleware'); };
   let resolved;
   try { resolved = Module._resolveFilename(request, parent); } catch {}
   const path = String(resolved).replaceAll('\\', '/');
@@ -429,6 +431,15 @@ test('valid OAuth state accepts internal destinations and rejects external retur
     assert.ok(response.headers.get('location').startsWith('http://localhost:3000/'));
     assert.equal(response.cookies.get('vg_oauth_nonce').value, '');
   }
+});
+test('OAuth preserves a validated locale, query and hash on success and failure', async () => {
+  const returnTo = '/pt/facebook/integration?tab=pages#connected';
+  const state = Buffer.from(JSON.stringify({ nonce: 'nonce', returnTo })).toString('base64url');
+  const req = new NextRequest('http://localhost:3000/api/auth/callback/google?code=x&state=' + state,
+    { headers: { Cookie: 'vg_oauth_nonce=nonce' } });
+  assert.equal((await oauth.GET(req)).headers.get('location'), 'http://localhost:3000' + returnTo);
+  emailVerified = false;
+  assert.equal((await oauth.GET(req)).headers.get('location'), 'http://localhost:3000/pt/admin?error=profile_failed');
 });
 test('missing owned audio returns 404 on delete without touching another owner', async () => {
   const response = await library.DELETE(request('/api/audio-library?id=foreign', null, 'DELETE'));

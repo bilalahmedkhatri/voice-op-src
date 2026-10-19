@@ -29,11 +29,11 @@ export const getFormattedModelName = (name: string, provider: string) => {
   return name;
 };
 
-export const getModelDescription = (provider: string) => {
-  if (provider === 'elevenlabs') return 'Powered by ElevenLabs';
-  if (provider === 'gemini') return 'Powered by Google Gemini';
-  if (provider === 'fish-audio') return 'Powered by Fish Audio';
-  if (provider === 'kokoro') return 'Free & Open Source TTS Engine';
-  return `Powered by ${provider.toUpperCase()}`;
+export const getModelDescription = (provider: string, copy: (source: string, values?: Record<string, string>) => string) => {
+  if (provider === 'elevenlabs') return copy('Powered by ElevenLabs');
+  if (provider === 'gemini') return copy('Powered by Google Gemini');
+  if (provider === 'fish-audio') return copy('Powered by Fish Audio');
+  if (provider === 'kokoro') return copy('Free & Open Source TTS Engine');
+  return copy('Powered by {v0}', {v0: provider.toUpperCase()});
 };
 

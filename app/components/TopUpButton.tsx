@@ -1,4 +1,6 @@
 
+import {useCopy} from '@/i18n/copy';
+
 import { FiZap } from "react-icons/fi";
 import { FC } from "react";
 
@@ -11,6 +13,9 @@ interface TopUpButtonProps {
 export interface WalletBalance { credits: number | null; tier: string; }
 
 export const TopUpButton: FC<TopUpButtonProps> = ({ availableCredits, userTier, disabled = false }) => {
+  const copy = useCopy();
+
+
     return (
         <div>
             <div className="flex items-center gap-2">
@@ -18,7 +23,7 @@ export const TopUpButton: FC<TopUpButtonProps> = ({ availableCredits, userTier, 
                     <span className="text-amber-500 font-bold flex items-center gap-1 font-mono">
                         🪙 {availableCredits}
                     </span>
-                    <span className="text-slate-400">Credits</span>
+                    <span className="text-slate-400">{copy("Credits")}</span>
                     {userTier && <span className="hidden sm:inline text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-orange-50 text-[#c83a2a]">
                         {userTier}
                     </span>}
@@ -32,10 +37,10 @@ export const TopUpButton: FC<TopUpButtonProps> = ({ availableCredits, userTier, 
                         }
                     }}
                     className="px-2.5 py-1.5 rounded-xl bg-[#ff7d6e] hover:bg-[#e04836] text-white text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Top-Up Wallet Credits"
+                    title={copy("Top-Up Wallet Credits")}
                 >
                     <FiZap className="w-3 h-3" />
-                    <span>+ Top Up</span>
+                    <span>{copy("+ Top Up")}</span>
                 </button>
             </div>
         </div>

@@ -1,13 +1,18 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 import { currentOwnerScope, knownOwnerScope, resolveOwnerScope, setOwnerScope, ownerFetch } from '../lib/ownerStorage';
 import { pendingAudioJobs, pendingJobFromHistory, savePendingAudioJob, removePendingAudioJob, type PendingGeneration } from '../lib/pendingAudioJobs';
 import { isDatabaseEnabled } from '../lib/config';
 import { saveLocalHistoryItem } from '../lib/localHistoryStorage';
 
 export default function PendingAudioJobs() {
+  const copy = useCopy();
+
+
   const [jobs, setJobs] = useState<PendingGeneration[]>([]);
   useEffect(() => {
     let cancelled = false;
@@ -82,12 +87,11 @@ export default function PendingAudioJobs() {
   }, []);
   if (!jobs.length) return null;
   return <section className="space-y-3 rounded-xl bg-orange-50 p-4">
-    <h2 className="font-semibold text-slate-900">Unfinished voiceovers</h2>
+    <h2 className="font-semibold text-slate-900">{copy("Unfinished voiceovers")}</h2>
     {jobs.map(job => <div key={job.jobId} className="flex flex-wrap items-center justify-between gap-3 text-sm">
-      <span className="max-w-lg truncate">{job.params.text.slice(0, 80) || 'Voiceover'}</span>
+      <span className="max-w-lg truncate">{job.params.text.slice(0, 80) || copy("Voiceover")}</span>
       <Link className="rounded-lg bg-[#ff7d6e] px-3 py-2 font-semibold text-slate-900" href={`/admin?resumeJob=${encodeURIComponent(job.jobId)}`}>
-        Resume in Studio
-      </Link>
+        {copy("Resume in Studio")}</Link>
     </div>)}
   </section>;
 }

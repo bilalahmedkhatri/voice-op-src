@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 import React, { useState } from 'react';
 import { FiImage, FiDownloadCloud, FiTrash2, FiVideo, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
@@ -33,6 +35,8 @@ export default function ExtractedMediaGallery({
   downloadProgress,
   setDownloadProgress
 }: ExtractedMediaGalleryProps) {
+  const copy = useCopy();
+
 
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
 
@@ -53,7 +57,7 @@ export default function ExtractedMediaGallery({
         console.warn("Directory picker failed, falling back:", err);
       }
     } else {
-      alert("Folder selection not supported. Videos will be saved to your default 'Downloads' folder.");
+      alert(copy("Folder selection not supported. Videos will be saved to your default 'Downloads' folder."));
     }
 
     setIsDownloadingBulk(true);
@@ -65,7 +69,7 @@ export default function ExtractedMediaGallery({
       try {
         // Use Next.js API proxy instead of direct fetch to avoid CORS and hide endpoints
         const response = await fetch(`/api/media/download?${new URLSearchParams({ url, templateId: templateId || '', itemId: itemId || '' })}`);
-        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        if (!response.ok) throw new Error(copy("HTTP error {v0}", {v0: response.status}));
 
         const blob = await response.blob();
 
@@ -101,12 +105,12 @@ export default function ExtractedMediaGallery({
 
     if (savedCount > 0) {
       if (dirHandle) {
-        setTimeout(() => setAlertConfig({ isOpen: true, title: "Download Complete", message: `Successfully saved ${savedCount} items to your folder!`, isError: false }), 300);
+        setTimeout(() => setAlertConfig({ isOpen: true, title: copy("Download Complete"), message: `Successfully saved ${savedCount} items to your folder!`, isError: false }), 300);
       } else {
-        setTimeout(() => setAlertConfig({ isOpen: true, title: "Download Complete", message: `${savedCount} items downloaded to default Downloads.`, isError: false }), 300);
+        setTimeout(() => setAlertConfig({ isOpen: true, title: copy("Download Complete"), message: `${savedCount} items downloaded to default Downloads.`, isError: false }), 300);
       }
     } else {
-      setTimeout(() => setAlertConfig({ isOpen: true, title: "Download Failed", message: `Failed to download items. Please check the console for details.`, isError: true }), 300);
+      setTimeout(() => setAlertConfig({ isOpen: true, title: copy("Download Failed"), message: `Failed to download items. Please check the console for details.`, isError: true }), 300);
     }
   };
 
@@ -117,7 +121,7 @@ export default function ExtractedMediaGallery({
       <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <FiImage className="w-5 h-5 text-[#ff7d6e]" />
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Extracted Media Gallery</h3>
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{copy("Extracted Media Gallery")}</h3>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <select
@@ -137,12 +141,12 @@ export default function ExtractedMediaGallery({
             className="text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] cursor-pointer shadow-xs bg-white"
             defaultValue=""
           >
-            <option value="" disabled>Select Multiple...</option>
-            <option value="10">Select First 10</option>
-            <option value="20">Select First 20</option>
-            <option value="30">Select First 30</option>
-            <option value="all">Select All</option>
-            <option value="clear">Clear Selection</option>
+            <option value="" disabled>{copy("Select Multiple...")}</option>
+            <option value="10">{copy("Select First 10")}</option>
+            <option value="20">{copy("Select First 20")}</option>
+            <option value="30">{copy("Select First 30")}</option>
+            <option value="all">{copy("Select All")}</option>
+            <option value="clear">{copy("Clear Selection")}</option>
           </select>
 
           {selectedMediaUrls.length > 0 && (
@@ -156,7 +160,7 @@ export default function ExtractedMediaGallery({
                 icon={<FiDownloadCloud className="w-3.5 h-3.5" />}
                 hideTextOnMobile={true}
               >
-                {isDownloadingBulk ? `Downloading ${downloadProgress}/${selectedMediaUrls.length}...` : `Download Selected (${selectedMediaUrls.length})`}
+                {isDownloadingBulk ? copy("Downloading {v0}/{v1}...", {v0: downloadProgress, v1: selectedMediaUrls.length}) : copy("Download Selected ({v0})", {v0: selectedMediaUrls.length})}
               </Button>
               <Button
                 onClick={() => handleDeleteMedia(selectedMediaUrls)}
@@ -167,7 +171,7 @@ export default function ExtractedMediaGallery({
                 icon={<FiTrash2 className="w-3.5 h-3.5" />}
                 hideTextOnMobile={true}
               >
-                {isDeleting ? 'Deleting...' : `Delete Selected (${selectedMediaUrls.length})`}
+                {isDeleting ? copy("Deleting...") : copy("Delete Selected ({v0})", {v0: selectedMediaUrls.length})}
               </Button>
             </>
           )}
@@ -199,7 +203,7 @@ export default function ExtractedMediaGallery({
                   </div>
                 </>
               ) : (
-                <img src={url} alt={`Media ${idx}`} className="w-full h-auto block transition-transform duration-300 group-hover:scale-105 pointer-events-none" />
+                <img src={url} alt={copy("Media {v0}", {v0: idx})} className="w-full h-auto block transition-transform duration-300 group-hover:scale-105 pointer-events-none" />
               )}
 
               {/* Selection Checkbox */}

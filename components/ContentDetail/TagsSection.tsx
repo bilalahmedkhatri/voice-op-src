@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import React from 'react';
 import { FiCheck, FiCopy } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
@@ -12,12 +14,15 @@ interface TagsSectionProps {
 }
 
 export default function TagsSection({ tagsList, copiedId, handleCopy, rawTagsData }: TagsSectionProps) {
+  const copy = useCopy();
+
+
   return (
     <Card>
-      <SectionHeader title="Tags">
+      <SectionHeader title={copy("Tags")}>
         <IconButton
           icon={copiedId === 'tags' ? <FiCheck className="w-4 h-4 text-emerald-500" /> : <FiCopy className="w-4 h-4" />}
-          title="Copy Tags"
+          title={copy("Copy Tags")}
           variant="ghost"
           size="xs"
           onClick={() => handleCopy(tagsList.join(' '), 'tags')}
@@ -32,7 +37,7 @@ export default function TagsSection({ tagsList, copiedId, handleCopy, rawTagsDat
           ))}
         </div>
       ) : (
-        <p className="italic text-slate-400 text-sm">No tags provided</p>
+        <p className="italic text-slate-400 text-sm">{copy("No tags provided")}</p>
       )}
     </Card>
   );

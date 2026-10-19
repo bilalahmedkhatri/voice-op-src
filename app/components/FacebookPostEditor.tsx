@@ -1,5 +1,7 @@
 'use client';
 
+import {useCopy} from '@/i18n/copy';
+
 import { ownerFetch as fetch } from '@/app/lib/ownerStorage';
 
 import { useState, useRef, useEffect } from 'react';
@@ -41,6 +43,9 @@ export default function FacebookPostEditor({
   onResyncPages,
   initialData,
 }: FacebookPostEditorProps) {
+  const copy = useCopy();
+
+
   const [selectedPage, setSelectedPage] = useState<any>(pages.length > 0 ? pages[0] : null);
 
   // Destinations: Facebook and/or Instagram
@@ -191,7 +196,7 @@ export default function FacebookPostEditor({
     e.preventDefault();
     if (!selectedPage) return;
     if (!message.trim() && !mediaFile && !mediaPreviewUrl) {
-      setStatus({ type: 'error', text: 'Please add a message or media file.' });
+      setStatus({ type: 'error', text: copy("Please add a message or media file.") });
       return;
     }
 
@@ -206,7 +211,7 @@ export default function FacebookPostEditor({
       if (scheduled_publish_time < currentEpoch + 600) {
         setStatus({
           type: 'error',
-          text: 'Meta requires scheduled publish time to be at least 10 minutes in the future.',
+          text: copy("Meta requires scheduled publish time to be at least 10 minutes in the future."),
         });
         setIsSubmitting(false);
         return;
@@ -215,7 +220,7 @@ export default function FacebookPostEditor({
       if (scheduled_publish_time > currentEpoch + 75 * 24 * 3600) {
         setStatus({
           type: 'error',
-          text: 'Meta allows scheduling up to 75 days in advance.',
+          text: copy("Meta allows scheduling up to 75 days in advance."),
         });
         setIsSubmitting(false);
         return;
@@ -302,7 +307,7 @@ export default function FacebookPostEditor({
       }
     } catch (err: any) {
       console.error(err);
-      setStatus({ type: 'error', text: 'A network error occurred while communicating with the server.' });
+      setStatus({ type: 'error', text: copy("A network error occurred while communicating with the server.") });
     } finally {
       setIsSubmitting(false);
     }
@@ -318,11 +323,10 @@ export default function FacebookPostEditor({
       <div className="p-4 sm:p-5 border-b border-slate-100 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span>Post & Reel Studio</span>
+            <span>{copy("Post & Reel Studio")}</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Publish or schedule directly to your connected Facebook Page and Instagram Account
-          </p>
+            {copy("Publish or schedule directly to your connected Facebook Page and Instagram Account")}</p>
         </div>
         <div className="flex items-center gap-3">
           {onResyncPages && (
@@ -331,15 +335,13 @@ export default function FacebookPostEditor({
               onClick={onResyncPages}
               className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
             >
-              + Sync / Add Pages
-            </button>
+              {copy("+ Sync / Add Pages")}</button>
           )}
           <button
             onClick={onDisconnect}
             className="text-xs font-semibold text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
           >
-            Disconnect
-          </button>
+            {copy("Disconnect")}</button>
         </div>
       </div>
 
@@ -372,8 +374,7 @@ export default function FacebookPostEditor({
                 }}
                 className="px-3 py-1 bg-[#ff7d6e] hover:bg-[#e04836] text-white font-bold rounded-lg text-[11px] shrink-0 transition-all shadow-2xs cursor-pointer"
               >
-                Top-Up Credits
-              </button>
+                {copy("Top-Up Credits")}</button>
             )}
           </div>
         )}
@@ -383,8 +384,7 @@ export default function FacebookPostEditor({
           {/* 1. Publishing Destinations */}
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
-              1. Publishing Destinations
-            </label>
+              {copy("1. Publishing Destinations")}</label>
             <div className="p-3.5 bg-slate-50/80 border border-slate-200/90 rounded-xl space-y-3 min-h-[110px] flex flex-col justify-center">
               {/* Facebook Page Select */}
               <div className="flex items-center justify-between gap-2">
@@ -396,7 +396,7 @@ export default function FacebookPostEditor({
                     className="w-4 h-4 accent-[#ff7d6e] rounded cursor-pointer"
                   />
                   <FaFacebook className="text-blue-600 text-base shrink-0" />
-                  <span>Facebook Page:</span>
+                  <span>{copy("Facebook Page:")}</span>
                 </label>
                 <select
                   value={selectedPage?.page_id || selectedPage?.id || ''}
@@ -425,7 +425,7 @@ export default function FacebookPostEditor({
                     className="w-4 h-4 text-pink-600 rounded-sm focus:ring-pink-500 cursor-pointer disabled:cursor-not-allowed"
                   />
                   <FaInstagram className="text-pink-600 text-base shrink-0" />
-                  <span>Instagram Account:</span>
+                  <span>{copy("Instagram Account:")}</span>
                 </label>
                 {hasInstagram ? (
                   <span className="text-xs font-bold text-pink-700 bg-pink-50 px-2.5 py-0.5 rounded-md border border-pink-200">
@@ -433,10 +433,9 @@ export default function FacebookPostEditor({
                   </span>
                 ) : (
                   <div className="text-right">
-                    <span className="text-[11px] text-slate-400 block font-medium">No linked IG business account</span>
+                    <span className="text-[11px] text-slate-400 block font-medium">{copy("No linked IG business account")}</span>
                     <span className="text-[10px] text-slate-400">
-                      (Link via Page Settings ➔ Linked Accounts)
-                    </span>
+                      {copy("(Link via Page Settings ➔ Linked Accounts)")}</span>
                   </div>
                 )}
               </div>
@@ -446,14 +445,13 @@ export default function FacebookPostEditor({
           {/* 2. Content Format */}
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
-              2. Content Format
-            </label>
+              {copy("2. Content Format")}</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-2.5 min-h-[110px] items-stretch">
               {[
-                { id: 'reel', label: 'Reel (9:16)', icon: FaMobileAlt },
-                { id: 'post', label: 'Status', icon: FaGlobeAmericas },
-                { id: 'photo', label: 'Photo', icon: FaImage },
-                { id: 'video', label: 'Video', icon: FaVideo },
+                { id: 'reel', label: copy("Reel (9:16)"), icon: FaMobileAlt },
+                { id: 'post', label: copy("Status"), icon: FaGlobeAmericas },
+                { id: 'photo', label: copy("Photo"), icon: FaImage },
+                { id: 'video', label: copy("Video"), icon: FaVideo },
               ].map((fmt) => {
                 const Icon = fmt.icon;
                 const isActive = postType === fmt.id;
@@ -480,9 +478,8 @@ export default function FacebookPostEditor({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              3. Media Attachment
-            </label>
-            <span className="text-[11px] text-slate-400">Reel: 9:16 vertical • Video & Photo up to 1GB</span>
+              {copy("3. Media Attachment")}</label>
+            <span className="text-[11px] text-slate-400">{copy("Reel: 9:16 vertical • Video & Photo up to 1GB")}</span>
           </div>
 
           {!mediaPreviewUrl ? (
@@ -494,8 +491,8 @@ export default function FacebookPostEditor({
                 <FaImage className="text-slate-400 group-hover:text-[#ff7d6e] text-xl transition-colors" />
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-800 block">Click to upload video or photo</span>
-                <span className="text-[11px] text-slate-400">Supports MP4, MOV, WEBM, PNG, JPG (Vertical 9:16 recommended for Reels)</span>
+                <span className="text-xs font-bold text-slate-800 block">{copy("Click to upload video or photo")}</span>
+                <span className="text-[11px] text-slate-400">{copy("Supports MP4, MOV, WEBM, PNG, JPG (Vertical 9:16 recommended for Reels)")}</span>
               </div>
             </div>
           ) : (
@@ -505,29 +502,26 @@ export default function FacebookPostEditor({
                   {mediaFile?.type?.startsWith('video/') || postType === 'reel' || postType === 'video' ? (
                     <video src={mediaPreviewUrl} className="h-full w-full object-cover" />
                   ) : (
-                    <img src={mediaPreviewUrl} alt="Preview" className="h-full w-full object-cover" />
+                    <img src={mediaPreviewUrl} alt={copy("Preview")} className="h-full w-full object-cover" />
                   )}
                   {mediaFile?.type?.startsWith('video/') || postType === 'reel' || postType === 'video' ? (
                     <span className="absolute bottom-1 right-1 bg-black/70 px-1 py-0.5 rounded text-[9px] font-bold text-white">
-                      VIDEO
-                    </span>
+                      {copy("VIDEO")}</span>
                   ) : (
                     <span className="absolute bottom-1 right-1 bg-black/70 px-1 py-0.5 rounded text-[9px] font-bold text-white">
-                      PHOTO
-                    </span>
+                      {copy("PHOTO")}</span>
                   )}
                 </div>
                 <div className="min-w-0">
                   <span className="text-xs font-bold text-white block truncate max-w-xs sm:max-w-md">
-                    {mediaFile?.name || 'Attached Media Asset'}
+                    {mediaFile?.name || copy("Attached Media Asset")}
                   </span>
                   <span className="text-[11px] text-emerald-400 font-medium block mt-0.5">
-                    Ready for publishing ({postType.toUpperCase()})
+                    {copy("Ready for publishing (")}{postType.toUpperCase()})
                   </span>
                   {mediaFile?.size && (
                     <span className="text-[10px] text-slate-400">
-                      {(mediaFile.size / (1024 * 1024)).toFixed(1)} MB
-                    </span>
+                      {(mediaFile.size / (1024 * 1024)).toFixed(1)} {copy(" MB")}</span>
                   )}
                 </div>
               </div>
@@ -538,15 +532,13 @@ export default function FacebookPostEditor({
                   onClick={() => fileInputRef.current?.click()}
                   className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Change
-                </button>
+                  {copy("Change")}</button>
                 <button
                   type="button"
                   onClick={removeMedia}
                   className="px-3 py-1.5 bg-rose-500/90 hover:bg-rose-600 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Remove
-                </button>
+                  {copy("Remove")}</button>
               </div>
             </div>
           )}
@@ -563,18 +555,17 @@ export default function FacebookPostEditor({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              4. Caption &amp; Details
-            </label>
+              {copy("4. Caption & Details")}</label>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleGenerateAiCaption}
                 disabled={isGeneratingCaption}
                 className="px-2.5 py-1 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-[#c83a2a] border border-orange-200/80 rounded-lg text-[11px] font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                title="Generate engaging viral caption with AI (Cost: 1 Credit)"
+                title={copy("Generate engaging viral caption with AI (Cost: 1 Credit)")}
               >
                 <FaMagic className="text-[10px] text-amber-500" />
-                <span>{isGeneratingCaption ? 'Generating...' : '✨ AI Caption (1 Credit)'}</span>
+                <span>{isGeneratingCaption ? copy("Generating...") : copy("✨ AI Caption (1 Credit)")}</span>
               </button>
               <span className="text-[11px] text-slate-400 font-medium">
                 {message.length} / {maxChars}
@@ -585,7 +576,7 @@ export default function FacebookPostEditor({
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Write a viral caption, hook, or status update..."
+            placeholder={copy("Write a viral caption, hook, or status update...")}
             className="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#ff9b8f]/25 focus:border-[#ff9b8f] transition-all resize-none h-32 leading-relaxed"
             maxLength={maxChars}
           />
@@ -593,8 +584,7 @@ export default function FacebookPostEditor({
           {/* Quick Hashtag Chips */}
           <div className="flex items-center gap-1.5 flex-wrap pt-1">
             <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1 mr-1">
-              <FaHashtag className="text-[10px]" /> Tags:
-            </span>
+              <FaHashtag className="text-[10px]" /> {copy(" Tags:")}</span>
             {['#VoiceAI', '#Reels', '#Shorts', '#Trending', '#AI', '#Viral'].map((tag) => (
               <button
                 key={tag}
@@ -619,9 +609,9 @@ export default function FacebookPostEditor({
                 className="w-4 h-4 accent-[#ff7d6e] rounded cursor-pointer"
               />
               <FaClock className="text-[#ff7d6e] text-sm" />
-              <span>Schedule for Later</span>
+              <span>{copy("Schedule for Later")}</span>
             </label>
-            <span className="text-[11px] text-slate-400 font-medium">Meta Limit: 10m - 75 days in advance</span>
+            <span className="text-[11px] text-slate-400 font-medium">{copy("Meta Limit: 10m - 75 days in advance")}</span>
           </div>
 
           {isScheduled && (
@@ -640,28 +630,25 @@ export default function FacebookPostEditor({
 
               {/* Quick Presets */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] text-slate-400 font-semibold">Quick Presets:</span>
+                <span className="text-[11px] text-slate-400 font-semibold">{copy("Quick Presets:")}</span>
                 <button
                   type="button"
                   onClick={() => applyPresetTime('30m')}
                   className="px-2.5 py-1 bg-white border border-slate-200 hover:bg-orange-50/50 hover:text-[#c83a2a] hover:border-[#ff9b8f]/60 text-slate-700 rounded-lg text-[11px] font-bold transition-all cursor-pointer shadow-2xs"
                 >
-                  +35 Mins
-                </button>
+                  {copy("+35 Mins")}</button>
                 <button
                   type="button"
                   onClick={() => applyPresetTime('tomorrow_9am')}
                   className="px-2.5 py-1 bg-white border border-slate-200 hover:bg-orange-50/50 hover:text-[#c83a2a] hover:border-[#ff9b8f]/60 text-slate-700 rounded-lg text-[11px] font-bold transition-all cursor-pointer shadow-2xs"
                 >
-                  Tomorrow 9 AM
-                </button>
+                  {copy("Tomorrow 9 AM")}</button>
                 <button
                   type="button"
                   onClick={() => applyPresetTime('tomorrow_6pm')}
                   className="px-2.5 py-1 bg-white border border-slate-200 hover:bg-orange-50/50 hover:text-[#c83a2a] hover:border-[#ff9b8f]/60 text-slate-700 rounded-lg text-[11px] font-bold transition-all cursor-pointer shadow-2xs"
                 >
-                  Tomorrow 6 PM (Best Time)
-                </button>
+                  {copy("Tomorrow 6 PM (Best Time)")}</button>
               </div>
             </div>
           )}
@@ -680,8 +667,7 @@ export default function FacebookPostEditor({
           }}
           className="px-4 py-2 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-[#ff9b8f]/60 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
         >
-          Clear Form
-        </button>
+          {copy("Clear Form")}</button>
 
         <button
           type="button"
@@ -690,16 +676,16 @@ export default function FacebookPostEditor({
           className="px-6 py-2.5 bg-[#ff7d6e] hover:bg-[#e04836] text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:shadow-md disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
         >
           {isSubmitting ? (
-            <span>Publishing to Meta...</span>
+            <span>{copy("Publishing to Meta...")}</span>
           ) : isScheduled ? (
             <>
               <FaClock className="text-xs" />
-              <span>Schedule Post</span>
+              <span>{copy("Schedule Post")}</span>
             </>
           ) : (
             <>
               <FaPaperPlane className="text-xs" />
-              <span>Publish Now</span>
+              <span>{copy("Publish Now")}</span>
             </>
           )}
         </button>

@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import React from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { TTSModel } from '../../hooks/useModels';
@@ -14,9 +16,12 @@ export default function ModelOptionItem({
   isSelected,
   onSelect,
 }: ModelOptionItemProps) {
+  const copy = useCopy();
+
+
   const icon = getModelIcon(model.provider);
   const title = getFormattedModelName(model.name, model.provider);
-  const description = getModelDescription(model.provider);
+  const description = getModelDescription(model.provider, copy);
 
   return (
     <button

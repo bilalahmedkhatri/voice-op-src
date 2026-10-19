@@ -1,3 +1,5 @@
+
+import {useCopy} from '@/i18n/copy';
 import { useEffect } from 'react';
 
 interface ToastProps {
@@ -7,6 +9,9 @@ interface ToastProps {
 }
 
 export default function Toast({ message, type = 'info', onClose }: ToastProps) {
+  const copy = useCopy();
+
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -46,13 +51,13 @@ export default function Toast({ message, type = 'info', onClose }: ToastProps) {
       </span>
       <div className="flex-1">
         <p className="m-0 text-base text-gray-900 leading-normal whitespace-pre-wrap">
-          {message}
+          {copy(message)}
         </p>
       </div>
       <button
         onClick={onClose}
         className="bg-transparent border-none cursor-pointer text-xl text-gray-500 p-0 leading-none flex-shrink-0"
-        aria-label="Close notification"
+        aria-label={copy("Close notification")}
       >
         ×
       </button>
