@@ -414,7 +414,6 @@
     "m1a8dq7w": "Copiar Link",
     "mg2of6n": "Eliminar la pista audio",
     "mo17uuu": "Eliminar pistes audio {v0}",
-    "muijy6g": "Sigur que quer eliminar {v0}? Esta accion no pode ser desfecha.",
     "mdyf31r": "Ningun arquivo de áudio encontrado",
     "motlty": "Tu ainda n''as generat ninguna voz over. Crea tu primeira pista audio em Voice Studio.",
     "m1v4z9fw": "Por favor inicie login con seu compte de Google para acceder a seus files audio salvados.",
@@ -1347,6 +1346,7 @@
     "me1ihsm": "{v0, plural, =0 {# instruções} one {# instrução} other {# instruções}}",
     "m1t1i04u": "Deixe de perder 5 horas a gravar e editar locuções. Transforme qualquer guião em fala natural e agende todos os conteúdos da semana com publicação num clique.",
     "mcvdgve": "Deixe de perder 5 horas a gravar e editar locuções. Transforme qualquer guião em fala natural e agende todos os Reels da semana com publicação num clique.",
-    "m1rkeypc": "{v0, plural, one {# voz carregada} other {# vozes carregadas}}"
+    "m1rkeypc": "{v0, plural, one {# voz carregada} other {# vozes carregadas}}",
+    "m1k37ps": "{v0, plural, =0 {Tem a certeza de que pretende eliminar estas # faixas de áudio? Esta ação não pode ser anulada.} one {Tem a certeza de que pretende eliminar esta faixa de áudio? Esta ação não pode ser anulada.} other {Tem a certeza de que pretende eliminar estas # faixas de áudio? Esta ação não pode ser anulada.}}"
   }
 }

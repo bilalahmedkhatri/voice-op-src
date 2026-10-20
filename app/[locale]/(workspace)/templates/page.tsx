@@ -4,7 +4,7 @@ import {useLocale} from 'next-intl';
 import {languageTags, type Locale} from '@/i18n/routing';
 import {errorCopy} from '@/i18n/errors';
 
-import {useCopy} from '@/i18n/copy';
+import {useCopy, type Copy} from '@/i18n/copy';
 
 import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
 
@@ -31,19 +31,19 @@ type Template = {
   updated_at: string;
 };
 
-const extractTemplateInfo = (jsonData: any) => {
+const extractTemplateInfo = (jsonData: any, copy: Copy) => {
   if (!jsonData || typeof jsonData !== 'object') {
-    return { title: "Unknown Template", channel: "Unknown Channel", contentInfo: "No data", statuses: [] };
+    return { title: copy("Unknown Template"), channel: copy("Unknown Channel"), contentInfo: copy("No data"), statuses: [] };
   }
 
-  let title = "Unknown Topic";
+  let title = copy("Unknown Topic");
   if (jsonData?.content_strategy?.long_video?.title) {
     title = jsonData.content_strategy.long_video.title;
   } else if (Array.isArray(jsonData?.content_plan) && jsonData.content_plan.length > 0) {
     const firstPlan = jsonData.content_plan[0];
-    title = firstPlan.theme || (jsonData.page_name ? `${jsonData.page_name} Content Plan` : "Content Plan");
+    title = firstPlan.theme || (jsonData.page_name ? copy("{v0} Content Plan", {v0: jsonData.page_name}) : copy("Content Plan"));
   } else if (Array.isArray(jsonData?.captions) && jsonData.captions.length > 0) {
-    title = jsonData.title || (jsonData.page_name ? `${jsonData.page_name} Captions` : `${jsonData.captions.length} Social Media Captions`);
+    title = jsonData.title || (jsonData.page_name ? copy("{v0} Captions", {v0: jsonData.page_name}) : copy("{v0} Social Media Captions", {v0: jsonData.captions.length}));
   } else {
     const searchTitle = (obj: any): string | null => {
       if (!obj || typeof obj !== 'object') return null;
@@ -63,7 +63,7 @@ const extractTemplateInfo = (jsonData: any) => {
     if (foundTitle) title = foundTitle;
   }
 
-  let channel = "Unknown Channel";
+  let channel = copy("Unknown Channel");
   if (jsonData?.page_name && typeof jsonData.page_name === 'string') {
     channel = jsonData.page_name;
   } else if (jsonData?.channel_info?.channel_name) {
@@ -76,13 +76,13 @@ const extractTemplateInfo = (jsonData: any) => {
   let statuses: string[] = [];
 
   if (jsonData?.content_strategy?.shorts && Array.isArray(jsonData.content_strategy.shorts)) {
-    contentParts.push(`${jsonData.content_strategy.shorts.length} Shorts`);
+    contentParts.push(copy("{v0} Shorts", {v0: jsonData.content_strategy.shorts.length}));
     jsonData.content_strategy.shorts.forEach((short: any) => {
       statuses.push(short.status || "pending");
     });
   }
   if (jsonData?.content_strategy?.long_video) {
-    contentParts.push(`1 Long Video`);
+    contentParts.push(copy("1 Long Video"));
     statuses.push(jsonData.content_strategy.long_video.status || "pending");
   }
 
@@ -96,25 +96,25 @@ const extractTemplateInfo = (jsonData: any) => {
         });
       }
     });
-    contentParts.push(`${postCount} Posts`);
+    contentParts.push(copy("{v0} Posts", {v0: postCount}));
   } else if (Array.isArray(jsonData?.posts) && jsonData.posts.length > 0) {
     jsonData.posts.forEach((post: any) => {
       statuses.push(post.status || "pending");
     });
-    contentParts.push(`${jsonData.posts.length} Posts`);
+    contentParts.push(copy("{v0} Posts", {v0: jsonData.posts.length}));
   } else if (Array.isArray(jsonData?.captions) && jsonData.captions.length > 0) {
     jsonData.captions.forEach((cap: any) => {
       statuses.push(cap.status || "pending");
     });
-    contentParts.push(`${jsonData.captions.length} Captions`);
+    contentParts.push(copy("{v0} Captions", {v0: jsonData.captions.length}));
   }
 
   if (contentParts.length === 0) {
     const keys = Object.keys(jsonData);
     if (keys.length > 0) {
-      contentParts.push(`${keys.length} Sections`);
+      contentParts.push(copy("{v0} Sections", {v0: keys.length}));
     } else {
-      contentParts.push("Empty");
+      contentParts.push(copy("Empty"));
     }
   }
 
@@ -186,15 +186,15 @@ export default function TemplatesDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case "published":
-        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">{status}</span>;
+        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">{copy("Published")}</span>;
       case "completed":
-        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">{status}</span>;
+        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">{copy("Completed")}</span>;
       case "pending":
-        return <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-xs font-semibold rounded-full border border-amber-200/80">{status}</span>;
+        return <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-xs font-semibold rounded-full border border-amber-200/80">{copy("Pending")}</span>;
       case "draft":
-        return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
+        return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">{copy("Draft")}</span>;
       case "closed":
-        return <span className="px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-semibold rounded-full border border-rose-200/80">{status}</span>;
+        return <span className="px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-semibold rounded-full border border-rose-200/80">{copy("Closed")}</span>;
       default:
         return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200">{status}</span>;
     }
@@ -283,7 +283,7 @@ export default function TemplatesDashboard() {
                 </tr>
               ) : (
                 filteredTemplates.map((template) => {
-                  const info = extractTemplateInfo(template.json_data);
+                  const info = extractTemplateInfo(template.json_data, copy);
                   const platform = detectTemplatePlatform(template.json_data);
                   const contentUrl = getContentUrl(template.id, template.json_data);
 

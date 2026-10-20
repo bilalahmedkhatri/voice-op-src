@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
   if (!post) {
     return {
-      title: 'Article Not Found | GenZee Video',
+      title: (await getCopy(locale))('Article Not Found | GenZee Video'),
     };
   }
 

@@ -4,7 +4,7 @@ import {useLocale} from 'next-intl';
 import {languageTags, type Locale} from '@/i18n/routing';
 import {errorCopy} from '@/i18n/errors';
 
-import {useCopy} from '@/i18n/copy';
+import {useCopy, type Copy} from '@/i18n/copy';
 
 import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
 
@@ -31,20 +31,20 @@ type Template = {
   updated_at: string;
 };
 
-const extractYouTubeInfo = (jsonData: any) => {
+const extractYouTubeInfo = (jsonData: any, copy: Copy) => {
   if (!jsonData || typeof jsonData !== "object") {
-    return { title: "Unknown YouTube Strategy", channel: "Unknown Channel", contentInfo: "No data", statuses: [] };
+    return { title: copy("Unknown YouTube Strategy"), channel: copy("Unknown Channel"), contentInfo: copy("No data"), statuses: [] };
   }
 
-  let title = jsonData?.general_information?.main_title || jsonData?.channel_info?.main_title || jsonData?.main_title || jsonData?.title || jsonData?.topic || "Untitled Video Strategy";
-  let channel = jsonData?.general_information?.channel_name || jsonData?.general_information?.general_name || jsonData?.channel_info?.channel_name || jsonData?.channel_name || jsonData?.channel || "YouTube Channel";
+  let title = jsonData?.general_information?.main_title || jsonData?.channel_info?.main_title || jsonData?.main_title || jsonData?.title || jsonData?.topic || copy("Untitled Video Strategy");
+  let channel = jsonData?.general_information?.channel_name || jsonData?.general_information?.general_name || jsonData?.channel_info?.channel_name || jsonData?.channel_name || jsonData?.channel || copy("YouTube Channel");
 
   const contentParts = [];
   const statuses: string[] = [];
   const strategy = jsonData?.content_strategy;
 
   if (strategy?.shorts && Array.isArray(strategy.shorts)) {
-    contentParts.push(`${strategy.shorts.length} Shorts`);
+    contentParts.push(copy("{v0} Shorts", {v0: strategy.shorts.length}));
     strategy.shorts.forEach((short: any) => {
       statuses.push(short.status || "pending");
     });
@@ -55,14 +55,14 @@ const extractYouTubeInfo = (jsonData: any) => {
     const longVideoKeys = keys.filter(k => k.startsWith('long_video') || k.includes('long_video'));
     if (longVideoKeys.length > 0) {
       const longVideoCount = longVideoKeys.length;
-      contentParts.push(`${longVideoCount} Long Video${longVideoCount > 1 ? 's' : ''}`);
+      contentParts.push(copy('{v0, plural, one {# Long Video} other {# Long Videos}}', {v0: longVideoCount}));
       longVideoKeys.forEach(k => {
         const lv = strategy[k];
         const status = Array.isArray(lv) ? lv[0]?.status : lv?.status;
         statuses.push(status || "pending");
       });
       // also if we didn't find a title above, try to extract from the first long video
-      if (title === "Untitled Video Strategy") {
+      if (title === copy("Untitled Video Strategy")) {
         const firstLv = strategy[longVideoKeys[0]];
         const lvObj = Array.isArray(firstLv) ? firstLv[0] : firstLv;
         if (lvObj?.title || lvObj?.topic) {
@@ -71,7 +71,7 @@ const extractYouTubeInfo = (jsonData: any) => {
       }
     } else if (strategy.long_video) {
       // Fallback to legacy single object check
-      contentParts.push("1 Long Video");
+      contentParts.push(copy("1 Long Video"));
       const lvObj = Array.isArray(strategy.long_video) ? strategy.long_video[0] : strategy.long_video;
       statuses.push(lvObj?.status || "pending");
     }
@@ -80,7 +80,7 @@ const extractYouTubeInfo = (jsonData: any) => {
   return {
     title: title.length > 55 ? title.substring(0, 55) + "..." : title,
     channel,
-    contentInfo: contentParts.length > 0 ? contentParts.join(", ") : "Video Strategy",
+    contentInfo: contentParts.length > 0 ? contentParts.join(", ") : copy("Video Strategy"),
     statuses,
   };
 };
@@ -237,7 +237,7 @@ export default function YouTubeTemplatesPage() {
                 </tr>
               ) : (
                 templates.map((template) => {
-                  const info = extractYouTubeInfo(template.json_data);
+                  const info = extractYouTubeInfo(template.json_data, copy);
                   return (
                     <tr key={template.id} className="hover:bg-slate-50 transition-colors group">
                       <td className="px-6 py-4">

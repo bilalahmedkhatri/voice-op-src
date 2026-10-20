@@ -4,7 +4,7 @@ import {useLocale} from 'next-intl';
 import {languageTags, type Locale} from '@/i18n/routing';
 import {errorCopy} from '@/i18n/errors';
 
-import {useCopy} from '@/i18n/copy';
+import {useCopy, type Copy} from '@/i18n/copy';
 
 import WorkspacePageHeader from "@/app/components/workspace/WorkspacePageHeader";
 
@@ -31,12 +31,12 @@ type Template = {
   updated_at: string;
 };
 
-const extractFacebookInfo = (jsonData: any) => {
+const extractFacebookInfo = (jsonData: any, copy: Copy) => {
   if (!jsonData || typeof jsonData !== "object") {
-    return { title: "Untitled Facebook Plan", pageName: "Facebook Page", contentInfo: "No data", statuses: [] };
+    return { title: copy("Untitled Facebook Plan"), pageName: copy("Facebook Page"), contentInfo: copy("No data"), statuses: [] };
   }
 
-  const pageName = jsonData?.page_name || jsonData?.channel_info?.channel_name || "Facebook Page";
+  const pageName = jsonData?.page_name || jsonData?.channel_info?.channel_name || copy("Facebook Page");
   let title = jsonData?.theme || jsonData?.title || "";
   let totalPosts = 0;
   const statuses: string[] = [];
@@ -64,10 +64,10 @@ const extractFacebookInfo = (jsonData: any) => {
   }
 
   if (!title) {
-    title = `${pageName} Content Plan`;
+    title = copy("{v0} Content Plan", {v0: pageName});
   }
 
-  const contentInfo = totalPosts > 0 ? `${totalPosts} Posts` : "Social Media Plan";
+  const contentInfo = totalPosts > 0 ? copy("{v0} Posts", {v0: totalPosts}) : copy("Social Media Plan");
 
   return {
     title: title.length > 55 ? title.substring(0, 55) + "..." : title,
@@ -229,7 +229,7 @@ export default function FacebookTemplatesPage() {
                 </tr>
               ) : (
                 templates.map((template) => {
-                  const info = extractFacebookInfo(template.json_data);
+                  const info = extractFacebookInfo(template.json_data, copy);
                   return (
                     <tr key={template.id} className="hover:bg-slate-50 transition-colors group">
                       <td className="px-6 py-4">
