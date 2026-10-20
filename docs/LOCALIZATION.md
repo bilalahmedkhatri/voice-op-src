@@ -32,3 +32,12 @@ Brand names, URLs, emails, numbers and interpolation tokens are protected during
 - `pnpm exec tsc --noEmit --incremental false` and `pnpm build`.
 
 Browser checks should cover the public and workspace selectors, query/hash preservation, sidebar links, auth return destinations, long text and 390px mobile widths. Runtime/provider, production database, payments, hosted deployment and fluent-language quality require separate verification.
+
+The generated `app/sitemap.ts` owns `/sitemap.xml`; do not add a static `public/sitemap.xml` because it takes precedence over the localized route.
+
+## Release review
+
+- [ ] Fluent speakers review every additional language, including complete blog and legal text, against English meaning and claims.
+- [ ] A European Portuguese reviewer checks terminology and phrasing throughout the Portuguese drafts.
+- [ ] Verify authenticated online generation, retry/recovery, wallet and social integration against the deployed services. Local ownership tests use isolated dependencies.
+- [ ] After deployment, verify canonical/alternate URLs, sitemap delivery and private workspace `noindex` on the public host.

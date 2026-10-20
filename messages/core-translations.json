@@ -1,5 +1,7 @@
 {
   "Language": ["Язык", "Idioma", "Langue", "Idioma", "Taal"],
+  "Voiceover Script:": ["Текст озвучки:", "Guião da locução:", "Script de voix off :", "Guion de voz en off:", "Voice-overscript:"],
+  "Try Script:": ["Попробуйте текст:", "Experimente o guião:", "Essayer un script :", "Prueba un guion:", "Probeer een script:"],
   "Article Not Found | GenZee Video": ["Статья не найдена | GenZee Video", "Artigo não encontrado | GenZee Video", "Article introuvable | GenZee Video", "Artículo no encontrado | GenZee Video", "Artikel niet gevonden | GenZee Video"],
   "Closed": ["Закрыто", "Fechado", "Fermé", "Cerrado", "Gesloten"],
   "{v0, plural, one {# Long Video} other {# Long Videos}}": ["{v0, plural, one {# длинное видео} few {# длинных видео} many {# длинных видео} other {# длинного видео}}", "{v0, plural, =0 {# vídeos longos} one {# vídeo longo} other {# vídeos longos}}", "{v0, plural, one {# vidéo longue} other {# vidéos longues}}", "{v0, plural, one {# vídeo largo} other {# vídeos largos}}", "{v0, plural, one {# lange video} other {# lange video's}}"],

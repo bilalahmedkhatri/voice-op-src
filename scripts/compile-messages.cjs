@@ -17,6 +17,8 @@ for(const file of files){
   function visit(n,field=''){
     if(ts.isBindingElement(n)&&fields.has(n.name.getText(sf))&&n.initializer){visit(n.initializer,n.name.getText(sf));return;}
     if(ts.isCallExpression(n)&&ts.isIdentifier(n.expression)&&n.expression.text==='copy'&&n.arguments[0]&&ts.isStringLiteral(n.arguments[0]))add(ui,n.arguments[0].text);
+    if((ts.isCallExpression(n)&&ts.isIdentifier(n.expression)&&['setError','setPlaybackError'].includes(n.expression.text)
+      ||ts.isNewExpression(n)&&ts.isIdentifier(n.expression)&&n.expression.text==='Error')&&n.arguments?.[0]&&ts.isStringLiteral(n.arguments[0]))add(ui,n.arguments[0].text);
     if(ts.isPropertyAssignment(n)){
       const name=n.name.getText(sf).replace(/['"]/g,'');
       visit(n.initializer,fields.has(name)?name:field==='routeTitles'?field:'');return;

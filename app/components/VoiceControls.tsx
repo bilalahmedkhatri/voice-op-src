@@ -1,6 +1,9 @@
 'use client';
 
 import {useCopy} from '@/i18n/copy';
+import {useLocale} from 'next-intl';
+import {languageTags, type Locale} from '@/i18n/routing';
+import {errorCopy} from '@/i18n/errors';
 
 import { memo, useState, useEffect, useRef } from 'react';
 import {
@@ -68,7 +71,7 @@ const LANGUAGE_META: Record<string, { country: string; code: string }> = {
 };
 
 // Deterministic tone and stats generator based on voice ID
-function getVoiceCardMeta(voice: VoiceSample, copy: (source: string) => string) {
+function getVoiceCardMeta(voice: VoiceSample, copy: (source: string) => string, locale: string) {
   const id = voice.voice_id.toLowerCase();
 
   // Country & Lang Code Resolution
@@ -111,8 +114,9 @@ function getVoiceCardMeta(voice: VoiceSample, copy: (source: string) => string) 
   for (let i = 0; i < id.length; i++) {
     hash = (hash * 31 + id.charCodeAt(i)) % 10000;
   }
-  const usageCount = `${(500 + (hash % 450) + ((hash % 99) / 100)).toFixed(2)} K`;
-  const likesCount = `${(1.0 + ((hash % 85) / 100)).toFixed(2)} K`;
+  const numberFormat = new Intl.NumberFormat(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const usageCount = `${numberFormat.format(500 + (hash % 450) + ((hash % 99) / 100))} K`;
+  const likesCount = `${numberFormat.format(1.0 + ((hash % 85) / 100))} K`;
 
   // Avatar pastel background colors
   const avatarGradients = [
@@ -161,6 +165,7 @@ const VoiceControls = memo(function VoiceControls({
   onDeletePreset,
 }: VoiceControlsProps) {
   const copy = useCopy();
+  const locale = useLocale();
 
 
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
@@ -384,7 +389,7 @@ const VoiceControls = memo(function VoiceControls({
 
         {playbackError && (
           <div className="p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
-            {playbackError}
+            {errorCopy(playbackError, copy)}
           </div>
         )}
 
@@ -392,7 +397,7 @@ const VoiceControls = memo(function VoiceControls({
           <LoadingSkeleton variant="voiceList" />
         ) : apiVoicesError ? (
           <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 text-center">
-            ⚠️ {apiVoicesError}
+            ⚠️ {errorCopy(apiVoicesError, copy)}
           </div>
         ) : apiVoices.length === 0 ? (
           <div className="p-5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-center text-xs text-gray-500">
@@ -409,7 +414,7 @@ const VoiceControls = memo(function VoiceControls({
               const isPlayingThis = playingVoiceId === voice.voice_id;
               const isLoadingThis = loadingVoiceId === voice.voice_id;
               const isLiked = !!likedVoices[voice.voice_id];
-              const meta = getVoiceCardMeta(voice, copy);
+              const meta = getVoiceCardMeta(voice, copy, languageTags[locale as Locale]);
               const genderLabel =
                 voice.gender?.toLowerCase() === 'male' ? copy('Male') : copy('Female');
 
